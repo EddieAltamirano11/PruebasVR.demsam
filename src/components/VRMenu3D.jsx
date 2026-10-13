@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame, useThree, createPortal } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { SoundFX } from '../utils/sound.js';
@@ -88,7 +88,6 @@ export function VRMenu3D({
   const [fuseProgress, setFuseProgress] = useState(0);
 
   const menuGroupRef = useRef();
-  const reticleRef = useRef();
   const progressMeshRef = useRef();
 
   // Registro de botones interactivos para el raycaster
@@ -106,11 +105,6 @@ export function VRMenu3D({
   const tempTarget = useRef(new THREE.Vector3());
   const tempOffset = useRef(new THREE.Vector3());
   const tempMenuPos = useRef(new THREE.Vector3());
-
-  // Obtener la camara activa real (en WebXR Three.js usa gl.xr.getCamera(), que contiene el tracking de la cabeza)
-  const getActiveCam = useCallback(() => {
-    return (gl.xr && gl.xr.isPresenting && gl.xr.getCamera()) ? gl.xr.getCamera() : camera;
-  }, [gl, camera]);
 
   // Registrar y desregistrar botones
   const registerButton = (id, mesh, onClick) => {
@@ -130,10 +124,9 @@ export function VRMenu3D({
       tempMenuPos.current.copy(rig.position).add(tempOffset.current);
       menuGroupRef.current.position.copy(tempMenuPos.current);
       menuGroupRef.current.lookAt(rig.position.x, tempMenuPos.current.y, rig.position.z);
-    } else {
-      const activeCam = getActiveCam();
-      activeCam.getWorldPosition(tempPos.current);
-      activeCam.getWorldDirection(tempForward.current);
+    } else if (camera) {
+      camera.getWorldPosition(tempPos.current);
+      camera.getWorldDirection(tempForward.current);
       tempForward.current.y = 0;
       if (tempForward.current.lengthSq() < 0.001) {
         tempForward.current.set(0, 0, -1);
@@ -144,7 +137,7 @@ export function VRMenu3D({
       menuGroupRef.current.position.copy(tempTarget.current);
       menuGroupRef.current.lookAt(tempPos.current.x, tempTarget.current.y, tempPos.current.z);
     }
-  }, [cameraRigRef, getActiveCam]);
+  }, [cameraRigRef, camera]);
 
   // Posicionar inicialmente al entrar en VR
   useEffect(() => {
@@ -171,24 +164,21 @@ export function VRMenu3D({
 
     let targetId = lastHoveredRef.current;
 
-    // Si por timing de frame no estaba registrado en lastHovered, raycast inmediato con la camara activa de WebXR
-    if (!targetId) {
-      const activeCam = getActiveCam();
-      if (activeCam) {
-        activeCam.getWorldPosition(rayOrigin.current);
-        activeCam.getWorldDirection(rayDir.current);
-        raycaster.current.set(rayOrigin.current, rayDir.current);
+    // Si por timing de frame no estaba registrado en lastHovered, raycast inmediato desde la camara
+    if (!targetId && camera) {
+      camera.getWorldPosition(rayOrigin.current);
+      camera.getWorldDirection(rayDir.current);
+      raycaster.current.set(rayOrigin.current, rayDir.current);
 
-        const meshes = Array.from(buttonsRegistry.current.values()).map((v) => v.mesh);
-        const intersects = raycaster.current.intersectObjects(meshes, false);
+      const meshes = Array.from(buttonsRegistry.current.values()).map((v) => v.mesh);
+      const intersects = raycaster.current.intersectObjects(meshes, false);
 
-        if (intersects.length > 0) {
-          const hitMesh = intersects[0].object;
-          for (const [id, val] of buttonsRegistry.current.entries()) {
-            if (val.mesh === hitMesh) {
-              targetId = id;
-              break;
-            }
+      if (intersects.length > 0) {
+        const hitMesh = intersects[0].object;
+        for (const [id, val] of buttonsRegistry.current.entries()) {
+          if (val.mesh === hitMesh) {
+            targetId = id;
+            break;
           }
         }
       }
@@ -206,7 +196,7 @@ export function VRMenu3D({
         }
       }
     }
-  }, [getActiveCam]);
+  }, [camera]);
 
   // Escuchar eventos de WebXR (select) y DOM (touch/pointerdown) para el gatillo del visor Homido Grab
   useEffect(() => {
@@ -254,17 +244,14 @@ export function VRMenu3D({
     };
   }, [gl, triggerCurrentButton]);
 
-  // Frame a frame: Orientar la mira, actualizar anclaje del menu y temporizador por mirada (Gaze Fuse)
+  // Frame a frame: Raycasting continuo para el apuntador y actualizacion de menu
   useFrame((state, delta) => {
-    const activeCam = getActiveCam();
-    activeCam.getWorldPosition(tempPos.current);
-    activeCam.getWorldDirection(tempForward.current);
+    if (!camera) return;
 
-    // 1. Posicionar la reticula (mira) fija a 1.2m perpendicular a la mirada del usuario
-    if (reticleRef.current) {
-      reticleRef.current.position.copy(tempPos.current).addScaledVector(tempForward.current, 1.2);
-      reticleRef.current.lookAt(tempPos.current);
-    }
+    // 1. Raycasting continuo desde el visor hacia el frente para detectar botones bajo el apuntador
+    camera.getWorldPosition(rayOrigin.current);
+    camera.getWorldDirection(rayDir.current);
+    raycaster.current.set(rayOrigin.current, rayDir.current);
 
     // 2. Anclar el menu al Camera Rig: acompana el desplazamiento del usuario en WebXR
     // Posicionado 1.15m a la izquierda para NO obstruir la vision frontal del Bocho
@@ -279,11 +266,7 @@ export function VRMenu3D({
       }
     }
 
-    // 3. Raycasting desde el centro de la cabeza hacia el frente
-    rayOrigin.current.copy(tempPos.current);
-    rayDir.current.copy(tempForward.current);
-    raycaster.current.set(rayOrigin.current, rayDir.current);
-
+    // 3. Evaluar colision del apuntador con los botones
     const meshes = Array.from(buttonsRegistry.current.values()).map((v) => v.mesh);
     const intersects = raycaster.current.intersectObjects(meshes, false);
 
@@ -305,7 +288,7 @@ export function VRMenu3D({
           fuseTimer.current = 0;
         }
 
-        // Incrementar temporizador de mirada (1.2 segundos para activar)
+        // Incrementar temporizador de mirada (1.2 segundos para activar automaticamente)
         fuseTimer.current += delta;
         const progress = Math.min(1.0, fuseTimer.current / 1.2);
         setFuseProgress(progress);
@@ -331,7 +314,7 @@ export function VRMenu3D({
       }
     }
 
-    // Si la mirada sale de cualquier boton
+    // Si el apuntador sale de cualquier boton
     if (lastHoveredRef.current !== null) {
       lastHoveredRef.current = null;
       setHoveredId(null);
@@ -346,26 +329,68 @@ export function VRMenu3D({
   return (
     <>
       {/* ==================================================== */}
-      {/* RETICULA / MIRA CON FUSE TIMER FRENTE A LOS OJOS    */}
+      {/* RETICULA / APUNTADOR VR 100% FIJO EN LA CAMARA       */}
       {/* ==================================================== */}
-      <group ref={reticleRef}>
-        {/* Anillo exterior de la mira */}
-        <mesh>
-          <ringGeometry args={[0.012, 0.018, 32]} />
-          <meshBasicMaterial
-            color={hoveredId ? '#38bdf8' : '#ffffff'}
-            transparent
-            opacity={hoveredId ? 0.95 : 0.6}
-            depthTest={false}
-          />
-        </mesh>
+      {camera && createPortal(
+        <group position={[0, 0, -1.2]} renderOrder={9999}>
+          {/* Punto central solido para maxima precision del apuntador */}
+          <mesh renderOrder={9999}>
+            <circleGeometry args={[0.007, 24]} />
+            <meshBasicMaterial
+              color="#ffffff"
+              transparent
+              opacity={0.95}
+              depthTest={false}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+              toneMapped={false}
+            />
+          </mesh>
 
-        {/* Circulo interior de progreso de mirada (se expande al mirar) */}
-        <mesh ref={progressMeshRef} scale={[0, 0, 1]}>
-          <circleGeometry args={[0.012, 32]} />
-          <meshBasicMaterial color="#38bdf8" transparent opacity={0.85} depthTest={false} />
-        </mesh>
-      </group>
+          {/* Anillo de contraste exterior oscuro para que resalte en cielos brillantes */}
+          <mesh position={[0, 0, -0.001]} renderOrder={9998}>
+            <ringGeometry args={[0.015, 0.026, 32]} />
+            <meshBasicMaterial
+              color="#000000"
+              transparent
+              opacity={0.5}
+              depthTest={false}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+              toneMapped={false}
+            />
+          </mesh>
+
+          {/* Anillo interactivo brillante que resalta en cian al apuntar a un boton */}
+          <mesh renderOrder={9999}>
+            <ringGeometry args={[0.016, 0.024, 32]} />
+            <meshBasicMaterial
+              color={hoveredId ? '#38bdf8' : '#ffffff'}
+              transparent
+              opacity={hoveredId ? 1.0 : 0.75}
+              depthTest={false}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+              toneMapped={false}
+            />
+          </mesh>
+
+          {/* Disco interior de progreso de mirada (se expande al mirar) */}
+          <mesh ref={progressMeshRef} scale={[0, 0, 1]} renderOrder={9999}>
+            <circleGeometry args={[0.016, 32]} />
+            <meshBasicMaterial
+              color="#38bdf8"
+              transparent
+              opacity={0.85}
+              depthTest={false}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+              toneMapped={false}
+            />
+          </mesh>
+        </group>,
+        camera
+      )}
 
       {/* ==================================================== */}
       {/* PANEL FLOTANTE EN ESPACIO 3D                         */}
