@@ -119,7 +119,7 @@ export function VRMenu3D({
     if (!menuGroupRef.current) return;
     const rig = cameraRigRef?.current;
     if (rig) {
-      tempOffset.current.set(-1.15, -0.05, -2.1);
+      tempOffset.current.set(0, 0, -2.2);
       tempOffset.current.applyQuaternion(rig.quaternion);
       tempMenuPos.current.copy(rig.position).add(tempOffset.current);
       menuGroupRef.current.position.copy(tempMenuPos.current);
