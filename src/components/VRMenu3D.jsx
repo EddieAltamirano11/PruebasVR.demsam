@@ -1,4 +1,4 @@
-﻿import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
@@ -78,9 +78,10 @@ export function VRMenu3D({
   setFixedView,
   lightMode,
   setLightMode,
-  onRestart
+  onRestart,
+  onRecenterRef
 }) {
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const [minimized, setMinimized] = useState(false);
   const [hoveredId, setHoveredId] = useState(null);
   const [fuseProgress, setFuseProgress] = useState(0);
@@ -97,6 +98,7 @@ export function VRMenu3D({
 
   const fuseTimer = useRef(0);
   const lastHoveredRef = useRef(null);
+  const lastTriggerTime = useRef(0);
 
   const tempPos = useRef(new THREE.Vector3());
   const tempForward = useRef(new THREE.Vector3());
@@ -110,34 +112,130 @@ export function VRMenu3D({
     buttonsRegistry.current.delete(id);
   };
 
-  // Posicionar inicialmente el menu frente a la camara al entrar
-  useEffect(() => {
+  // Posicionar el menu de forma estatica a 2.2m al frente de los ojos, nivelado con el horizonte
+  const recenterMenu = useCallback(() => {
     if (!menuGroupRef.current) return;
     camera.getWorldPosition(tempPos.current);
     camera.getWorldDirection(tempForward.current);
 
-    // Colocar a 2.2 metros al frente
+    // Nivelar en Y para que el menu no quede inclinado hacia arriba o abajo
+    tempForward.current.y = 0;
+    if (tempForward.current.lengthSq() < 0.001) {
+      tempForward.current.set(0, 0, -1);
+    } else {
+      tempForward.current.normalize();
+    }
+
+    // Colocar a 2.2 metros al frente en el espacio 3D
     tempTarget.current.copy(tempPos.current).addScaledVector(tempForward.current, 2.2);
     menuGroupRef.current.position.copy(tempTarget.current);
-    menuGroupRef.current.lookAt(tempPos.current);
+    menuGroupRef.current.lookAt(tempPos.current.x, tempTarget.current.y, tempPos.current.z);
   }, [camera]);
 
-  // Soporte de gatillo fisico / toque de pantalla en visor
+  // Posicionar inicialmente una sola vez al entrar en VR
   useEffect(() => {
-    const handleScreenTap = () => {
-      if (lastHoveredRef.current) {
-        const item = buttonsRegistry.current.get(lastHoveredRef.current);
-        if (item && item.onClick) {
-          SoundFX.playClick();
-          item.onClick();
-          fuseTimer.current = 0;
-          setFuseProgress(0);
+    recenterMenu();
+  }, [recenterMenu]);
+
+  // Si se solicita recentrado desde la interfaz, recentrar tambien el menu frente al usuario
+  useEffect(() => {
+    if (onRecenterRef) {
+      const prevRecenter = onRecenterRef.current;
+      onRecenterRef.current = () => {
+        if (prevRecenter) prevRecenter();
+        recenterMenu();
+      };
+    }
+  }, [onRecenterRef, recenterMenu]);
+
+  // Disparar accion en el boton enfocado (soporte gatillo Homido Grab / toque de pantalla / WebXR select)
+  const triggerCurrentButton = useCallback(() => {
+    const now = Date.now();
+    // Debounce de 250ms para evitar doble disparo por eventos consecutivos
+    if (now - lastTriggerTime.current < 250) return;
+    lastTriggerTime.current = now;
+
+    let targetId = lastHoveredRef.current;
+
+    // Si por timing de frame no estaba registrado en lastHovered, raycast inmediato
+    if (!targetId && camera) {
+      camera.getWorldPosition(rayOrigin.current);
+      camera.getWorldDirection(rayDir.current);
+      raycaster.current.set(rayOrigin.current, rayDir.current);
+
+      const meshes = Array.from(buttonsRegistry.current.values()).map((v) => v.mesh);
+      const intersects = raycaster.current.intersectObjects(meshes, false);
+
+      if (intersects.length > 0) {
+        const hitMesh = intersects[0].object;
+        for (const [id, val] of buttonsRegistry.current.entries()) {
+          if (val.mesh === hitMesh) {
+            targetId = id;
+            break;
+          }
         }
       }
+    }
+
+    if (targetId) {
+      const item = buttonsRegistry.current.get(targetId);
+      if (item && item.onClick) {
+        SoundFX.playClick();
+        item.onClick();
+        fuseTimer.current = 0;
+        setFuseProgress(0);
+        if (progressMeshRef.current) {
+          progressMeshRef.current.scale.set(0, 0, 1);
+        }
+      }
+    }
+  }, [camera]);
+
+  // Escuchar eventos de WebXR (select) y DOM (touch/pointerdown) para el gatillo del visor Homido Grab
+  useEffect(() => {
+    // 1. WebXR Controllers (Cardboard, WebXR Polyfill, sesion nativa WebXR)
+    const controller0 = gl.xr?.getController ? gl.xr.getController(0) : null;
+    const controller1 = gl.xr?.getController ? gl.xr.getController(1) : null;
+
+    if (controller0) controller0.addEventListener('select', triggerCurrentButton);
+    if (controller1) controller1.addEventListener('select', triggerCurrentButton);
+
+    const onSessionStart = () => {
+      const session = gl.xr?.getSession ? gl.xr.getSession() : null;
+      if (session) {
+        session.addEventListener('select', triggerCurrentButton);
+      }
     };
-    window.addEventListener('pointerdown', handleScreenTap);
-    return () => window.removeEventListener('pointerdown', handleScreenTap);
-  }, []);
+
+    if (gl.xr) {
+      gl.xr.addEventListener('sessionstart', onSessionStart);
+      const existingSession = gl.xr.getSession ? gl.xr.getSession() : null;
+      if (existingSession) {
+        existingSession.addEventListener('select', triggerCurrentButton);
+      }
+    }
+
+    // 2. DOM Events (Para visores Homido Grab que tocan la pantalla tactil, fallback y split-screen)
+    const handleDomClick = (e) => {
+      if (e.target && e.target.closest && e.target.closest('button')) return;
+      triggerCurrentButton();
+    };
+
+    window.addEventListener('pointerdown', handleDomClick, { passive: true });
+    window.addEventListener('touchstart', handleDomClick, { passive: true });
+
+    return () => {
+      if (controller0) controller0.removeEventListener('select', triggerCurrentButton);
+      if (controller1) controller1.removeEventListener('select', triggerCurrentButton);
+      if (gl.xr) {
+        gl.xr.removeEventListener('sessionstart', onSessionStart);
+        const session = gl.xr.getSession ? gl.xr.getSession() : null;
+        if (session) session.removeEventListener('select', triggerCurrentButton);
+      }
+      window.removeEventListener('pointerdown', handleDomClick);
+      window.removeEventListener('touchstart', handleDomClick);
+    };
+  }, [gl, triggerCurrentButton]);
 
   // Frame a frame: Orientar la mira y ejecutar el temporizador por mirada (Gaze Fuse)
   useFrame((state, delta) => {
@@ -149,21 +247,10 @@ export function VRMenu3D({
       reticleRef.current.quaternion.copy(camera.quaternion);
     }
 
-    // 2. Mantener el menu acompanando a la camara suavemente si se mueve en coche
-    if (menuGroupRef.current) {
-      camera.getWorldPosition(tempPos.current);
-      const dist = menuGroupRef.current.position.distanceTo(tempPos.current);
+    // NOTA CLAVE: El menu 3D permanece estatico en el espacio del mundo.
+    // YA NO se arrastra con el auto ni lerpea con la camara para evitar que quede pegado al carro.
 
-      // Si el auto avanzo mas de 4m del menu, recentrarlo suavemente al frente
-      if (dist > 4.5 || dist < 1.0) {
-        camera.getWorldDirection(tempForward.current);
-        tempTarget.current.copy(tempPos.current).addScaledVector(tempForward.current, 2.2);
-        menuGroupRef.current.position.lerp(tempTarget.current, Math.min(1.0, delta * 3));
-        menuGroupRef.current.lookAt(tempPos.current);
-      }
-    }
-
-    // 3. Raycasting desde el centro de la cabeza hacia el frente
+    // 2. Raycasting desde el centro de la cabeza hacia el frente
     camera.getWorldPosition(rayOrigin.current);
     camera.getWorldDirection(rayDir.current);
     raycaster.current.set(rayOrigin.current, rayDir.current);

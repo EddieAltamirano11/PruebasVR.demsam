@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -65,18 +65,11 @@ export function VRDeviceOrientation({ onRecenterRef, carObj, followActive }) {
     window.addEventListener('deviceorientation', handleOrientation, true);
     window.addEventListener('deviceorientationabsolute', handleOrientation, true);
 
-    const handleTapToRecenter = (e) => {
-      if (e.target && e.target.closest && e.target.closest('button')) return;
-      recenter();
-    };
-    window.addEventListener('pointerdown', handleTapToRecenter);
-
     return () => {
       window.removeEventListener('orientationchange', updateScreenAngle);
       window.removeEventListener('resize', updateScreenAngle);
       window.removeEventListener('deviceorientation', handleOrientation, true);
       window.removeEventListener('deviceorientationabsolute', handleOrientation, true);
-      window.removeEventListener('pointerdown', handleTapToRecenter);
       orientationData.current = null;
     };
   }, []);

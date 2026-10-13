@@ -1,4 +1,4 @@
-﻿import React, { useRef } from 'react';
+import React, { useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Sky, PerspectiveCamera } from '@react-three/drei';
 import { BochoModel } from './BochoModel.jsx';
@@ -119,6 +119,7 @@ export function Scene({
           lightMode={lightMode}
           setLightMode={setLightMode}
           onRestart={onRestart}
+          onRecenterRef={onRecenterRef}
         />
       )}
 
