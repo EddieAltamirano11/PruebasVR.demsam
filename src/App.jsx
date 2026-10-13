@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { Scene } from './components/Scene.jsx';
 import { UIOverlay } from './components/UIOverlay.jsx';
 
@@ -11,14 +11,15 @@ export default function App() {
   const [lightMode, setLightMode] = useState('day'); // 'day' | 'sunset' | 'night'
   const [vrMode, setVrMode] = useState(false);
   const [carObj, setCarObj] = useState(null);
+  const [restartKey, setRestartKey] = useState(0);
   const onRecenterRef = useRef(null);
   const onWebXRTriggerRef = useRef(null);
 
   const handleRestart = useCallback(() => {
-    if (!followActive) {
-      setFixedView('origin');
-    }
-  }, [followActive]);
+    setRestartKey((k) => k + 1);
+    setFollowActive(false);
+    setFixedView('origin');
+  }, []);
 
   const toggleVRMode = useCallback(async () => {
     // 1. Si el gestor oficial WebXR esta listo, lanzar la sesion nativa
@@ -84,6 +85,7 @@ export default function App() {
         onRecenterRef={onRecenterRef}
         onWebXRTriggerRef={onWebXRTriggerRef}
         onRestart={handleRestart}
+        restartKey={restartKey}
       />
 
       {/* Interfaz de Usuario 2D (Modo Pantalla Normal) */}

@@ -79,7 +79,8 @@ export function VRMenu3D({
   lightMode,
   setLightMode,
   onRestart,
-  onRecenterRef
+  onRecenterRef,
+  cameraRigRef
 }) {
   const { camera, gl } = useThree();
   const [minimized, setMinimized] = useState(false);
@@ -103,6 +104,13 @@ export function VRMenu3D({
   const tempPos = useRef(new THREE.Vector3());
   const tempForward = useRef(new THREE.Vector3());
   const tempTarget = useRef(new THREE.Vector3());
+  const tempOffset = useRef(new THREE.Vector3());
+  const tempMenuPos = useRef(new THREE.Vector3());
+
+  // Obtener la camara activa real (en WebXR Three.js usa gl.xr.getCamera(), que contiene el tracking de la cabeza)
+  const getActiveCam = useCallback(() => {
+    return (gl.xr && gl.xr.isPresenting && gl.xr.getCamera()) ? gl.xr.getCamera() : camera;
+  }, [gl, camera]);
 
   // Registrar y desregistrar botones
   const registerButton = (id, mesh, onClick) => {
@@ -112,27 +120,33 @@ export function VRMenu3D({
     buttonsRegistry.current.delete(id);
   };
 
-  // Posicionar el menu de forma estatica a 2.2m al frente de los ojos, nivelado con el horizonte
+  // Posicionar el menu relativo al Camera Rig o al frente del usuario
   const recenterMenu = useCallback(() => {
     if (!menuGroupRef.current) return;
-    camera.getWorldPosition(tempPos.current);
-    camera.getWorldDirection(tempForward.current);
-
-    // Nivelar en Y para que el menu no quede inclinado hacia arriba o abajo
-    tempForward.current.y = 0;
-    if (tempForward.current.lengthSq() < 0.001) {
-      tempForward.current.set(0, 0, -1);
+    const rig = cameraRigRef?.current;
+    if (rig) {
+      tempOffset.current.set(-1.15, -0.05, -2.1);
+      tempOffset.current.applyQuaternion(rig.quaternion);
+      tempMenuPos.current.copy(rig.position).add(tempOffset.current);
+      menuGroupRef.current.position.copy(tempMenuPos.current);
+      menuGroupRef.current.lookAt(rig.position.x, tempMenuPos.current.y, rig.position.z);
     } else {
-      tempForward.current.normalize();
+      const activeCam = getActiveCam();
+      activeCam.getWorldPosition(tempPos.current);
+      activeCam.getWorldDirection(tempForward.current);
+      tempForward.current.y = 0;
+      if (tempForward.current.lengthSq() < 0.001) {
+        tempForward.current.set(0, 0, -1);
+      } else {
+        tempForward.current.normalize();
+      }
+      tempTarget.current.copy(tempPos.current).addScaledVector(tempForward.current, 2.2);
+      menuGroupRef.current.position.copy(tempTarget.current);
+      menuGroupRef.current.lookAt(tempPos.current.x, tempTarget.current.y, tempPos.current.z);
     }
+  }, [cameraRigRef, getActiveCam]);
 
-    // Colocar a 2.2 metros al frente en el espacio 3D
-    tempTarget.current.copy(tempPos.current).addScaledVector(tempForward.current, 2.2);
-    menuGroupRef.current.position.copy(tempTarget.current);
-    menuGroupRef.current.lookAt(tempPos.current.x, tempTarget.current.y, tempPos.current.z);
-  }, [camera]);
-
-  // Posicionar inicialmente una sola vez al entrar en VR
+  // Posicionar inicialmente al entrar en VR
   useEffect(() => {
     recenterMenu();
   }, [recenterMenu]);
@@ -157,21 +171,24 @@ export function VRMenu3D({
 
     let targetId = lastHoveredRef.current;
 
-    // Si por timing de frame no estaba registrado en lastHovered, raycast inmediato
-    if (!targetId && camera) {
-      camera.getWorldPosition(rayOrigin.current);
-      camera.getWorldDirection(rayDir.current);
-      raycaster.current.set(rayOrigin.current, rayDir.current);
+    // Si por timing de frame no estaba registrado en lastHovered, raycast inmediato con la camara activa de WebXR
+    if (!targetId) {
+      const activeCam = getActiveCam();
+      if (activeCam) {
+        activeCam.getWorldPosition(rayOrigin.current);
+        activeCam.getWorldDirection(rayDir.current);
+        raycaster.current.set(rayOrigin.current, rayDir.current);
 
-      const meshes = Array.from(buttonsRegistry.current.values()).map((v) => v.mesh);
-      const intersects = raycaster.current.intersectObjects(meshes, false);
+        const meshes = Array.from(buttonsRegistry.current.values()).map((v) => v.mesh);
+        const intersects = raycaster.current.intersectObjects(meshes, false);
 
-      if (intersects.length > 0) {
-        const hitMesh = intersects[0].object;
-        for (const [id, val] of buttonsRegistry.current.entries()) {
-          if (val.mesh === hitMesh) {
-            targetId = id;
-            break;
+        if (intersects.length > 0) {
+          const hitMesh = intersects[0].object;
+          for (const [id, val] of buttonsRegistry.current.entries()) {
+            if (val.mesh === hitMesh) {
+              targetId = id;
+              break;
+            }
           }
         }
       }
@@ -189,7 +206,7 @@ export function VRMenu3D({
         }
       }
     }
-  }, [camera]);
+  }, [getActiveCam]);
 
   // Escuchar eventos de WebXR (select) y DOM (touch/pointerdown) para el gatillo del visor Homido Grab
   useEffect(() => {
@@ -237,22 +254,34 @@ export function VRMenu3D({
     };
   }, [gl, triggerCurrentButton]);
 
-  // Frame a frame: Orientar la mira y ejecutar el temporizador por mirada (Gaze Fuse)
+  // Frame a frame: Orientar la mira, actualizar anclaje del menu y temporizador por mirada (Gaze Fuse)
   useFrame((state, delta) => {
-    // 1. Posicionar la reticula (mira) fija a 1.2m frente a los ojos del usuario
+    const activeCam = getActiveCam();
+    activeCam.getWorldPosition(tempPos.current);
+    activeCam.getWorldDirection(tempForward.current);
+
+    // 1. Posicionar la reticula (mira) fija a 1.2m perpendicular a la mirada del usuario
     if (reticleRef.current) {
-      camera.getWorldPosition(tempPos.current);
-      camera.getWorldDirection(tempForward.current);
       reticleRef.current.position.copy(tempPos.current).addScaledVector(tempForward.current, 1.2);
-      reticleRef.current.quaternion.copy(camera.quaternion);
+      reticleRef.current.lookAt(tempPos.current);
     }
 
-    // NOTA CLAVE: El menu 3D permanece estatico en el espacio del mundo.
-    // YA NO se arrastra con el auto ni lerpea con la camara para evitar que quede pegado al carro.
+    // 2. Anclar el menu al Camera Rig: acompana el desplazamiento del usuario en WebXR
+    // Posicionado 1.15m a la izquierda para NO obstruir la vision frontal del Bocho
+    const rig = cameraRigRef?.current;
+    if (menuGroupRef.current) {
+      if (rig) {
+        tempOffset.current.set(-1.15, -0.05, -2.1);
+        tempOffset.current.applyQuaternion(rig.quaternion);
+        tempMenuPos.current.copy(rig.position).add(tempOffset.current);
+        menuGroupRef.current.position.copy(tempMenuPos.current);
+        menuGroupRef.current.lookAt(rig.position.x, tempMenuPos.current.y, rig.position.z);
+      }
+    }
 
-    // 2. Raycasting desde el centro de la cabeza hacia el frente
-    camera.getWorldPosition(rayOrigin.current);
-    camera.getWorldDirection(rayDir.current);
+    // 3. Raycasting desde el centro de la cabeza hacia el frente
+    rayOrigin.current.copy(tempPos.current);
+    rayDir.current.copy(tempForward.current);
     raycaster.current.set(rayOrigin.current, rayDir.current);
 
     const meshes = Array.from(buttonsRegistry.current.values()).map((v) => v.mesh);
@@ -294,6 +323,9 @@ export function VRMenu3D({
           }
           fuseTimer.current = 0;
           setFuseProgress(0);
+          if (progressMeshRef.current) {
+            progressMeshRef.current.scale.set(0, 0, 1);
+          }
         }
         return;
       }

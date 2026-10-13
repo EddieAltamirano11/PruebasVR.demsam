@@ -27,9 +27,11 @@ export function Scene({
   setCarObj,
   onRecenterRef,
   onWebXRTriggerRef,
-  onRestart
+  onRestart,
+  restartKey
 }) {
   const orbitRef = useRef();
+  const cameraRigRef = useRef();
 
   // Configuracion de iluminacion segun el modo de luz
   const lightSettings = {
@@ -59,7 +61,10 @@ export function Scene({
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       dpr={[1, 2]}
     >
-      <PerspectiveCamera makeDefault position={[-445, 4.5, 32]} fov={80} near={0.1} far={50000} />
+      {/* Camera Rig (Dolly) para navegacion espacial y vistas en WebXR */}
+      <group ref={cameraRigRef} position={[-445, 4.5, 32]}>
+        <PerspectiveCamera makeDefault position={[0, 0, 0]} fov={80} near={0.1} far={50000} />
+      </group>
 
       {/* Cielo e Iluminacion Dinamica */}
       <Sky
@@ -78,7 +83,7 @@ export function Scene({
       <hemisphereLight groundColor="#334155" color="#94a3b8" intensity={0.6} />
 
       {/* Modelo 3D del Bocho y Entorno */}
-      <BochoModel isPlaying={isPlaying} speed={speed} onCarRef={setCarObj} />
+      <BochoModel isPlaying={isPlaying} speed={speed} onCarRef={setCarObj} restartKey={restartKey} />
 
       {/* Control de Camara y Seguimiento */}
       <FollowCamera
@@ -87,6 +92,7 @@ export function Scene({
         followType={followType}
         fixedView={fixedView}
         orbitControlsRef={orbitRef}
+        cameraRigRef={cameraRigRef}
         vrMode={vrMode}
       />
 
@@ -120,6 +126,7 @@ export function Scene({
           setLightMode={setLightMode}
           onRestart={onRestart}
           onRecenterRef={onRecenterRef}
+          cameraRigRef={cameraRigRef}
         />
       )}
 

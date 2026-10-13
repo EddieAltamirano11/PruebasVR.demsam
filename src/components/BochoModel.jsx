@@ -1,8 +1,8 @@
-﻿import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 
-export function BochoModel({ isPlaying = true, speed = 1.0, onCarRef }) {
+export function BochoModel({ isPlaying = true, speed = 1.0, onCarRef, restartKey }) {
   const group = useRef();
   // Carga del modelo optimizado de 8.84 MB con Draco
   const { scene, animations } = useGLTF('./bocho_optimized.glb', true);
@@ -30,6 +30,16 @@ export function BochoModel({ isPlaying = true, speed = 1.0, onCarRef }) {
       action.play();
     }
   }, [actions]);
+
+  // Reiniciar el recorrido al pulsar el boton Reiniciar
+  useEffect(() => {
+    if (restartKey) {
+      const action = actions['cuboAction.001'] || Object.values(actions)[0];
+      if (action) {
+        action.reset().play();
+      }
+    }
+  }, [restartKey, actions]);
 
   useEffect(() => {
     const action = actions['cuboAction.001'] || Object.values(actions)[0];
