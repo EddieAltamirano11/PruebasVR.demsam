@@ -1,0 +1,90 @@
+name: CI/CD & QA Pipeline - WebXR Project
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+jobs:
+  # ==========================================
+  # JOB 1: QA & AUTOMATED QUALITY GATES
+  # ==========================================
+  qa:
+    name: QA Quality Gates (Lint, Tests, Size Check)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run ESLint (Static Code Analysis)
+        run: npm run lint
+
+      - name: Build Project for Verification
+        run: npm run build
+
+      - name: Run Vitest Unit Tests & Bundle QA
+        run: npm test
+
+      - name: Verify Bundle Ultralight Threshold (< 500 KB gzip)
+        run: |
+          echo "=== DIST ASSETS ==="
+          ls -lh dist/assets/
+          echo "=== VERIFYING GZIP SIZES ==="
+          for file in dist/assets/*.js; do
+            gzip_size=$(gzip -c "$file" | wc -c)
+            echo "$file -> ${gzip_size} bytes gzipped"
+            if [ $gzip_size -gt 512000 ]; then
+              echo "Error: $file exceeds 500 KB gzip limit!"
+              exit 1
+            fi
+          done
+          echo "All bundle assets meet the < 500 KB gzip threshold."
+
+  # ==========================================
+  # JOB 2: DEPLOY TO CLOUDFLARE PAGES
+  # ==========================================
+  deploy:
+    name: Deploy to Cloudflare Pages
+    needs: qa
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Project for Production
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=pruebasvr-demsam
+        continue-on-error: true

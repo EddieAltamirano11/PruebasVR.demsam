@@ -10,6 +10,18 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    chunkSizeWarningLimit: 2500
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/three')) {
+            return 'vendor-three';
+          }
+          if (id.includes('node_modules/@react-three') || id.includes('node_modules/react') || id.includes('node_modules/lucide-react')) {
+            return 'vendor-framework';
+          }
+        }
+      }
+    }
   }
 });
