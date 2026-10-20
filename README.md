@@ -1,6 +1,6 @@
 # Módulo Inmersivo WebXR — Difusión de Culturas Vivas de Nayarit
 
-> **Taller Full Stack | Semestre VII | Equipo 10**  
+> **Taller Full Stack | Equipo 10**  
 > **Sede:** Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)  
 > **Stack Base:** React 18, Three.js, React Three Fiber, WebXR (`@react-three/xr`), Tailwind CSS, Vite y Cloudflare Pages.
 
@@ -10,10 +10,10 @@
 
 | Integrante | Rol | Responsabilidad Principal |
 | :--- | :--- | :--- |
-| **Eddie David Altamirano Plantillas** | Fullstack Lead & WebXR Architect | Arquitectura WebXR, setup base, rendimiento del bundle y CI/CD en Cloudflare. |
+| **Eddie David Altamirano Plantillas** | Fullstack Lead & WebXR Architect | Arquitectura WebXR, rendimiento del bundle y CI/CD en Cloudflare. |
 | **Luis Carlos Durán Ocampo** | Backend & Database Engineer | Diseño de base de datos PostgreSQL, esquemas Prisma ORM y APIs REST seguras. |
 | **Samir Adrián Cárdenas Gámez** | Frontend Admin & UI Designer | Panel administrativo 2D, formularios CRUD de libros, layout y experiencia de usuario. |
-| **Ulises Alejandro Bautista Meza** | 3D Asset & Optimization Specialist | Modelado low-poly de la sierra Wixárika, compresión Draco y retopología móvil. |
+| **Ulises Alejandro Bautista Meza** | setup base | Modelado low-poly de la sierra Wixárika, compresión Draco y retopología móvil. |
 
 ---
 
@@ -110,7 +110,7 @@ gitGraph
 
 * **`main` (Producción):**
   * Representa el software estable y entregable en producción.
-  * Solo recibe código aprobado desde `develop` o `QA` mediante Pull Requests evaluados.
+  * Solo recibe código aprobado desde `QA` mediante Pull Requests evaluados.
   * Cada `push` a `main` despliega automáticamente a producción en **Cloudflare Pages**.
 * **`develop` (Integración y Desarrollo Activo):**
   * Rama base de trabajo donde convergen las contribuciones diarias de los cuatro integrantes.
