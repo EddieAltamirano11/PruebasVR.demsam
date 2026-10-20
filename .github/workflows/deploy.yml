@@ -5,10 +5,14 @@ on:
     branches:
       - main
       - dev
+      - QA
+      - qa
   pull_request:
     branches:
       - main
       - dev
+      - QA
+      - qa
   workflow_dispatch:
 
 jobs:
@@ -62,7 +66,7 @@ jobs:
   deploy:
     name: Deploy to Cloudflare Pages
     needs: qa
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && github.event_name == 'push'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/QA' || github.ref == 'refs/heads/qa') && github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -86,5 +90,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=pruebasvr-demsam
+          command: pages deploy dist --project-name=pruebasvr-demsam --branch=${{ github.ref_name }}
         continue-on-error: true
