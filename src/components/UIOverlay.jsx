@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Play,
   Pause,
@@ -13,8 +13,15 @@ import {
   ChevronUp,
   Gauge,
   Compass,
-  Crosshair
+  Crosshair,
+  LogIn,
+  ShieldCheck,
+  BookOpen,
+  User
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { AuthModal } from './AuthModal';
+import { UserProfileModal } from './UserProfileModal';
 import { SoundFX } from '../utils/sound.js';
 
 export function UIOverlay({
@@ -36,6 +43,18 @@ export function UIOverlay({
   onRecenter
 }) {
   const [menuOpen, setMenuOpen] = useState(true);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const { user, profile } = useAuth();
+  const role = profile?.rol || user?.user_metadata?.rol || 'lector';
+  const displayName =
+    profile?.nombre_completo ||
+    user?.user_metadata?.full_name ||
+    user?.email?.split('@')[0] ||
+    'Usuario';
+  const roleBadge =
+    role === 'admin' ? 'Admin' : role === 'bibliotecario' ? 'Bibliotecario' : 'Lector';
 
   const handleAction = (cb) => {
     SoundFX.playClick();
@@ -69,13 +88,62 @@ export function UIOverlay({
         </div>
       )}
 
-      {/* HUD Superior Izquierdo: Estado y Controles rapidos (oculto en VR para evitar distraccion) */}
+      {/* HUD Superior Izquierdo: Estado, Controles rapidos y Acceso de Usuario */}
       {!vrMode && (
         <div style={{ position: 'fixed', top: 16, left: 16, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div className="glass-panel" style={{ padding: '8px 14px', borderRadius: 12, color: '#f8fafc', fontSize: 13, display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: isPlaying ? '#10b981' : '#f59e0b', boxShadow: '0 0 10px currentColor' }} />
             <span><strong>Bocho 3D</strong> • React Three Fiber</span>
           </div>
+
+          {/* Botón de Acceso / Perfil */}
+          {user ? (
+            <button
+              onClick={() => handleAction(() => setProfileOpen(true))}
+              className="glass-btn"
+              style={{
+                padding: '8px 14px',
+                borderRadius: 12,
+                fontSize: 12,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                borderColor: role === 'admin' ? 'rgba(245, 158, 11, 0.6)' : 'rgba(56, 189, 248, 0.4)',
+                background: 'rgba(15, 23, 42, 0.85)',
+                color: '#f8fafc'
+              }}
+            >
+              {role === 'admin' ? (
+                <ShieldCheck size={15} color="#fbbf24" />
+              ) : role === 'bibliotecario' ? (
+                <BookOpen size={15} color="#38bdf8" />
+              ) : (
+                <User size={15} color="#34d399" />
+              )}
+              <span style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <strong>{displayName}</strong> <span style={{ color: '#94a3b8' }}>({roleBadge})</span>
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={() => handleAction(() => setAuthOpen(true))}
+              className="glass-btn"
+              style={{
+                padding: '8px 14px',
+                borderRadius: 12,
+                fontSize: 12,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                borderColor: 'rgba(56, 189, 248, 0.4)',
+                background: 'rgba(15, 23, 42, 0.85)',
+                color: '#f8fafc'
+              }}
+            >
+              <LogIn size={15} color="#38bdf8" />
+              <span>Iniciar Sesión / Registro</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -284,6 +352,10 @@ export function UIOverlay({
           )}
         </div>
       )}
+
+      {/* Modales de Autenticación y Perfil de Usuario */}
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+      <UserProfileModal isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
     </>
   );
 }
