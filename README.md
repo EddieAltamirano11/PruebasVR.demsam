@@ -19,7 +19,7 @@
 
 ## 📋 Requisitos Previos del Sistema
 
-Antes de comenzar, asegúrate de contar con lo siguiente instalado en tu equipo de desarrollo:
+Antes de comenzar, los cuatro integrantes deben asegurarse de tener instalado lo siguiente en su computadora:
 
 1. **Node.js:** Versión `20.x` o `22.x` LTS ([Descargar Node.js](https://nodejs.org/)).
 2. **npm:** Versión `10.x` o superior (incluido automáticamente con Node.js).
@@ -31,7 +31,7 @@ Antes de comenzar, asegúrate de contar con lo siguiente instalado en tu equipo 
 
 ## 🚀 Guía de Instalación y Ejecución (Para los 4 Integrantes)
 
-Sigue estos pasos en tu terminal para clonar, instalar y poner en marcha el proyecto localmente:
+Sigue estos pasos en tu terminal para clonar, instalar y poner en marcha el proyecto:
 
 ### 1. Clonar el repositorio y acceder a la carpeta
 ```bash
@@ -39,13 +39,13 @@ git clone https://github.com/EddieAltamirano11/PruebasVR.demsam.git
 cd PruebasVR.demsam
 ```
 
-### 2. Cambiar a la rama de desarrollo
+### 2. Cambiar a la rama de desarrollo (`develop`)
 ```bash
 git checkout develop
 ```
 *(Si es tu primera vez y la rama local no existe, ejecuta `git checkout -b develop origin/develop`)*.
 
-### 3. Instalar las dependencias
+### 3. Instalar las dependencias del proyecto
 ```bash
 npm install
 ```
@@ -55,7 +55,7 @@ npm install
 npm run dev
 ```
 
-El servidor Vite se iniciará con salida similar a:
+El servidor Vite iniciará en puerto 3000 con soporte de red local (`host: true`):
 ```text
   VITE v6.0.0  ready in 250 ms
 
@@ -74,16 +74,16 @@ El servidor Vite se iniciará con salida similar a:
 | `npm run dev` | Inicia el entorno local de desarrollo con Hot Module Replacement (HMR). |
 | `npm run build` | Compila y optimiza el proyecto para producción en la carpeta `./dist`. |
 | `npm run preview` | Previsualiza localmente el build de producción antes de desplegar. |
-| `npm run lint` | Ejecuta ESLint en `/src` para detectar errores de sintaxis y código muerto. |
+| `npm run lint` | Ejecuta ESLint en `/src` para detectar errores de sintaxis y buenas prácticas. |
 | `npm test` | Ejecuta la suite de pruebas unitarias y validaciones de bundle con Vitest. |
 | `npm run qa` | **Pipeline integral de QA local:** ejecuta linter + build + suite de tests. |
 | `npm run deploy` | Despliega manualmente los archivos de `./dist` hacia Cloudflare Pages con Wrangler. |
 
 ---
 
-## 🌿 Flujo de Ramas (Git Branching Strategy)
+## 🌿 Convenciones de Git y Flujo de Ramas
 
-Trabajamos bajo una estrategia basada en **Git Flow adaptado a Sprints**:
+Trabajamos bajo una estrategia basada en **Git Flow adaptado a Sprints**, estructurada en **`main`**, **`develop`**, **`QA`** y **ramas por tarea**:
 
 ```mermaid
 gitGraph
@@ -106,104 +106,118 @@ gitGraph
    merge QA id: "Release Sprint"
 ```
 
-### Descripción de Ramas Principales:
-* **`main`**: Rama de producción final. Es 100% estable. Todo lo que esté aquí se refleja en el entorno de producción de Cloudflare Pages.
-* **`develop`**: Rama principal de desarrollo e integración activa. Todas las tareas de cada integrante convergen aquí vía Pull Request.
-* **`QA`**: Rama de pruebas de calidad, validación de hardware (visor físico) y contraste WCAG antes de pasar a producción.
+### 1. Ramas Principales
 
-### Ramas por Tarea (Feature Branches):
-Cada integrante **NUNCA** debe subir commits directamente a `main` ni a `develop`. Se debe crear una rama por tarea/tarjeta asignada.
+* **`main` (Producción):**
+  * Representa el software estable y entregable en producción.
+  * Solo recibe código aprobado desde `develop` o `QA` mediante Pull Requests evaluados.
+  * Cada `push` a `main` despliega automáticamente a producción en **Cloudflare Pages**.
+* **`develop` (Integración y Desarrollo Activo):**
+  * Rama base de trabajo donde convergen las contribuciones diarias de los cuatro integrantes.
+  * Todo desarrollo parte de `develop` y se reintegra a `develop` vía Pull Request.
+  * Cuenta con validación automática de QA en cada commit/PR.
+* **`QA` (Aseguramiento de Calidad y Pruebas E2E):**
+  * Rama dedicada a la validación de software en hardware real (visor Homido Grab, celulares económicos) y pruebas de accesibilidad WCAG 2.1.
+  * Permite generar despliegues de pre-producción antes de promover el código a `main`.
 
-#### 🏷️ Nomenclatura oficial:
-* Nuevas funciones: `feature/tarjeta<N>-<descripcion-corta>`
-* Corrección de errores: `fix/<descripcion-del-bug>`
-* Tareas de soporte/configuración: `chore/<descripcion>`
-* Documentación: `docs/<descripcion>`
+### 2. Ramas por Tarea (Feature Branches)
 
-**Ejemplos de ramas por integrante:**
+> ⚠️ **Regla de oro:** Ningún integrante debe comitear directamente sobre `main` ni `develop`. Cada tarea o tarjeta del Sprint debe realizarse en su propia rama.
+
+#### 🏷️ Nomenclatura oficial de ramas por tarea:
+* **Nuevas características:** `feature/tarjeta<N>-<descripcion-corta>`
+* **Corrección de errores:** `fix/<descripcion-del-bug>`
+* **Tareas de mantenimiento/configuración:** `chore/<descripcion>`
+* **Documentación:** `docs/<descripcion>`
+
+**Ejemplos de ramas asignadas a cada integrante:**
 * `feature/tarjeta1-setup-webxr` *(Eddie Altamirano)*
 * `feature/tarjeta2-schema-prisma` *(Luis Carlos Durán)*
 * `feature/tarjeta3-admin-layout` *(Samir Cárdenas)*
 * `feature/tarjeta4-modelo-wixarika-3d` *(Ulises Bautista)*
 
-#### 🔄 Paso a paso para trabajar en una tarea:
-1. Asegurarse de tener la última versión de `develop`:
+#### 🔄 Ciclo de vida de una tarea:
+1. **Actualizar la rama base:**
    ```bash
    git checkout develop
    git pull origin develop
    ```
-2. Crear tu rama de trabajo:
+2. **Crear la rama de la tarea asignada:**
    ```bash
    git checkout -b feature/tarjetaX-mi-tarea
    ```
-3. Trabajar en el código y realizar commits siguiendo las convenciones.
-4. **Verificar que pase QA antes de subir:**
+3. **Desarrollar y realizar commits** siguiendo la guía de Conventional Commits.
+4. **Ejecutar y validar la suite de QA localmente:**
    ```bash
    npm run qa
    ```
-5. Subir tu rama a GitHub:
+5. **Subir la rama a GitHub:**
    ```bash
    git push origin feature/tarjetaX-mi-tarea
    ```
-6. Abrir un **Pull Request (PR)** hacia la rama `develop` en GitHub para revisión de código por pares.
+6. **Abrir Pull Request (PR):** Crear el PR con destino a la rama `develop` para revisión de código por pares.
 
 ---
 
 ## ✍️ Formato Estándar de Commits (Conventional Commits)
 
-Los mensajes de commit deben seguir la especificación de [Conventional Commits](https://www.conventionalcommits.org/):
+Todos los mensajes de confirmación en el repositorio deben seguir la convención de [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```text
-<tipo>(<alcance opcional>): <descripción breve en minúsculas y presente>
+<tipo>(<alcance opcional>): <descripción concisa en minúsculas>
 ```
 
-### Tipos de Commit Permitidos:
-* **`feat`**: Nueva funcionalidad para el usuario o sistema (ej: `feat(xr): implementar anclaje de menú 3D en rig`).
-* **`fix`**: Corrección de un bug o error (ej: `fix(camera): solucionar bloqueo de orientación en iOS`).
-* **`docs`**: Cambios en documentación o README (ej: `docs: actualizar guía de comandos para equipo`).
-* **`style`**: Cambios de formato visual o CSS sin alterar lógica (ej: `style(ui): elevar contraste a ratio 7:1`).
-* **`refactor`**: Reorganización de código que no arregla un bug ni añade una función (ej: `refactor(services): desacoplar lógica de WebXR`).
-* **`perf`**: Cambio de código orientado a mejorar rendimiento o peso (ej: `perf(assets): reducir resolución de texturas a WebP`).
-* **`test`**: Añadir o corregir pruebas (ej: `test(qa): añadir verificación de límite de 500 KB gzip`).
-* **`chore`**: Actualización de dependencias, configuración de build o linters (ej: `chore(deps): actualizar wrangler y tailwind`).
+### Tipos de Commits Permitidos:
 
-### Ejemplos Correctos:
+| Tipo | Propósito | Ejemplo |
+| :--- | :--- | :--- |
+| **`feat`** | Nueva funcionalidad o módulo para el sistema | `feat(xr): implementar anclaje de menú 3D en rig` |
+| **`fix`** | Corrección de un error o bug reportado | `fix(camera): solucionar centrado de retícula en iOS` |
+| **`docs`** | Creación o actualización de documentación | `docs(readme): agregar convenciones de git y ramas` |
+| **`style`** | Ajustes visuales, CSS o formato sin alterar lógica | `style(ui): elevar contraste a ratio 7:1 para WCAG` |
+| **`refactor`** | Reestructuración de código sin alterar su funcionamiento | `refactor(services): desacoplar lógica de WebXR a servicio` |
+| **`perf`** | Optimizaciones de rendimiento o reducción de tamaño | `perf(assets): comprimir texturas con Draco para build ligero` |
+| **`test`** | Inclusión o mejora de pruebas unitarias o de integración | `test(bundle): validar límite de 500 KB gzip por chunk` |
+| **`chore`** | Actualización de dependencias, configs de Vite o CI/CD | `chore(ci): configurar deploy automático en Cloudflare` |
+
+### Ejemplos Prácticos de Commits:
 ```bash
-git commit -m "feat(models): cargar modelo wixarika ceremonial con compresion draco"
-git commit -m "fix(audio): prevenir bloqueo de AudioContext al arrancar simulacion"
-git commit -m "docs(readme): agregar convenciones de ramas para el equipo"
+git commit -m "feat(models): integrar modelo ceremonial wixarika comprimido con draco"
+git commit -m "fix(audio): evitar suspension no deseada de AudioContext en primer toque"
+git commit -m "docs(readme): documentar guia de instalacion para los 4 integrantes"
+git commit -m "test(webxr): agregar prueba de deteccion de soporte immersive-vr"
 ```
 
 ---
 
 ## 🏛️ Arquitectura Modular del Código (`/src`)
 
-El proyecto está diseñado bajo una arquitectura limpia y modular para facilitar el trabajo concurrente entre los cuatro integrantes:
+El código se encuentra modularizado en 4 capas para permitir el trabajo en paralelo de los integrantes sin conflictos:
 
 ```text
 src/
 ├── components/          # Componentes 3D y de UI independientes
-│   ├── BochoModel.jsx   # Carga y gestión de animaciones GLTF con Draco
-│   ├── FollowCamera.jsx # Sistema de seguimiento dinámico de cámara
-│   ├── Scene.jsx        # Lienzo Canvas R3F y luces
-│   ├── StereoVRManager.jsx # División estereoscópica para visor Cardboard
-│   ├── UIOverlay.jsx    # Interfaz 2D para navegador móvil
-│   ├── VRMenu3D.jsx     # Menú inmersivo espacial dentro de la escena
+│   ├── BochoModel.jsx   # Carga y animación de modelos GLTF/Draco
+│   ├── FollowCamera.jsx # Sistema dinámico de seguimiento de cámara
+│   ├── Scene.jsx        # Canvas principal R3F, iluminación y entorno
+│   ├── StereoVRManager.jsx # División estereoscópica para visores Cardboard
+│   ├── UIOverlay.jsx    # Interfaz de usuario 2D móvil
+│   ├── VRMenu3D.jsx     # Menú tridimensional espacial interactivo
 │   └── WebXRManager.jsx # Integración nativa con WebXR Session
-├── views/               # Pantallas y vistas completas (facilitará añadir el panel admin)
+├── views/               # Pantallas y vistas completas desacopladas
 │   ├── VRView.jsx       # Vista del entorno inmersivo WebXR
 │   └── index.js
 ├── hooks/               # Custom hooks reutilizables
-│   ├── useWebXR.js      # Hook para detectar compatibilidad con visores VR
-│   ├── useVRControls.js # Hook para gestionar estados de simulación
+│   ├── useWebXR.js      # Detección de compatibilidad con visores VR
+│   ├── useVRControls.js # Gestión de estados de simulación y vistas
 │   └── index.js
-├── services/            # Servicios desacoplados de la lógica de presentación
+├── services/            # Lógica desacoplada de presentación y APIs
 │   ├── webxrService.js  # Control de sesiones WebXR, sensores y fullscreen
 │   ├── audioService.js  # Síntesis Web Audio API (SoundFX)
 │   └── index.js
 ├── utils/
-│   └── sound.js         # Módulo utilitario de soporte
-├── App.jsx              # Punto de entrada de la aplicación
+│   └── sound.js         # Módulo utilitario de soporte retrocompatible
+├── App.jsx              # Montaje limpio de vistas de la aplicación
 ├── index.css            # Directivas Tailwind CSS y utilidades de cristal
 └── main.jsx
 ```
@@ -212,7 +226,7 @@ src/
 
 ## 🎯 Definición de Hecho (DoD - Definition of Done)
 
-Para que una tarjeta se marque como **Hecho (Done)** en el tablero de Notion:
+Para considerar una tarjeta o tarea como **Hecho (Done)**:
 1.  **Código revisado:** Aprobado mediante Pull Request en GitHub.
 2.  **Calidad QA:** Pasa exitosamente `npm run lint` y `npm test`.
 3. ⚡ **Build Ultraligero:** El tamaño individual de cada chunk en producción no debe exceder **500 KB gzip** (verificado automáticamente por el CI de GitHub Actions).
