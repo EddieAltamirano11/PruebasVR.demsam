@@ -1,0 +1,119 @@
+# Open Spec: Museo Virtual Wixárika (WebXR - Kiosco Cultural)
+# Versión: 4.0.0 (v4)
+# Proyecto: Módulo Inmersivo WebXR para la Difusión de las Culturas Vivas de Nayarit
+# Sede: Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)
+# Equipo 10 - Taller Full Stack
+
+spec_version: "4.0.0"
+title: "Especificación Técnica y Cultural: Museo Virtual Wixárika 3D - Versión 4 (v4)"
+status: "approved"
+last_updated: "2026-10-19"
+
+release_notes_v4:
+  previous_versions_retained:
+    - "v1: public/museo_wixarika_v1.glb y specs/museo_wixarika_spec_v1.yaml"
+    - "v2: public/museo_wixarika_v2.glb y specs/museo_wixarika_spec_v2.yaml"
+    - "v3: public/museo_wixarika_v3.glb y specs/museo_wixarika_spec_v3.yaml"
+  enhancements_and_curation_v4:
+    - "Conservación íntegra de la obra sagrada auténtica de Tatewari (Nierika de estambre con textura PNG embebida en el binario GLB y relieve físico 3D de 134 componentes)."
+    - "Eliminación definitiva de la plataforma/grada curva de las deidades (plataforma_alcoba_deidades): los 6 pedestales descansan directamente sobre la losa continua de cantera, mejorando la apertura espacial y accesibilidad visual."
+    - "Eliminación definitiva de los pedestales/tótems de entrada con Ojos de Dios (pedestal_entrada_1 y pedestal_entrada_2) en el cuadrante de bienvenida: se despejan los accesos laterales hacia las deidades y se optimiza la circulación en VR."
+    - "Optimización geométrica vía Blender (Khronos glTF Blender I/O v4.5.49): reducción de 40 mallas, 1,782 vértices y ~400 KB de peso binario."
+    - "Mantenimiento estricto de letreros museográficos suspendidos en el techo a Y = 3.15m (DEIDADES SAGRADAS en Norte, BIENVENIDA CULTURAL en Sur, GASTRONOMÍA en Este, FIESTAS en Oeste)."
+
+verified_audit_results_v4:
+  dod_status: "PASSED"
+  total_vertices: 67518
+  total_triangles: 40864
+  file_size_kb: 3421.26
+  glb_total_bytes: 3503368
+  total_meshes: 1082
+  total_nodes: 1245
+  total_materials: 84
+  embedded_textures_count: 1
+  embedded_images_count: 1
+  tatewari_nierika_texture_embedded: true
+  tatewari_relief_components_modeled: 134
+  deities_modeled: 6
+  deity_plaques_3d_modeled: 6
+  deity_offerings_modeled: 6
+  deity_auras_modeled: 6
+  gastronomy_stations_modeled: 7
+  fiestas_stations_modeled: 3
+  fiestas_nierikas_modeled: 3
+  museographic_signposts_modeled: 4
+  wixarika_frieze_diamonds_count: 32
+  wixarika_carved_pilasters_count: 8
+  wixarika_ceiling_otate_rings_count: 3
+  wixarika_hanging_tsikuris_count: 4
+  wixarika_cardinal_pathways_count: 4
+  curated_removals:
+    - "plataforma_alcoba_deidades (removido por el usuario)"
+    - "pedestal_entrada_1 (removido por el usuario)"
+    - "pedestal_entrada_2 (removido por el usuario)"
+
+room_architecture_v4:
+  type: "circular_enclosed_gallery"
+  inspiration: "Kalihuey ceremonial sagrado Wixárika"
+  radius_meters: 8.0
+  height_meters: 5.4
+  viewer_position: [0.0, 1.6, 0.0]
+  wixarika_frieze_360:
+    height_range: [3.35, 3.70]
+    radius: 7.94
+    diamonds_count: 32
+    colors: ["#0d9488", "#dc2626", "#facc15", "#1e3a8a"]
+  carved_pilasters:
+    count: 8
+    reliefs: ["tsikuri_diamond_top", "sacred_maize_center", "stepped_chevron_base"]
+    accent_material: "mat_medallon_turquesa"
+  ceiling_kalihuey:
+    radial_beams_count: 16
+    concentric_otate_rings: 3
+    hanging_tsikuris: 4
+    oculus_sun_rosette: true
+  floor_cosmogram:
+    radius_medallion: 2.8
+    cardinal_pathways:
+      - "Sur (Wirikuta - Desierto Sagrado)"
+      - "Este (Xapawiyemeta - Lago de Chapala)"
+      - "Oeste (Tatei Haramara - Mar de San Blas)"
+      - "Norte (Hauxamanaka - Cerro Gordo Sierra Madre)"
+    chaquira_bead_rings: 2
+  welcome_portal_mural:
+    quadrant: "cuadrante_bienvenida (Norte / Z < 0)"
+    elements:
+      - "Mural en relieve de la Peregrinación Sagrada a Wirikuta"
+      - "Silueta sagrada de Kauyumari y Padre Sol Tau"
+      - "Portales de cantera y dintel ceremonial"
+  museographic_signposts_ceiling:
+    mount_type: "Colgantes de techo / vigas con varillas de suspensión"
+    height_y: 3.15
+    tilt_angle_deg: 15
+    signposts:
+      - name: "letrero_seccion_deidades"
+        position: [0.0, 3.15, -4.8]
+        orientation: "Mirando hacia el centro desde el Norte (frente a las 6 deidades)"
+      - name: "letrero_seccion_bienvenida"
+        position: [0.0, 3.15, 4.8]
+        orientation: "Mirando hacia el centro desde el Sur (área reservada para Menú 2D)"
+      - name: "letrero_seccion_gastronomia"
+        position: [4.6, 3.15, -1.6]
+        orientation: "Mirando hacia el centro desde el Este"
+      - name: "letrero_seccion_fiestas"
+        position: [-4.6, 3.15, -1.6]
+        orientation: "Mirando hacia el centro desde el Oeste"
+
+budgets_and_dod_v4:
+  max_vertices: 70000
+  max_triangles: 50000
+  max_file_size_kb: 4500
+  target_fps: 60
+  mobile_hardware_tier: "Entry-to-Mid Android/iOS (Homido Grab VR Kiosk)"
+  shading_model: "MeshStandardMaterial (PBR Stylized Quality Low-Poly)"
+  export_format: ".glb (GLTF 2.0 Binary)"
+  output_paths_v4:
+    - "public/museo_wixarika_v4.glb"
+    - "imagenesRef/museo_wixarika_v4.glb"
+    - "public/museo_wixarika_base.glb"
+    - "imagenesRef/museo_wixarika_base.glb"

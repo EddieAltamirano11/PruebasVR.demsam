@@ -1,0 +1,325 @@
+# Open Spec: Museo Virtual Wixárika (WebXR - Kiosco Cultural)
+# Proyecto: Módulo Inmersivo WebXR para la Difusión de las Culturas Vivas de Nayarit
+# Sede: Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)
+# Equipo 10 - Taller Full Stack
+
+spec_version: "1.0.0"
+title: "Especificación Técnica y Cultural: Museo Virtual Wixárika 3D"
+status: "approved"
+last_updated: "2026-10-18"
+
+verified_audit_results:
+  dod_status: "PASSED"
+  total_vertices: 43662
+  total_triangles: 28040
+  file_size_kb: 2071.32
+  deities_modeled: 6
+  gastronomy_stations_modeled: 7
+  fiestas_stations_modeled: 3
+  fiestas_nierikas_modeled: 3
+  museographic_signposts_modeled: 4
+  signpost_3d_text_and_emblems: "VERIFIED (TextGeometry + Sculpted Emblems)"
+  ceiling_twist_bug: "FIXED (Orthonormal basis makeBasis)"
+  ceiling_normals_bug: "FIXED (Inverted winding and normals)"
+
+room_architecture:
+  type: "circular_enclosed_gallery"
+  inspiration: "Kalihuey ceremonial sagrado Wixárika"
+  radius_meters: 8.0
+  height_meters: 5.4
+  viewer_position: [0.0, 1.6, 0.0]
+  floor:
+    base_material: "mat_suelo_cantera"
+    medallion_layers:
+      - "ring_wood_outer (R: 2.5 - 2.8m)"
+      - "ring_turquoise_sacred (R: 2.2 - 2.5m)"
+      - "inner_disc_cantera (R: 2.2m)"
+      - "star_wixarika_8_points"
+      - "center_standing_spot (R: 0.4m)"
+  walls:
+    material: "mat_muro_adobe"
+    height_meters: 3.8
+    baseboard_height: 0.25
+    cornice_height: 0.2
+    pilasters_count: 8
+    normals_orientation: "inward_facing"
+
+ceiling_and_dome:
+  cone_surface:
+    radius_bottom: 8.0
+    radius_top: 1.0
+    height: 1.6
+    y_range: [3.8, 5.4]
+    material: "mat_techo_artesonado"
+    normals_fix: "inverted_normals_facing_inward"
+    double_sided: true
+  radial_beams:
+    count: 16
+    material: "mat_madera_oscura"
+    dimensions: [0.18, 0.22] # width, thickness
+    start_point: "perimeter wall (R=8.0, Y=3.8)"
+    end_point: "oculus ring (R=1.0, Y=5.4)"
+    rotation_method: "vector_quaternion_alignment" # EVITA bugs de rotación Euler XYZ (sin torsión lateral)
+  oculus_skylight:
+    radius: 1.0
+    y_position: 5.4
+    frame_material: "mat_madera_oscura"
+    glass_material: "mat_oculo_cristal"
+    transparency: 0.85
+  lighting_ring:
+    track_radius: 5.0
+    y_position: 4.2
+    spotlights_count: 12
+    aim_orientation: "radial_downward_and_outward_vector"
+
+pantheon_deities:
+  quadrant_name: "cuadrante_deidades"
+  cardinal_direction: "Sur (180 grados, Z > 0)"
+  radial_distance_meters: 6.1
+  arc_range_deg: [137, 223]
+  stepped_platform:
+    height: 0.15
+    material: "mat_medallon_base"
+    wood_trim: "mat_madera_oscura"
+  pedestals_count: 6
+  pedestal_height: 0.96 # plinto + fuste + moldura + tope
+  deities:
+    - id: "kauyumari"
+      name: "Tamatsi Kauyumari (El Hermano Mayor Venado Azul)"
+      pedestal_node: "pedestal_deidad_1_kauyumari"
+      sculpture_node: "escultura_deidad_1_kauyumari"
+      color_palette:
+        body: "#1e3a8a" # Azul marino/turquesa profundo
+        antlers: "#d97706" # Cuernos/astas doradas sagradas
+        accents: "#06b6d4" # Turquesa místico
+      components:
+        - "torso y lomo esbelto"
+        - "cuello y cabeza estilizada"
+        - "astas sagradas ramificadas doradas"
+        - "4 patas y pezuñas talladas"
+        - "cola y orejas sagradas"
+
+    - id: "tatewari"
+      name: "Tatewari (Nuestro Abuelo Fuego)"
+      pedestal_node: "pedestal_deidad_2_tatewari"
+      sculpture_node: "escultura_deidad_2_tatewari"
+      color_palette:
+        stones: "#44403c" # Piedras volcánicas oscuras
+        wood: "#292524" # Leños quemados
+        flame_outer: "#dc2626" # Rojo fuego
+        flame_mid: "#f97316" # Naranja radiante
+        flame_core: "#fde047" # Amarillo luminoso
+      components:
+        - "anillo de 8 piedras volcánicas sagradas"
+        - "leños cruzados en la base"
+        - "conjunto de 5 flamas curvas ascendentes estilizadas"
+        - "núcleo de brasa central incandescente"
+
+    - id: "tayaupa"
+      name: "Tamatsi Tayaupa / Tau (Nuestro Padre Sol)"
+      pedestal_node: "pedestal_deidad_3_tayaupa"
+      sculpture_node: "escultura_deidad_3_tayaupa"
+      color_palette:
+        gold_face: "#eab308" # Oro sagrado
+        rays: "#f59e0b" # Ámbar brillante
+        mount: "#78350f" # Soporte de madera fina
+      components:
+        - "base/soporte vertical ceremonial"
+        - "disco central dorado con rostro solar Wixárika grabado"
+        - "corona de 12 rayos flamígeros triangulares estilizados"
+        - "halo sagrado perimetral"
+
+    - id: "takutsi_nakawe"
+      name: "Takutsi Nakawe (Nuestra Abuela Crecimiento / Tierra)"
+      pedestal_node: "pedestal_deidad_4_takutsi_nakawe"
+      sculpture_node: "escultura_deidad_4_takutsi_nakawe"
+      color_palette:
+        robe: "#15803d" # Verde vegetación y vida
+        shawl: "#854d0e" # Manto de tierra fértil
+        staff: "#451a03" # Báculo de madera sagrada
+        accent: "#facc15" # Flores y fecundidad
+      components:
+        - "cuerpo cónico estilizado con manto ceremonial"
+        - "cabeza y tocado ancestral"
+        - "báculo nudoso de árbol con retoños"
+        - "jícara pequeña de semillas en las manos"
+
+    - id: "tatei_haramara"
+      name: "Tatei Haramara (Nuestra Madre el Océano y Aguas Sagradas)"
+      pedestal_node: "pedestal_deidad_5_tatei_haramara"
+      sculpture_node: "escultura_deidad_5_tatei_haramara"
+      color_palette:
+        shell: "#f8fafc" # Caracol sagrado blanco nácar
+        waves_deep: "#0284c7" # Océano pacífico azul
+        waves_crest: "#38bdf8" # Turquesa claro
+        foam: "#ffffff" # Espuma sagrada de las olas
+      components:
+        - "base marina de 3 olas concéntricas estilizadas"
+        - "gran caracol sagrado ceremonial (Kura) espiral"
+        - "crestas de espuma y gotas de rocío de lluvia"
+
+    - id: "hikuri"
+      name: "Tatei Híkuri (El Cactus Sagrado / Peyote)"
+      pedestal_node: "pedestal_deidad_6_hikuri_peyote"
+      sculpture_node: "escultura_deidad_6_hikuri_peyote"
+      color_palette:
+        cactus: "#16a34a" # Verde salvia sagrado
+        flower: "#f472b6" # Flor apical rosa suave
+        flower_center: "#fef08a" # Centro floral amarillo
+        gourd: "#78350f" # Jícara votiva de madera (rukuri)
+        beads: "#0284c7" # Adornos de chaquira votiva
+      components:
+        - "jícara votiva ceremonial tallada (rukuri)"
+        - "cuerpo globoso del peyote con 8 gajos acanalados"
+        - "mechones de pelusa apical sagrada"
+        - "flor de peyote abierta en la corona"
+
+gastronomy_exhibit:
+  quadrant_name: "cuadrante_gastronomia"
+  cardinal_direction: "Este (90 grados, X > 0) - a la izquierda del observador mirando a las deidades"
+  radial_distance_meters: 6.4
+  arc_range_deg: [50, 130]
+  curved_niche:
+    material: "mat_muro_nicho"
+    height_meters: 2.5
+  main_table:
+    node_name: "mesa_exhibicion_gastronomia"
+    dimensions: [3.0, 0.82, 0.9] # width, height, depth
+    material_top: "mat_madera_clara"
+    material_legs: "mat_madera_oscura"
+  items:
+    - id: "maiz_5_colores"
+      name: "El Maíz Sagrado de los 5 Colores (Ikú)"
+      description: "Mazorcas tradicionales y jícaras con granos sagrados: azul/morado, amarillo, rojo, blanco y pinto"
+      node_name: "estacion_maiz_sagrado"
+      components:
+        - "canasta_otate_maiz (canasta tejida de mimbre/otate)"
+        - "5 mazorcas sagradas con hojas de totomoxtle abiertas (azul, amarillo, rojo, blanco, pinto)"
+        - "3 jícaras votivas de madera pulida con granos de maíz de colores"
+    - id: "tamales_y_tortillas"
+      name: "Tortillas de Comal y Tamales Ceremoniales (Yeuxi)"
+      description: "Alimentos rituales y cotidianos elaborados a base de masa de maíz nixtamalizado"
+      node_name: "estacion_tortillas_tamales"
+      components:
+        - "canasta_tortillero_palma con paño bordado Wixárika tradicional"
+        - "pila de tortillas de maíz azul y amarillo recién hechas"
+        - "bandeja de madera rústica con 4 tamales ceremoniales envueltos en totomoxtle"
+    - id: "olla_tejuino_atole"
+      name: "Olla de Barro Tradicional Nayarita y Bebidas Sagradas (Tejuino y Nava)"
+      description: "Olla vidriada de barro cocido con cucharón de madera y jícaras para tejuino fermentado"
+      node_name: "estacion_olla_bebidas"
+      components:
+        - "gran olla de barro cocido nayarita con asas curvas y tapa abombada"
+        - "cucharón rústico de madera tallada dentro de la olla"
+        - "2 jícaras servidas con tejuino y toques de limón y sal ceremonial"
+        - "molinillo de madera torneada para batir el atole"
+    - id: "cazuela_guiso_serrano"
+      name: "Cazuela de Barro con Guiso Tradicional de Huachales"
+      description: "Guiso serrano de maíz deshidratado cocinado a fuego lento en cazuela de barro"
+      node_name: "estacion_cazuela_guiso"
+      components:
+        - "cazuela ancha de barro con asas y base rústica"
+        - "guiso de huachales con caldo rojizo y granos tiernos"
+    - id: "metate_piedra_volcanica"
+      name: "Metate Tradicional de Piedra Volcánica con Metlapil"
+      description: "Piedra de moler ancestral de 3 patas para nixtamal, montada sobre soporte de tronco"
+      node_name: "estacion_metate_molienda"
+      components:
+        - "soporte de tronco rústico de pino"
+        - "metate curvo de piedra volcánica oscura con 3 patas cónicas"
+        - "metlapil (mano de piedra cilíndrica de molienda)"
+        - "porción de masa fresca de maíz azul sobre la piedra"
+    - id: "repisas_alacena_serrana"
+      name: "Alacena Flotante Tradicional (Repisas de Muro)"
+      description: "Semillas, chiles secos, jícaras y cántaros de barro en las repisas de exhibición"
+      node_names: ["repisa_gastronomia_1_items", "repisa_gastronomia_2_items"]
+      components:
+        - "3 cántaros de barro y jarras con cuello esbelto"
+        - "jícaras con chiles secos chiltepín/yahualica rojos"
+        - "calabaza serrana entera y jícaras con pepitas tostadas"
+        - "atados de hierbas aromáticas de la sierra colgadas"
+
+festivals_exhibit:
+  quadrant_name: "cuadrante_fiestas_patronales"
+  cardinal_direction: "Oeste (270 grados, X < 0) - a la derecha del observador mirando a las deidades"
+  radial_distance_meters: 6.4
+  arc_range_deg: [230, 310]
+  curved_niche:
+    material: "mat_muro_nicho"
+    height_meters: 2.5
+  items:
+    - id: "altar_tepu_tambor_sagrado"
+      name: "El Tambor Ceremonial Sagrado (Tepu) y Altar del Tatei Neixa"
+      description: "Tambor ceremonial tallado de 3 patas con parche de piel de venado y fogón sagrado para templar el cuero"
+      node_name: "estacion_tambor_tepu"
+      components:
+        - "tambor ceremonial Tepu de madera noble tallada con 3 patas esculpidas"
+        - "parche de piel de venado tensado con clavijas de madera y sogas perimetrales"
+        - "2 baquetas ceremoniales de madera con cabeza de piel cruzadas sobre el parche"
+        - "fogón sagrado de piedras volcánicas al pie para calentar y templar el tambor"
+    - id: "instrumentos_musicales_fiesta"
+      name: "Instrumentos Musicales de Fiesta (Xaweri, Kanari y Tuxame)"
+      description: "Violín huichol, guitarra tradicional y sonajas de jícara ceremoniales"
+      node_name: "estacion_musica_fiesta"
+      components:
+        - "mesa de exhibición de madera tallada"
+        - "violín tradicional Wixárika (Xaweri) tallado en madera con su arco de crin"
+        - "guitarra huichola (Kanari) de 4 cuerdas con grabados de peyote y sol"
+        - "2 sonajas ceremoniales de jícara (Tuxame) con mango torneado y plumas de colores"
+    - id: "objetos_sagrados_fiesta"
+      name: "Objetos Sagrados y Votivos de Fiesta (Tsikuri, Urukame y Morral)"
+      description: "Ojo de Dios ceremonial de 5 rombos, flechas de plegaria, sombrero de soyate y morral bordado"
+      node_name: "estacion_objetos_sagrados_fiesta"
+      components:
+        - "gran Ojo de Dios sagrado (Tsikuri) de 5 rombos en madera y estambre ceremonial multicolor"
+        - "2 flechas de plegaria sagradas (Urukame) con plumas de halcón y jícaras votivas"
+        - "sombrero tradicional de soyate de fiesta con borlas de estambre y plumas"
+        - "morral tradicional bordado (Kutsuri) con diseño de venado sagrado"
+    - id: "nierikas_murales_fiesta"
+      name: "Tablas de Estambre Ceremoniales (Nierikas de Fiesta en Muro)"
+      description: "3 obras de estambre enmarcadas que representan las danzas sagradas y la fiesta de Wirikuta"
+      node_names: ["nierika_fiesta_1", "nierika_fiesta_2", "nierika_fiesta_3"]
+      components:
+        - "Nierika del Tatei Neixa (danza del tambor y maíz tierno)"
+        - "Nierika de la Peregrinación Sagrada a Wirikuta"
+        - "Nierika del Abuelo Fuego Tatewari y la Fiesta Nocturna"
+
+museographic_signposts:
+  description: "Letreros y atriles museográficos con títulos en relieve 3D y emblemas esculturales que ilustran cada temática"
+  stands:
+    - id: "letrero_seccion_deidades"
+      section: "cuadrante_deidades"
+      title_3d: "DEIDADES SAGRADAS"
+      emblem_3d: "cabeza dorada de venado sagrado (Kauyumari) con astas ramificadas y disco solar"
+      position: [0.0, 0.0, 4.4]
+      orientation_deg: 180
+    - id: "letrero_seccion_gastronomia"
+      section: "cuadrante_gastronomia"
+      title_3d: "GASTRONOMIA TRADICIONAL"
+      emblem_3d: "mazorca sagrada dorada (Ikú) con hojas de totomoxtle y olla de barro"
+      position: [4.8, 0.0, -1.6]
+      orientation_deg: 110
+    - id: "letrero_seccion_fiestas"
+      section: "cuadrante_fiestas_patronales"
+      title_3d: "FIESTAS Y CEREMONIAS"
+      emblem_3d: "Ojo de Dios sagrado (Tsikuri) con plumas ceremoniales y tambor Tepu"
+      position: [-4.8, 0.0, -1.6]
+      orientation_deg: 250
+    - id: "letrero_seccion_bienvenida"
+      section: "cuadrante_bienvenida"
+      title_3d: "BIENVENIDA CULTURAL"
+      emblem_3d: "estrella sagrada de 8 puntas de Wirikuta con pórtico ceremonial"
+      position: [0.0, 0.0, -5.2]
+      orientation_deg: 0
+
+budgets_and_dod:
+  max_vertices: 45000
+  max_triangles: 35000
+  max_file_size_kb: 3000
+  target_fps: 60
+  mobile_hardware_tier: "Entry-to-Mid Android/iOS (Homido Grab VR Kiosk)"
+  shading_model: "MeshStandardMaterial (PBR Stylized Quality Low-Poly)"
+  export_format: ".glb (GLTF 2.0 Binary)"
+  output_paths:
+    - "public/museo_wixarika_base.glb"
+    - "imagenesRef/museo_wixarika_base.glb"

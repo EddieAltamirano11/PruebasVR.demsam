@@ -1,0 +1,79 @@
+# Open Spec: Museo Virtual Wixárika (WebXR - Kiosco Cultural)
+# Versión: 8.0.0 (v8)
+# Proyecto: Módulo Inmersivo WebXR para la Difusión de las Culturas Vivas de Nayarit
+# Sede: Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)
+# Equipo 10 - Taller Full Stack
+
+spec_version: "8.0.0"
+title: "Especificación Técnica y Cultural: Museo Virtual Wixárika 3D - Versión 8 (v8)"
+status: "approved"
+last_updated: "2026-10-19"
+
+release_notes_v8:
+  base_version: "v7 (public/museo_wixarika_v7.glb - Blender v6 curado + subtítulos negros)"
+  previous_versions_retained:
+    - "v1: public/museo_wixarika_v1.glb y specs/museo_wixarika_spec_v1.yaml"
+    - "v2: public/museo_wixarika_v2.glb y specs/museo_wixarika_spec_v2.yaml"
+    - "v3: public/museo_wixarika_v3.glb y specs/museo_wixarika_spec_v3.yaml"
+    - "v4: public/museo_wixarika_v4.glb y specs/museo_wixarika_spec_v4.yaml"
+    - "v5: public/museo_wixarika_v5.glb y specs/museo_wixarika_spec_v5.yaml"
+    - "v6: public/museo_wixarika_v6.glb (curaduría manual en Blender)"
+    - "v7: public/museo_wixarika_v7.glb y specs/museo_wixarika_spec_v7.yaml"
+  enhancements_v8:
+    - "Instalación del Tapete Sagrado Wixárika (Mándala Ceremonial de Chaquira) en el círculo concéntrico del suelo: sustitución de las estrellas y rombos sobrepuestos por la obra auténtica de 1024x1024 embebida directamente en el binario GLB (tex_tapete_sagrado_wixarika)."
+    - "El tapete cubre una superficie circular de 5.0 metros de diámetro (radio R = 2.50m) enmarcado por la moldura de madera oscura exterior y el anillo ceremonial de 48 cuentas de chaquira a R = 2.65m, integrándose limpiamente con los 4 senderos cardinales del cosmograma."
+    - "Centrado perfecto de los letreros colgantes de techo en los cuadrantes de Gastronomía y Fiestas:"
+    - "  • Letrero Gastronomía: Reubicado de [4.6, 3.15, -1.6] a [4.8, 3.15, 0.0] con rotación yaw de -90° (-PI/2), quedando perfectamente alineado al centro exacto de la mesa de exhibición de guisos/maíz y repisas."
+    - "  • Letrero Fiestas Patronales: Reubicado de [-4.6, 3.15, -1.6] a [-4.8, 3.15, 0.0] con rotación yaw de +90° (+PI/2), quedando perfectamente alineado al centro exacto del gran tambor sagrado tepu y la nierika central."
+    - "Los 4 letreros colgantes se encuentran ahora distribuidos de forma simétrica a R = 4.8m en cruz cardinal perfecta (Norte, Sur, Este y Oeste), mirando directamente hacia el visitante central."
+
+verified_audit_results_v8:
+  dod_status: "PASSED"
+  total_nodes: 1085
+  total_meshes: 925
+  total_materials: 73
+  embedded_textures_count: 7
+  embedded_images_count: 7
+  embedded_images:
+    - "tex_cuadro_tatewari_nierika (image/png)"
+    - "tex_cuadro_tayau_nierika (image/png)"
+    - "tex_cuadro_kauyumari_nierika (image/jpeg)"
+    - "tex_cuadro_takutsi_nierika (image/jpeg)"
+    - "tex_cuadro_niwetsika_nierika (image/jpeg)"
+    - "tex_cuadro_haramara_nierika (image/jpeg)"
+    - "tex_tapete_sagrado_wixarika (image/jpeg)"
+  file_size_kb: 5024.02
+  glb_total_bytes: 5144600
+  floor_carpet:
+    node_name: "tapete_central_wixarika"
+    radius_meters: 2.50
+    diameter_meters: 5.00
+    material_name: "mat_tapete_sagrado_wixarika"
+    shading: "PBR Metallic-Roughness (roughness: 0.85, metalness: 0.05)"
+    frame_ring_radius_range: [2.50, 2.80]
+    frame_chaquira_beads_count: 48
+  museographic_signposts_aligned:
+    - name: "letrero_seccion_deidades"
+      position: [0.0, 3.15, -4.8]
+      quadrant: "Norte"
+    - name: "letrero_seccion_bienvenida"
+      position: [0.0, 3.15, 4.8]
+      quadrant: "Sur"
+    - name: "letrero_seccion_gastronomia"
+      position: [4.8, 3.15, 0.0]
+      quadrant: "Este"
+    - name: "letrero_seccion_fiestas"
+      position: [-4.8, 3.15, 0.0]
+      quadrant: "Oeste"
+
+budgets_and_dod_v8:
+  max_file_size_kb: 6000
+  target_fps: 60
+  mobile_hardware_tier: "Entry-to-Mid Android/iOS (Homido Grab VR Kiosk)"
+  shading_model: "MeshStandardMaterial (PBR Stylized Quality Low-Poly)"
+  export_format: ".glb (GLTF 2.0 Binary)"
+  output_paths_v8:
+    - "public/museo_wixarika_v8.glb"
+    - "imagenesRef/museo_wixarika_v8.glb"
+    - "public/museo_wixarika_base.glb"
+    - "imagenesRef/museo_wixarika_base.glb"
