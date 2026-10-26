@@ -1,0 +1,60 @@
+# Open Spec: Museo Virtual Wixárika (WebXR - Kiosco Cultural)
+# Versión: 7.0.0 (v7)
+# Proyecto: Módulo Inmersivo WebXR para la Difusión de las Culturas Vivas de Nayarit
+# Sede: Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)
+# Equipo 10 - Taller Full Stack
+
+spec_version: "7.0.0"
+title: "Especificación Técnica y Cultural: Museo Virtual Wixárika 3D - Versión 7 (v7)"
+status: "approved"
+last_updated: "2026-10-19"
+
+release_notes_v7:
+  base_version: "v6 (public/museo_wixarika_v6.glb - Curaduría manual en Blender)"
+  previous_versions_retained:
+    - "v1: public/museo_wixarika_v1.glb y specs/museo_wixarika_spec_v1.yaml"
+    - "v2: public/museo_wixarika_v2.glb y specs/museo_wixarika_spec_v2.yaml"
+    - "v3: public/museo_wixarika_v3.glb y specs/museo_wixarika_spec_v3.yaml"
+    - "v4: public/museo_wixarika_v4.glb y specs/museo_wixarika_spec_v4.yaml"
+    - "v5: public/museo_wixarika_v5.glb y specs/museo_wixarika_spec_v5.yaml"
+    - "v6: public/museo_wixarika_v6.glb (exportado desde Blender por el usuario)"
+  enhancements_v7:
+    - "Trabajo directo sobre la versión v6 de Blender sin alterar mallas, jerarquías, posiciones, rotaciones ni geometrías."
+    - "Modificación exclusiva requerida: Cambio de color del material de las letras debajo del nombre de cada deidad (subtítulos con significado sagrado) de blanco/marfil a negro puro (#000000 / [0.0, 0.0, 0.0, 1.0])."
+    - "Las 6 leyendas con tipografía negra 3D de alta legibilidad sobre placa de cantera:"
+    - "  1. Tatewari -> 'Nuestro Abuelo, el Fuego'"
+    - "  2. Tayau -> 'Nuestro Padre, el Sol'"
+    - "  3. Kauyumari -> 'El Venado Azul'"
+    - "  4. Takutsi Nakawe -> 'Nuestra Bisabuela'"
+    - "  5. Tatei Niwetsika -> 'Nuestra Madre, el Maiz'"
+    - "  6. Tatei Haramara -> 'Nuestra Madre, el Mar'"
+    - "Preservación binaria exacta del buffer (BIN) de la exportación de Blender v6, garantizando 0% de distorsión en texturas o polígonos."
+
+verified_audit_results_v7:
+  dod_status: "PASSED"
+  total_nodes: 1085
+  total_meshes: 925
+  total_materials: 72
+  embedded_textures_count: 6
+  embedded_images_count: 6
+  file_size_kb: 4260.70
+  glb_total_bytes: 4362960
+  subtitle_material_name: "mat_texto_negro"
+  subtitle_material_color_rgba: [0.0, 0.0, 0.0, 1.0]
+  subtitle_material_hex: "#000000"
+  roughness_factor: 0.5
+  metallic_factor: 0.0
+  deity_plaques_with_black_text: 6
+  blender_curations_respected: true
+
+budgets_and_dod_v7:
+  max_file_size_kb: 5000
+  target_fps: 60
+  mobile_hardware_tier: "Entry-to-Mid Android/iOS (Homido Grab VR Kiosk)"
+  shading_model: "MeshStandardMaterial (PBR Stylized Quality Low-Poly)"
+  export_format: ".glb (GLTF 2.0 Binary)"
+  output_paths_v7:
+    - "public/museo_wixarika_v7.glb"
+    - "imagenesRef/museo_wixarika_v7.glb"
+    - "public/museo_wixarika_base.glb"
+    - "imagenesRef/museo_wixarika_base.glb"

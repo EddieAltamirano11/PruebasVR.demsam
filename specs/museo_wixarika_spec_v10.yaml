@@ -1,0 +1,92 @@
+# Open Spec: Museo Virtual Wixárika (WebXR - Kiosco Cultural)
+# Versión: 10.5.0 (v10 - Inversión de Cuadros Tatei/Namawita + Centrado de Letreros en Pilares)
+# Proyecto: Módulo Inmersivo WebXR para la Difusión de las Culturas Vivas de Nayarit
+# Sede: Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)
+# Equipo 10 - Taller Full Stack
+
+spec_version: "10.5.0"
+title: "Especificación Técnica y Cultural: Museo Virtual Wixárika 3D - Versión 10 (v10)"
+status: "approved"
+last_updated: "2026-10-20"
+
+release_notes_v10:
+  base_version: "v9 (public/museo_wixarika_v9.glb - Óculo de Tatewari + Tapete sagrado + Letreros centrados)"
+  previous_versions_retained:
+    - "v1: public/museo_wixarika_v1.glb y specs/museo_wixarika_spec_v1.yaml"
+    - "v2: public/museo_wixarika_v2.glb y specs/museo_wixarika_spec_v2.yaml"
+    - "v3: public/museo_wixarika_v3.glb y specs/museo_wixarika_spec_v3.yaml"
+    - "v4: public/museo_wixarika_v4.glb y specs/museo_wixarika_spec_v4.yaml"
+    - "v5: public/museo_wixarika_v5.glb y specs/museo_wixarika_spec_v5.yaml"
+    - "v6: public/museo_wixarika_v6.glb (curaduría manual en Blender)"
+    - "v7: public/museo_wixarika_v7.glb y specs/museo_wixarika_spec_v7.yaml"
+    - "v8: public/museo_wixarika_v8.glb y specs/museo_wixarika_spec_v8.yaml"
+    - "v9: public/museo_wixarika_v9.glb y specs/museo_wixarika_spec_v9.yaml"
+  enhancements_v10:
+    - "Inversión y Asignación Correcta de Cuadros en Fiestas:"
+    - "  • Estación Central (Z = 0.00 m): Cuadro de arte con el título sagrado 'Tatei Neixa' + Cédula monumental TATEI NEIXA."
+    - "  • Estación Norte/Derecha (Z = -1.85 m): Cuadro ceremonial tradicional de estambre con el tambor y cantador + Cédula monumental NAMAWITA NEIXA."
+    - "  • Estación Sur/Izquierda (Z = +1.85 m): Nierika circular de peregrinación y danza + Cédula monumental HIKURI NEIXA."
+    - "Centrado Exacto de los 4 Letreros Superiores respecto a los Pilares:"
+    - "  • Corrección del desplazamiento hacia la izquierda en los 4 letreros colgantes de la sala:"
+    - "    1. Bienvenida: pos = [-0.13, 3.15, 4.80], alineado al centro del pilar sur."
+    - "    2. Gastronomía: pos = [4.80, 3.15, 0.13], alineado al centro del pilar este."
+    - "    3. Deidades: pos = [0.13, 3.15, -4.80], alineado al centro del pilar norte."
+    - "    4. Fiestas: pos = [-4.80, 3.15, -0.13], alineado al centro del pilar oeste."
+    - "  • Orientación angular convergente al visitante central (0, 0, 0)."
+    - "Elevación Vertical de Obras y Cédulas (Despeje Total de Mesas de Piso):"
+    - "  • Cuadros a Y = 2.50 m (base del marco a Y = 1.60 m a nivel de ojos VR)."
+    - "  • Cédulas a Y = 1.38 m (despejadas del tambor de 1.18 m y mesas de 0.85 m)."
+
+verified_audit_results_v10:
+  dod_status: "PASSED"
+  total_nodes: 1166
+  total_meshes: 931
+  total_materials: 80
+  file_size_kb: 8574.42
+  glb_total_bytes: 8780208
+  fiestas_pavilion:
+    station_north:
+      node_name: "estacion_fiesta_1_namawita_neixa"
+      position: [-7.062, 0.00, -1.85]
+      cuadro_y: 2.50
+      placa_y: 1.38
+      artwork_texture: "cuadro_fiesta_tambor.jpg (Cuadro de estambre ceremonial)"
+      plaque_text: "NAMAWITA NEIXA"
+    station_center:
+      node_name: "estacion_fiesta_2_tatei_neixa"
+      position: [-7.300, 0.00, 0.00]
+      cuadro_y: 2.50
+      placa_y: 1.38
+      artwork_texture: "cuadro_fiesta_tatei_neixa.jpg (Obra con nombre Tatei Neixa)"
+      plaque_text: "TATEI NEIXA"
+    station_south:
+      node_name: "estacion_fiesta_3_hikuri_neixa"
+      position: [-7.062, 0.00, 1.85]
+      cuadro_y: 2.50
+      placa_y: 1.38
+      artwork_texture: "cuadro_fiesta_hikuri_neixa.jpg (Nierika circular)"
+      plaque_text: "HIKURI NEIXA"
+  roof_banners:
+    bienvenida:
+      position: [-0.13, 3.15, 4.80]
+      status: "Centrado con pilar sur"
+    gastronomia:
+      position: [4.80, 3.15, 0.13]
+      status: "Centrado con pilar este"
+    deidades:
+      position: [0.13, 3.15, -4.80]
+      status: "Centrado con pilar norte"
+    fiestas:
+      position: [-4.80, 3.15, -0.13]
+      status: "Centrado con pilar oeste"
+
+budgets_and_dod_v10:
+  target_fps: 60
+  mobile_hardware_tier: "Entry-to-Mid Android/iOS (Homido Grab VR Kiosk)"
+  shading_model: "MeshStandardMaterial (PBR Stylized Quality Low-Poly)"
+  export_format: ".glb (GLTF 2.0 Binary)"
+  output_paths_v10:
+    - "public/museo_wixarika_v10.glb"
+    - "imagenesRef/museo_wixarika_v10.glb"
+    - "public/museo_wixarika_base.glb"
+    - "imagenesRef/museo_wixarika_base.glb"
