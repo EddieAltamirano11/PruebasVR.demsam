@@ -173,7 +173,7 @@ export function MuseumScene({
                       anchorY="middle"
                       maxWidth={1.4}
                     >
-                      ⊙ Fijar mirada (1.2 s)
+                      ⊙ Fijar mirada 
                     </Text>
                   </group>
                 )}
@@ -267,7 +267,7 @@ export function MuseumScene({
                         anchorX="center"
                         anchorY="middle"
                       >
-                        Cerrar [✕] (1.2 s)
+                        Cerrar [✕] 
                       </Text>
                     </group>
                   )}
