@@ -1,0 +1,84 @@
+# Open Spec: Museo Virtual Wixárika (WebXR - Kiosco Cultural)
+# Versión: 11.0.0 (v11 - Adopción de Curaduría Manual en Blender: Banners Refinados y Cédulas de Fiestas)
+# Proyecto: Módulo Inmersivo WebXR para la Difusión de las Culturas Vivas de Nayarit
+# Sede: Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)
+# Equipo 10 - Taller Full Stack
+
+spec_version: "11.0.0"
+title: "Especificación Técnica y Cultural: Museo Virtual Wixárika 3D - Versión 11 (v11)"
+status: "approved"
+last_updated: "2026-10-20"
+
+release_notes_v11:
+  base_version: "v11 (public/museo_wixarika_v11.glb - Modificaciones manuales del usuario en Blender)"
+  previous_versions_retained:
+    - "v1: public/museo_wixarika_v1.glb y specs/museo_wixarika_spec_v1.yaml"
+    - "v2: public/museo_wixarika_v2.glb y specs/museo_wixarika_spec_v2.yaml"
+    - "v3: public/museo_wixarika_v3.glb y specs/museo_wixarika_spec_v3.yaml"
+    - "v4: public/museo_wixarika_v4.glb y specs/museo_wixarika_spec_v4.yaml"
+    - "v5: public/museo_wixarika_v5.glb y specs/museo_wixarika_spec_v5.yaml"
+    - "v6: public/museo_wixarika_v6.glb (primera curaduría manual en Blender)"
+    - "v7: public/museo_wixarika_v7.glb y specs/museo_wixarika_spec_v7.yaml"
+    - "v8: public/museo_wixarika_v8.glb y specs/museo_wixarika_spec_v8.yaml"
+    - "v9: public/museo_wixarika_v9.glb y specs/museo_wixarika_spec_v9.yaml"
+    - "v10: public/museo_wixarika_v10.glb y specs/museo_wixarika_spec_v10.yaml"
+    - "v11: public/museo_wixarika_v11.glb (modelo base activo consolidado)"
+  enhancements_v11:
+    - "Alineación y Micro-Ajuste Visual de Letreros Colgantes:"
+    - "  • Bienvenida: Ajustado manualmente a [0.0688, 3.1558, 4.8061] para centrado estético respecto al dintel y pilar sur."
+    - "  • Deidades: Ajustado a [0.0709, 3.1451, -4.7965] con leve rotación compensatoria frente al pilar norte."
+    - "  • Fiestas: Elevado verticalmente a Y = 3.3035 m con reorientación precisa hacia el visitante central."
+    - "  • Gastronomía: Reajuste micrométrico de posición y cadenas colgantes (Node_1168) centrado con la viga este."
+    - "Rediseño y Proporciones de Cédulas en Fiestas:"
+    - "  • Escala ampliada (~1.144x - 1.152x) y ajuste vertical en las bases de madera y cantera de las 3 placas."
+    - "  • Eliminación de medallones esquineros en las placas inferiores para un acabado museográfico más limpio y moderno."
+
+verified_audit_results_v11:
+  dod_status: "PASSED"
+  total_nodes: 1319
+  total_meshes: 1088
+  total_materials: 157
+  total_textures: 20
+  total_images: 14
+  file_size_kb: 8860.48
+  glb_total_bytes: 9073136
+  fiestas_pavilion:
+    station_north:
+      node_name: "estacion_fiesta_1_namawita_neixa"
+      position: [-7.062, 0.00, -1.85]
+      cuadro_y: 2.50
+      artwork_texture: "cuadro_fiesta_tambor.jpg"
+      plaque_text: "NAMAWITA NEIXA"
+    station_center:
+      node_name: "estacion_fiesta_2_tatei_neixa"
+      position: [-7.300, 0.00, 0.00]
+      cuadro_y: 2.50
+      artwork_texture: "cuadro_fiesta_tatei_neixa.jpg"
+      plaque_text: "TATEI NEIXA"
+    station_south:
+      node_name: "estacion_fiesta_3_hikuri_neixa"
+      position: [-7.062, 0.00, 1.85]
+      cuadro_y: 2.50
+      artwork_texture: "cuadro_fiesta_hikuri_neixa.jpg"
+      plaque_text: "HIKURI NEIXA"
+  roof_banners:
+    bienvenida:
+      position: [0.0688, 3.1558, 4.8061]
+      status: "Curaduría manual consolidada"
+    gastronomia:
+      position: [4.80, 3.15, 0.13]
+      subnode_delta: [-0.2925, -0.0208, 0.0238]
+      status: "Curaduría manual consolidada"
+    deidades:
+      position: [0.0709, 3.1451, -4.7965]
+      status: "Curaduría manual consolidada"
+    fiestas:
+      position: [-4.80, 3.3035, -0.13]
+      status: "Curaduría manual consolidada"
+
+budgets_and_dod_v11:
+  target_fps: 60
+  mobile_hardware_tier: "Entry-to-Mid Android/iOS (Homido Grab VR Kiosk)"
+  shading_model: "MeshStandardMaterial (PBR Stylized Quality Low-Poly)"
+  export_format: ".glb (GLTF 2.0 Binary)"
+  active_base_model: "public/museo_wixarika_base.glb (v11)"

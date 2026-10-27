@@ -60,8 +60,8 @@ export function AuthModal({ isOpen, onClose }) {
         className="relative w-full max-w-md p-7 overflow-hidden rounded-2xl bg-slate-900/95 border border-sky-500/30 shadow-2xl shadow-sky-500/10 text-slate-100"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Barra superior con gradiente */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 via-amber-400 to-sky-500"></div>
+        {/* Barra superior dorada */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[#E5A00D]" />
 
         {/* Botón de cierre */}
         <button
@@ -78,7 +78,7 @@ export function AuthModal({ isOpen, onClose }) {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400">
               <CheckCircle2 size={36} />
             </div>
-            <h3 className="text-xl font-bold text-amber-400">¡Verifica tu cuenta!</h3>
+            <h3 className="text-xl font-bold text-[#E5A00D]">¡Confirma tu cuenta!</h3>
             <p className="text-xs text-slate-300 leading-relaxed">
               Hemos enviado un enlace de confirmación a: <br />
               <strong className="text-amber-300 text-sm font-semibold">{email}</strong>
@@ -88,7 +88,7 @@ export function AuthModal({ isOpen, onClose }) {
               <strong className="text-slate-200">Pasos para activar tu acceso:</strong>
               <ol className="list-decimal ml-4 space-y-0.5">
                 <li>Abre tu bandeja de entrada de <strong>Gmail</strong>.</li>
-                <li>Busca el correo de confirmación de la biblioteca.</li>
+                <li>Busca el correo de confirmación de BiblioVR.</li>
                 <li>Haz clic en el enlace para activar tu cuenta.</li>
               </ol>
             </div>
@@ -98,7 +98,7 @@ export function AuthModal({ isOpen, onClose }) {
                 setMode('login');
                 setErrorMsg('');
               }}
-              className="w-full py-2.5 px-4 font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition-all cursor-pointer"
+              className="w-full py-2.5 px-4 font-bold text-[#0B1A30] bg-[#E5A00D] hover:bg-amber-400 rounded-xl transition-all cursor-pointer"
             >
               Ir a Iniciar Sesión
             </button>
@@ -107,9 +107,9 @@ export function AuthModal({ isOpen, onClose }) {
           <>
             {/* ENCABEZADO */}
             <div className="text-center mb-5">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 mb-2 text-xs font-semibold text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-full">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 mb-2 text-xs font-semibold text-[#E5A00D] bg-[#E5A00D]/10 border border-[#E5A00D]/20 rounded-full">
                 <Sparkles size={12} />
-                <span>Portal de Biblioteca & VR</span>
+                <span>BiblioVR Admin</span>
               </div>
               <h2 className="text-xl font-bold text-white">
                 {mode === 'login' && 'Iniciar Sesión'}
@@ -117,7 +117,7 @@ export function AuthModal({ isOpen, onClose }) {
                 {mode === 'forgot' && 'Recuperar Contraseña'}
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                {mode === 'login' && 'Ingresa para guardar tu avance y rol en el sistema'}
+                {mode === 'login' && 'Ingresa para acceder al Panel de Control General'}
                 {mode === 'register' && 'Regístrate para recibir tu correo de confirmación'}
                 {mode === 'forgot' && 'Ingresa tu correo para recibir las instrucciones'}
               </p>

@@ -112,7 +112,7 @@ export function UserProfileModal({ isOpen, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Barra superior con gradiente de acento */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 via-amber-400 to-emerald-400" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[#E5A00D]" />
 
         {/* Botón cerrar */}
         <button
@@ -124,8 +124,8 @@ export function UserProfileModal({ isOpen, onClose }) {
         </button>
 
         {/* ENCABEZADO */}
-        <div className="flex items-center gap-2 mb-5">
-          <div className="p-2 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
+        <div className="flex items-center gap-2.5 mb-5">
+          <div className="p-2 rounded-xl bg-[#E5A00D]/15 text-[#E5A00D] border border-[#E5A00D]/30">
             <Sparkles size={18} />
           </div>
           <div>
@@ -133,14 +133,14 @@ export function UserProfileModal({ isOpen, onClose }) {
               Panel de Usuario & Control
             </h2>
             <p className="text-xs text-slate-400">
-              Biblioteca Pública Profesor Solón Argüello
+              BiblioVR Admin • Biblioteca Profesor Solón Argüello
             </p>
           </div>
         </div>
 
         {/* TARJETA DE PERFIL */}
         <div className="p-4 mb-4 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-500/30 to-slate-800 border border-sky-400/30 flex items-center justify-center text-sky-300 font-bold text-lg shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-[#0B1A30] border border-[#E5A00D]/40 flex items-center justify-center text-[#E5A00D] font-black text-lg shrink-0 shadow-sm">
             {displayName.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
@@ -230,7 +230,7 @@ export function UserProfileModal({ isOpen, onClose }) {
 
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-slate-900 bg-sky-400 hover:bg-sky-300 transition-all cursor-pointer shadow-md shadow-sky-500/20"
+            className="px-5 py-2 rounded-xl text-xs font-bold text-[#0B1A30] bg-[#E5A00D] hover:bg-amber-400 transition-all cursor-pointer shadow-md shadow-amber-500/20"
           >
             Aceptar
           </button>

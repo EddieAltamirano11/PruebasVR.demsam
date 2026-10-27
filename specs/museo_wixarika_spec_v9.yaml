@@ -1,0 +1,90 @@
+# Open Spec: Museo Virtual Wixárika (WebXR - Kiosco Cultural)
+# Versión: 9.0.0 (v9)
+# Proyecto: Módulo Inmersivo WebXR para la Difusión de las Culturas Vivas de Nayarit
+# Sede: Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)
+# Equipo 10 - Taller Full Stack
+
+spec_version: "9.0.0"
+title: "Especificación Técnica y Cultural: Museo Virtual Wixárika 3D - Versión 9 (v9)"
+status: "approved"
+last_updated: "2026-10-20"
+
+release_notes_v9:
+  base_version: "v8 (public/museo_wixarika_v8.glb - Tapete sagrado central + letreros alineados)"
+  previous_versions_retained:
+    - "v1: public/museo_wixarika_v1.glb y specs/museo_wixarika_spec_v1.yaml"
+    - "v2: public/museo_wixarika_v2.glb y specs/museo_wixarika_spec_v2.yaml"
+    - "v3: public/museo_wixarika_v3.glb y specs/museo_wixarika_spec_v3.yaml"
+    - "v4: public/museo_wixarika_v4.glb y specs/museo_wixarika_spec_v4.yaml"
+    - "v5: public/museo_wixarika_v5.glb y specs/museo_wixarika_spec_v5.yaml"
+    - "v6: public/museo_wixarika_v6.glb (curaduría manual en Blender)"
+    - "v7: public/museo_wixarika_v7.glb y specs/museo_wixarika_spec_v7.yaml"
+    - "v8: public/museo_wixarika_v8.glb y specs/museo_wixarika_spec_v8.yaml"
+  enhancements_v9:
+    - "Instalación del Óculo Cenital Sagrado de Tatewari en el techo circular central (tragaluz/óculo a Y = 5.42 m)."
+    - "Procesamiento de imagen de alta fidelidad: Remoción precisa y antialiased del fondo ajedrezado falso exterior, preservando al 100% el borde perimetral de chaquira blanca/negra y el disco sagrado de fuego (tatewari_oculo_techo.png en RGBA)."
+    - "Alineación y orientación geométrica: El disco central del techo proyecta su normal hacia abajo (-Y), mirando directamente al visitante de pie sobre el tapete central."
+    - "Orientación cosmogónica: La corona de fuego y cabeza de Tatewari apuntan al cuadrante Norte (muro de las deidades sagradas), creando coherencia visual y ritual en el eje vertical cielo-tierra (óculo Tatewari arriba <-> tapete mándala abajo)."
+    - "Material PBR optimizado: mat_tatewari_oculo_techo configurado con alphaMode MASK (cutoff: 0.5), doubleSided: true, roughnessFactor: 0.65, metallicFactor: 0.05 para renderizado fiel y sin artefactos en WebXR móvil."
+    - "Preservación estricta de todos los elementos anteriores: Mándala del suelo intacto, 4 letreros alineados cardinalmente en el techo, subtítulos en negro de deidades, cuadros agrandados e iluminación."
+
+verified_audit_results_v9:
+  dod_status: "PASSED"
+  total_nodes: 1085
+  total_meshes: 925
+  total_materials: 74
+  embedded_textures_count: 8
+  embedded_images_count: 8
+  embedded_images:
+    - "tex_cuadro_tatewari_nierika (image/png)"
+    - "tex_cuadro_tayau_nierika (image/png)"
+    - "tex_cuadro_kauyumari_nierika (image/jpeg)"
+    - "tex_cuadro_takutsi_nierika (image/jpeg)"
+    - "tex_cuadro_niwetsika_nierika (image/jpeg)"
+    - "tex_cuadro_haramara_nierika (image/jpeg)"
+    - "tex_tapete_sagrado_wixarika (image/jpeg)"
+    - "tex_tatewari_oculo_techo (image/png - 2042 KB RGBA con transparencia)"
+  file_size_kb: 7067.35
+  glb_total_bytes: 7236968
+  ceiling_oculus_artwork:
+    node_name: "tatewari_oculo_cenital"
+    node_index: 941
+    position: [0.0, 5.42, 0.0]
+    radius_meters: 0.97
+    rotation_quaternion: [0.70710688829422, 0.0, 0.0, 0.7071066498756409]
+    normal_vector: [0.0, -1.0, 0.0]
+    facing_direction: "Abajo hacia el visitante y centro ceremonial"
+    material_name: "mat_tatewari_oculo_techo"
+    alpha_mode: "MASK"
+    alpha_cutoff: 0.5
+    double_sided: true
+  floor_carpet:
+    node_name: "tapete_central_wixarika"
+    radius_meters: 2.50
+    diameter_meters: 5.00
+    material_name: "mat_tapete_sagrado_wixarika"
+    shading: "PBR Metallic-Roughness (roughness: 0.85, metalness: 0.05)"
+  museographic_signposts_aligned:
+    - name: "letrero_seccion_deidades"
+      position: [0.0, 3.15, -4.8]
+      quadrant: "Norte"
+    - name: "letrero_seccion_bienvenida"
+      position: [0.0, 3.15, 4.8]
+      quadrant: "Sur"
+    - name: "letrero_seccion_gastronomia"
+      position: [4.8, 3.15, 0.0]
+      quadrant: "Este"
+    - name: "letrero_seccion_fiestas"
+      position: [-4.8, 3.15, 0.0]
+      quadrant: "Oeste"
+
+budgets_and_dod_v9:
+  target_fps: 60
+  mobile_hardware_tier: "Entry-to-Mid Android/iOS (Homido Grab VR Kiosk)"
+  shading_model: "MeshStandardMaterial (PBR Stylized Quality Low-Poly)"
+  export_format: ".glb (GLTF 2.0 Binary)"
+  output_paths_v9:
+    - "public/museo_wixarika_v9.glb"
+    - "imagenesRef/museo_wixarika_v9.glb"
+    - "public/museo_wixarika_base.glb"
+    - "imagenesRef/museo_wixarika_base.glb"

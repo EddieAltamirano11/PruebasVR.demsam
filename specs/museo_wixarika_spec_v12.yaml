@@ -1,0 +1,110 @@
+# Open Spec: Museo Virtual Wixárika (WebXR - Kiosco Cultural)
+# Versión: 12.3.0 (v12 - Tipografía Monumental Maximizada en Letreros + Eliminación de Subtextos)
+# Proyecto: Módulo Inmersivo WebXR para la Difusión de las Culturas Vivas de Nayarit
+# Sede: Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)
+# Equipo 10 - Taller Full Stack
+
+spec_version: "12.3.0"
+title: "Especificación Técnica y Cultural: Museo Virtual Wixárika 3D - Versión 12 (v12)"
+status: "approved"
+last_updated: "2026-10-20"
+
+release_notes_v12:
+  base_version: "v11 (public/museo_wixarika_v11.glb - Curaduría manual en Blender preservada al 100%)"
+  retained_intact:
+    - "public/museo_wixarika_v11.glb (sin ninguna modificación)"
+    - "Letreros superiores colgantes calibrados por el usuario"
+    - "Cédulas y cuadros del pabellón de Fiestas y Ceremonias"
+    - "Panteón de Deidades Sagradas, óculo de Tatewari y tapete central"
+  enhancements_v12:
+    - "Tipografía Monumental en Letreros de Gastronomía (v12.3):"
+    - "  • Aumento radical de tamaño de fuente: hasta 230 pt para palabras únicas y 148-192 pt para títulos compuestos (más del doble de tamaño respecto a los 80-88 pt previos), abarcando entre el 87% y 90% del ancho del letrero."
+    - "  • Formato de texto exclusivo: Eliminación absoluta de subtextos. 'MAÍZ TOSTADO' ahora muestra únicamente el nombre del platillo (se removió '(XARIKÍXA)'), cumpliendo la regla de que los letreros solo muestren el nombre de la comida."
+    - "  • Preservación del tamaño de peana: Se mantuvieron intactas las dimensiones físicas aprobadas (0.66 m x 0.22 m x 0.06 m, quad 0.64 m x 0.20 m)."
+    - "  • Relación de aspecto 3.2:1 exacta: Texturas generadas a 1536 x 480 px con tipografía Trebuchet Bold de alto contraste, sombra de relieve y factor emisivo para legibilidad máxima en VR."
+    - "Corrección Integral de Altura e Inclinación de Letreros:"
+    - "  • Corrección de penetración: Base de peanas colocada en Y = 0.895 m (completamente sobre el tablero de 0.885 m, sin atravesar la madera)."
+    - "  • Corrección de inclinación: Ángulo invertido a -26° (orientado hacia arriba y al frente, vector normal con componente +Y apuntando directamente a la vista del observador VR a 1.60 m)."
+    - "  • Separación visual: Alimentos en Z = -0.12 m y letreros en Z = +0.22 m (despeje de 34 cm para que ambos se aprecien simultáneamente)."
+    - "Comida Tradicional con Alto Detalle y Texturas Fotorrealistas:"
+    - "  • Tortillas de Maíz: Canasta de mimbre con paño bordado y disco de tortillas de comal tostadas con textura artesanal de nixtamal."
+    - "  • Tamales: Bandeja rústica de madera noble con 4 tamales 3D envueltos en totomoxtle y lecho texturizado."
+    - "  • Atole de Maíz: Gran olla vidriada nayarita apoyada sobre la mesa (sin atravesarla), cucharón de madera, jícaras y superficie espumosa."
+    - "  • Caldo de Toro: Cazuela profunda de barro con asas y superficie horizontal texturizada de caldo ámbar con carne, chiles y cilantro."
+    - "  • Maíz Tostado: Comal ceremonial de barro con lecho texturizado de granos tostados de 5 colores y granos en relieve."
+    - "  • Perruri: Cuenco artesanal con textura de molienda dorada nupcial de maíz y pepitas de calabaza, más tacos tradicionales."
+    - "  • Elotes Cocidos: Canasta de otate con mazorcas cocidas de elote tierno en la repisa central a nivel de ojos (Y = 1.63 m)."
+    - "Arquitectura de Doble Mesa Curva de Gran Formato:"
+    - "  • Dos mesas de 3.45m x 1.17m a R = 5.25m orientadas hacia el centro (0, 0, 0)."
+    - "  • Mesa Norte: Tortillas, Tamales y Atole."
+    - "  • Mesa Sur: Caldo de Toro, Maíz Tostado y Perruri."
+
+verified_audit_results_v12:
+  dod_status: "PASSED"
+  total_nodes: 1402
+  total_meshes: 1103
+  total_materials: 170
+  file_size_kb: 13101.87
+  glb_total_bytes: 13416312
+  gastronomy_exhibit:
+    table_north:
+      node_name: "mesa_gastronomia_1_norte"
+      position: [4.993, 0.00, -1.622]
+      tabletop_y: 0.885
+      dishes:
+        - name: "TORTILLAS DE MAÍZ"
+          font_size: 148
+          food_pos: [-0.90, 0.885, -0.12]
+          sign_pos: [-0.90, 1.005, 0.22]
+          sign_tilt: -26.0
+        - name: "TAMALES"
+          font_size: 230
+          food_pos: [0.00, 0.885, -0.12]
+          sign_pos: [0.00, 1.005, 0.22]
+          sign_tilt: -26.0
+        - name: "ATOLE DE MAÍZ"
+          font_size: 188
+          food_pos: [0.90, 0.885, -0.08]
+          sign_pos: [0.90, 1.005, 0.22]
+          sign_tilt: -26.0
+    table_south:
+      node_name: "mesa_gastronomia_2_sur"
+      position: [4.993, 0.00, 1.622]
+      tabletop_y: 0.885
+      dishes:
+        - name: "CALDO DE TORO"
+          font_size: 176
+          food_pos: [-0.90, 0.885, -0.12]
+          sign_pos: [-0.90, 1.005, 0.22]
+          sign_tilt: -26.0
+        - name: "MAÍZ TOSTADO"
+          font_size: 192
+          subtext: "NONE"
+          food_pos: [0.00, 0.885, -0.12]
+          sign_pos: [0.00, 1.005, 0.22]
+          sign_tilt: -26.0
+        - name: "PERRURI"
+          font_size: 230
+          food_pos: [0.90, 0.885, -0.12]
+          sign_pos: [0.90, 1.005, 0.22]
+          sign_tilt: -26.0
+    central_shelf:
+      node_name: "repisa_gastronomia_1"
+      position: [7.50, 1.60, 0.00]
+      dishes:
+        - name: "ELOTES COCIDOS"
+          font_size: 170
+          food_pos: [0.00, 0.025, -0.02]
+          sign_pos: [0.45, 0.140, 0.06]
+          sign_tilt: -12.0
+
+budgets_and_dod_v12:
+  target_fps: 60
+  mobile_hardware_tier: "Entry-to-Mid Android/iOS (Homido Grab VR Kiosk)"
+  shading_model: "MeshStandardMaterial (PBR Stylized Quality Low-Poly)"
+  export_format: ".glb (GLTF 2.0 Binary)"
+  output_paths_v12:
+    - "public/museo_wixarika_v12.glb"
+    - "imagenesRef/museo_wixarika_v12.glb"
+    - "public/museo_wixarika_base.glb"
+    - "imagenesRef/museo_wixarika_base.glb"

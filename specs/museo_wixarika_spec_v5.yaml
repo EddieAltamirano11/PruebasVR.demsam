@@ -1,0 +1,164 @@
+# Open Spec: Museo Virtual Wixárika (WebXR - Kiosco Cultural)
+# Versión: 5.0.0 (v5)
+# Proyecto: Módulo Inmersivo WebXR para la Difusión de las Culturas Vivas de Nayarit
+# Sede: Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)
+# Equipo 10 - Taller Full Stack
+
+spec_version: "5.0.0"
+title: "Especificación Técnica y Cultural: Museo Virtual Wixárika 3D - Versión 5 (v5)"
+status: "approved"
+last_updated: "2026-10-19"
+
+release_notes_v5:
+  previous_versions_retained:
+    - "v1: public/museo_wixarika_v1.glb y specs/museo_wixarika_spec_v1.yaml"
+    - "v2: public/museo_wixarika_v2.glb y specs/museo_wixarika_spec_v2.yaml"
+    - "v3: public/museo_wixarika_v3.glb y specs/museo_wixarika_spec_v3.yaml"
+    - "v4: public/museo_wixarika_v4.glb y specs/museo_wixarika_spec_v4.yaml"
+  enhancements_v5:
+    - "Transformación total de la sección de Deidades Sagradas en una Galería de Arte Sacro Wixárika de gran formato, eliminando las esculturas/estatuillas 3D sobre pedestales para centrar toda la experiencia en los 6 cuadros sagrados enmarcados con relieve 3D fino."
+    - "Eliminación completa del mural/paisaje invasor que se encontraba al centro de la pared norte (Z = -7.8m), dejando la curvatura del Kalihuey limpia y continua para una visibilidad panorámica perfecta."
+    - "Ampliación de los 6 cuadros a gran formato (1.40m x 1.40m cuadrados y 1.50m x 1.00m horizontal para Haramara) enmarcados en madera de cedro con biseles de oro y esquineros ceremoniales de chaquira en rombo, coronados por luminarias museográficas Picture Light de latón dorado."
+    - "Integración de las 6 obras fotográficas auténticas provistas por el usuario embebidas en el binario GLB (PNG y JPEG con soporte nativo GLTF 2.0):"
+    - "  1. Tatewari ('Nuestro Abuelo, el Fuego') - Nierika auténtica de estambre con relieve 3D."
+    - "  2. Tayau ('Nuestro Padre, el Sol') - Nierika sagrada solar con relieve de 24 rayos y rostro de oro."
+    - "  3. Kauyumari ('El Venado Azul') - Nierika del venado azul sagrado con astas de oro y peyote."
+    - "  4. Takutsi Nakawe ('Nuestra Bisabuela') - Nierika del diluvio primordial, árbol sagrado y canoa."
+    - "  5. Tatei Niwetsika ('Nuestra Madre, el Maiz') - Nierika de la diosa del maíz de 4 colores y lluvia."
+    - "  6. Tatei Haramara ('Nuestra Madre, el Mar') - Fotografía de la sagrada roca blanca en San Blas y olas con espuma marina."
+    - "Diseño de placas informativas individuales de gran visibilidad (1.20m x 0.34m) con el Nombre Sagrado en letras doradas 3D de gran tamaño (size: 0.076) y el Significado Sagrado en subtítulo marfil de alta legibilidad (size: 0.038), optimizadas mediante mergeVertices."
+    - "Ofrendas tradicionales al pie de cada cuadro a nivel de suelo (jícaras con semillas, conchas, copal y veladoras) sin obstruir la visual de los lienzos."
+    - "Respeto íntegro a las curadurías de v4: suelo continuo sin plataforma y pasillos 100% despejados."
+
+verified_audit_results_v5:
+  dod_status: "PASSED"
+  total_vertices: 58928
+  total_triangles: 41946
+  file_size_kb: 4896.66
+  glb_total_bytes: 5014180
+  embedded_textures_count: 6
+  embedded_images_count: 6
+  deities_authentic_artworks_embedded:
+    - name: "tatewari"
+      title: "TATEWARI"
+      meaning: "Nuestro Abuelo, el Fuego"
+      texture_file: "tatewari_nierika.png"
+      material: "mat_cuadro_tatewari_nierika"
+      mime_type: "image/png"
+    - name: "tayau"
+      title: "TAYAU"
+      meaning: "Nuestro Padre, el Sol"
+      texture_file: "tayau_sol_nierika.png"
+      material: "mat_cuadro_tayau_nierika"
+      mime_type: "image/png"
+    - name: "kauyumari"
+      title: "KAUYUMARI"
+      meaning: "El Venado Azul"
+      texture_file: "kauyumari_venado_nierika.jpg"
+      material: "mat_cuadro_kauyumari_nierika"
+      mime_type: "image/jpeg"
+    - name: "takutsi_nakawe"
+      title: "TAKUTSI NAKAWE"
+      meaning: "Nuestra Bisabuela"
+      texture_file: "takutsi_nakawe_nierika.jpg"
+      material: "mat_cuadro_takutsi_nierika"
+      mime_type: "image/jpeg"
+    - name: "tatei_niwetsika"
+      title: "TATEI NIWETSIKA"
+      meaning: "Nuestra Madre, el Maiz"
+      texture_file: "tatei_niwetsika_nierika.jpg"
+      material: "mat_cuadro_niwetsika_nierika"
+      mime_type: "image/jpeg"
+    - name: "tatei_haramara"
+      title: "TATEI HARAMARA"
+      meaning: "Nuestra Madre, el Mar"
+      texture_file: "tatei_haramara_mar_nierika.jpg"
+      material: "mat_cuadro_haramara_nierika"
+      mime_type: "image/jpeg"
+  deity_gallery_frames_modeled: 6
+  deity_plaques_3d_modeled: 6
+  deity_offerings_modeled: 6
+  deity_hitboxes_modeled: 6
+  gastronomy_stations_modeled: 7
+  fiestas_stations_modeled: 3
+  fiestas_nierikas_modeled: 3
+  museographic_signposts_modeled: 4
+  wixarika_frieze_diamonds_count: 32
+  wixarika_carved_pilasters_count: 8
+  wixarika_ceiling_otate_rings_count: 3
+  wixarika_hanging_tsikuris_count: 4
+  wixarika_cardinal_pathways_count: 4
+  curated_v4_respect_checks:
+    plataforma_alcoba_deidades_absent: true
+    pedestal_entrada_1_absent: true
+    pedestal_entrada_2_absent: true
+    paisaje_mural_centro_absent: true
+    esculturas_figurines_absent: true
+
+room_architecture_v5:
+  type: "circular_enclosed_gallery"
+  inspiration: "Kalihuey ceremonial sagrado Wixárika"
+  radius_meters: 8.0
+  height_meters: 5.4
+  viewer_position: [0.0, 1.6, 0.0]
+  wixarika_frieze_360:
+    height_range: [3.35, 3.70]
+    radius: 7.94
+    diamonds_count: 32
+    colors: ["#0d9488", "#dc2626", "#facc15", "#1e3a8a"]
+  carved_pilasters:
+    count: 8
+    reliefs: ["tsikuri_diamond_top", "sacred_maize_center", "stepped_chevron_base"]
+    accent_material: "mat_medallon_turquesa"
+  ceiling_kalihuey:
+    radial_beams_count: 16
+    concentric_otate_rings: 3
+    hanging_tsikuris: 4
+    oculus_sun_rosette: true
+  floor_cosmogram:
+    radius_medallion: 2.8
+    cardinal_pathways:
+      - "Sur (Wirikuta - Desierto Sagrado)"
+      - "Este (Xapawiyemeta - Lago de Chapala)"
+      - "Oeste (Tatei Haramara - Mar de San Blas)"
+      - "Norte (Hauxamanaka - Cerro Gordo Sierra Madre)"
+    chaquira_bead_rings: 2
+  museographic_signposts_ceiling:
+    mount_type: "Colgantes de techo con varillas de suspensión"
+    height_y: 3.15
+    tilt_angle_deg: 15
+    signposts:
+      - name: "letrero_seccion_deidades"
+        title: "DEIDADES"
+        subtitle: "COSMOVISION"
+        position: [0.0, 3.15, -4.8]
+        orientation: "Mirando hacia el centro desde el Norte"
+      - name: "letrero_seccion_bienvenida"
+        title: "BIENVENIDA"
+        subtitle: "KALIHUEY"
+        position: [0.0, 3.15, 4.8]
+        orientation: "Mirando hacia el centro desde el Sur (área para Menú 2D)"
+      - name: "letrero_seccion_gastronomia"
+        title: "GASTRONOMIA"
+        subtitle: "TRADICION"
+        position: [4.6, 3.15, -1.6]
+        orientation: "Mirando hacia el centro desde el Este"
+      - name: "letrero_seccion_fiestas"
+        title: "FIESTAS"
+        subtitle: "CEREMONIAS"
+        position: [-4.6, 3.15, -1.6]
+        orientation: "Mirando hacia el centro desde el Oeste"
+
+budgets_and_dod_v5:
+  max_vertices: 70000
+  max_triangles: 50000
+  max_file_size_kb: 5000
+  target_fps: 60
+  mobile_hardware_tier: "Entry-to-Mid Android/iOS (Homido Grab VR Kiosk)"
+  shading_model: "MeshStandardMaterial (PBR Stylized Quality Low-Poly)"
+  export_format: ".glb (GLTF 2.0 Binary)"
+  output_paths_v5:
+    - "public/museo_wixarika_v5.glb"
+    - "imagenesRef/museo_wixarika_v5.glb"
+    - "public/museo_wixarika_base.glb"
+    - "imagenesRef/museo_wixarika_base.glb"
