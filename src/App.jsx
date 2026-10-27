@@ -3,6 +3,7 @@ import { MuseumScene } from './components/MuseumScene.jsx';
 
 export default function App() {
   const [vrMode, setVrMode] = useState(false);
+  const [showButtons, setShowButtons] = useState(true);
   const onRecenterRef = useRef(null);
   const onWebXRTriggerRef = useRef(null);
 
@@ -72,9 +73,11 @@ export default function App() {
         setVrMode={setVrMode}
         onWebXRTriggerRef={onWebXRTriggerRef}
         onRecenterRef={onRecenterRef}
+        showButtons={showButtons}
+        setShowButtons={setShowButtons}
       />
 
-      {/* Boton flotante para entrar al modo VR (visible en modo normal) */}
+      {/* Barra de Controles Inferior (Abajo) */}
       {!vrMode && (
         <div
           style={{
@@ -84,12 +87,39 @@ export default function App() {
             transform: 'translateX(-50%)',
             zIndex: 1000,
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: 'row',
             alignItems: 'center',
-            gap: '8px',
+            gap: '12px',
             pointerEvents: 'auto'
           }}
         >
+          {/* Boton para Ocultar / Mostrar Botones Abajo */}
+          <button
+            onClick={() => setShowButtons(!showButtons)}
+            style={{
+              padding: '12px 22px',
+              fontSize: '14px',
+              fontWeight: '700',
+              letterSpacing: '0.5px',
+              color: showButtons ? '#fde047' : '#ffffff',
+              background: showButtons ? 'rgba(7, 10, 20, 0.90)' : 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+              border: showButtons ? '2px solid #f59e0b' : '2px solid #fde047',
+              borderRadius: '50px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5), 0 0 12px rgba(245, 158, 11, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease',
+              outline: 'none',
+              backdropFilter: 'blur(6px)'
+            }}
+          >
+            <span>{showButtons ? '👁️‍🗨️' : '👁️'}</span>
+            <span>{showButtons ? 'Ocultar Botones' : 'Mostrar Botones'}</span>
+          </button>
+
+          {/* Boton flotante para entrar al modo VR */}
           <button
             onClick={enterVR}
             style={{

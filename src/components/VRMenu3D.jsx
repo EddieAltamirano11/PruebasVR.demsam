@@ -3,65 +3,58 @@ import { useFrame, useThree, createPortal } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { SoundFX } from '../utils/sound.js';
+import { WixarikaVRButton, TsikuriDiamond, WixarikaVRBookPanel } from './wixarika/index.js';
 
-// Componente de Boton 3D interactivo para VR
+// Componente de Boton 3D interactivo para VR con estética ceremonial Wixárika
 function VRButton3D({
   position,
   width = 1.4,
   height = 0.22,
   label,
+  sublabel,
+  icon,
   active = false,
-  activeColor = '#0284c7',
-  idleColor = '#1e293b',
-  hoverColor = '#334155',
-  textColor = '#ffffff',
+  variant = 'solar',
+  activeColor,
+  idleColor,
+  hoverColor,
+  textColor,
   onClick,
   onRegister,
   onUnregister,
   hoveredId,
+  fuseProgress = 0,
+  showDiamonds = true,
   id
 }) {
-  const meshRef = useRef();
-  const isHovered = hoveredId === id;
-
-  useEffect(() => {
-    if (meshRef.current && onRegister) {
-      onRegister(id, meshRef.current, onClick);
-    }
-    return () => {
-      if (onUnregister) onUnregister(id);
-    };
-  }, [id, onClick, onRegister, onUnregister]);
-
-  const currentColor = active ? activeColor : isHovered ? hoverColor : idleColor;
-  const borderColor = active ? '#38bdf8' : isHovered ? '#67e8f9' : 'rgba(255, 255, 255, 0.2)';
+  // Mapeo retrocompatible de colores a variantes Wixárika
+  let resolvedVariant = variant;
+  if (!variant || variant === 'solar') {
+    if (activeColor === '#0284c7' || activeColor === '#2563eb') resolvedVariant = 'water';
+    else if (activeColor === '#10b981') resolvedVariant = 'hikuri';
+    else if (activeColor === '#eab308' || activeColor === '#f59e0b') resolvedVariant = 'solar';
+    else if (activeColor === '#6366f1') resolvedVariant = 'kauyumari';
+    else if (activeColor === '#ef4444' || idleColor === '#7f1d1d') resolvedVariant = 'danger';
+  }
 
   return (
-    <group position={position}>
-      {/* Borde exterior brillante */}
-      <mesh position={[0, 0, -0.002]}>
-        <planeGeometry args={[width + 0.03, height + 0.03]} />
-        <meshBasicMaterial color={borderColor} transparent opacity={0.8} />
-      </mesh>
-
-      {/* Fondo del boton */}
-      <mesh ref={meshRef}>
-        <planeGeometry args={[width, height]} />
-        <meshBasicMaterial color={currentColor} transparent opacity={0.92} />
-      </mesh>
-
-      {/* Texto de la etiqueta */}
-      <Text
-        position={[0, 0, 0.01]}
-        fontSize={height * 0.42}
-        color={textColor}
-        anchorX="center"
-        anchorY="middle"
-        maxWidth={width * 0.95}
-      >
-        {label}
-      </Text>
-    </group>
+    <WixarikaVRButton
+      id={id}
+      position={position}
+      width={width}
+      height={height}
+      label={label}
+      sublabel={sublabel}
+      icon={icon}
+      active={active}
+      variant={resolvedVariant}
+      onClick={onClick}
+      onRegister={onRegister}
+      onUnregister={onUnregister}
+      hoveredId={hoveredId}
+      fuseProgress={fuseProgress}
+      showDiamonds={showDiamonds}
+    />
   );
 }
 
@@ -86,6 +79,7 @@ export function VRMenu3D({
   const [minimized, setMinimized] = useState(false);
   const [hoveredId, setHoveredId] = useState(null);
   const [fuseProgress, setFuseProgress] = useState(0);
+  const [showBookPanel, setShowBookPanel] = useState(false);
 
   const menuGroupRef = useRef();
   const progressMeshRef = useRef();
@@ -396,76 +390,133 @@ export function VRMenu3D({
       {/* PANEL FLOTANTE EN ESPACIO 3D                         */}
       {/* ==================================================== */}
       <group ref={menuGroupRef}>
-        {/* BOTON MINIMIZADO FLOTANTE CUANDO EL MENU ESTA OCULTO */}
+        {/* BOTON MINIMIZADO FLOTANTE ABAJO CUANDO EL MENU ESTA OCULTO */}
         {minimized && (
-          <group position={[0, -0.2, 0]}>
+          <group position={[0, -0.80, 0]}>
             <VRButton3D
               id="btn-reopen-menu"
               position={[0, 0, 0]}
-              width={0.8}
-              height={0.24}
-              label="ABRIR MENU VR"
-              activeColor="#0284c7"
-              idleColor="#0f172a"
-              textColor="#38bdf8"
+              width={1.20}
+              height={0.22}
+              label="Mostrar Botones / Menú"
+              icon="☀️"
+              variant="solar"
               onClick={() => setMinimized(false)}
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
             />
           </group>
         )}
 
-        {/* PANEL PRINCIPAL COMPLETO */}
-        {!minimized && (
+        {/* MODULO CATÁLOGO DE LIBROS WIXÁRIKA (Para Eddie y Luis Carlos) */}
+        {!minimized && showBookPanel && (
           <group position={[0, 0, 0]}>
-            {/* Fondo del Panel Translúcido */}
-            <mesh position={[0, 0, -0.01]}>
-              <planeGeometry args={[1.75, 1.85]} />
-              <meshBasicMaterial color="#0f172a" transparent opacity={0.92} />
-            </mesh>
+            <WixarikaVRBookPanel
+              onClose={() => setShowBookPanel(false)}
+              onRegister={registerButton}
+              onUnregister={unregisterButton}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+            />
+          </group>
+        )}
 
-            {/* Borde exterior del panel */}
+        {/* PANEL PRINCIPAL COMPLETO CON IDENTIDAD WIXÁRIKA */}
+        {!minimized && !showBookPanel && (
+          <group position={[0, 0, 0]}>
+            {/* 1. Marco exterior resplandeciente */}
             <mesh position={[0, 0, -0.015]}>
-              <planeGeometry args={[1.78, 1.88]} />
-              <meshBasicMaterial color="#38bdf8" transparent opacity={0.4} />
+              <planeGeometry args={[1.88, 2.15]} />
+              <meshBasicMaterial color="#f59e0b" transparent opacity={0.65} />
             </mesh>
 
-            {/* Encabezado */}
-            <Text position={[0, 0.77, 0.01]} fontSize={0.075} color="#38bdf8" anchorX="center">
+            {/* 2. Placa base de Obsidiana Sagrada translúcida (WCAG AAA) */}
+            <mesh position={[0, 0, -0.01]}>
+              <planeGeometry args={[1.84, 2.11]} />
+              <meshBasicMaterial color="#070a14" transparent opacity={0.96} />
+            </mesh>
+
+            {/* 3. Cenefa superior decorativa de Chaquira */}
+            <mesh position={[0, 1.01, -0.005]}>
+              <planeGeometry args={[1.76, 0.03]} />
+              <meshBasicMaterial color="#38bdf8" transparent opacity={0.9} />
+            </mesh>
+
+            {/* 4. Cresta Sagrada Tsikuri (Ojo de Dios) en el encabezado */}
+            <TsikuriDiamond
+              size={0.16}
+              position={[0, 1.08, 0.01]}
+              colors={['#f59e0b', '#ef4444', '#38bdf8', '#ffffff']}
+            />
+            <TsikuriDiamond
+              size={0.08}
+              position={[-0.82, 0.96, 0.01]}
+              colors={['#f59e0b', '#38bdf8', '#ffffff', '#ef4444']}
+            />
+            <TsikuriDiamond
+              size={0.08}
+              position={[0.82, 0.96, 0.01]}
+              colors={['#f59e0b', '#38bdf8', '#ffffff', '#ef4444']}
+            />
+
+            {/* 5. Encabezado Monumental */}
+            <Text position={[0, 0.91, 0.01]} fontSize={0.075} color="#fde047" anchorX="center" outlineWidth={0.002} outlineColor="#040711">
               CONTROL DE ESCENARIO VR
             </Text>
-            <Text position={[0, 0.68, 0.01]} fontSize={0.045} color="#94a3b8" anchorX="center">
-              Bocho 3D • React Three Fiber
+            <Text position={[0, 0.83, 0.01]} fontSize={0.042} color="#38bdf8" anchorX="center">
+              Museo Wixárika • Biblioteca Solón Argüello
             </Text>
 
+            {/* SECCION LIBROS: BIBLIOTECA SOLÓN ARGÜELLO (Módulo Reutilizable) */}
+            <Text position={[-0.78, 0.72, 0.01]} fontSize={0.038} color="#fde047" anchorX="left">
+              ✦ FONDO BIBLIOTECA SOLÓN ARGÜELLO
+            </Text>
+            <VRButton3D
+              id="btn-open-books"
+              position={[0, 0.60, 0]}
+              width={1.60}
+              height={0.16}
+              label="Catálogo de Libros Wixárika"
+              icon="📚"
+              variant="solar"
+              onClick={() => setShowBookPanel(true)}
+              onRegister={registerButton}
+              onUnregister={unregisterButton}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+            />
+
             {/* SECCION 1: MODO SEGUIMIENTO */}
-            <Text position={[-0.75, 0.54, 0.01]} fontSize={0.038} color="#64748b" anchorX="left">
+            <Text position={[-0.78, 0.46, 0.01]} fontSize={0.038} color="#94a3b8" anchorX="left">
               MODO SEGUIMIENTO
             </Text>
             <VRButton3D
               id="btn-toggle-follow"
-              position={[0, 0.43, 0]}
-              width={1.55}
-              height={0.16}
+              position={[0, 0.35, 0]}
+              width={1.60}
+              height={0.15}
               label={followActive ? 'Seguimiento: ACTIVO' : 'Seguir Auto en Marcha'}
+              icon="◈"
               active={followActive}
-              activeColor="#0284c7"
-              idleColor="#1e293b"
+              variant={followActive ? 'water' : 'obsidian'}
               onClick={() => setFollowActive(!followActive)}
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
             />
 
             {/* Sub-botones de tipo de seguimiento */}
             <VRButton3D
               id="btn-cam-chase"
-              position={[-0.53, 0.25, 0]}
-              width={0.48}
-              height={0.14}
-              label="Atras"
+              position={[-0.54, 0.19, 0]}
+              width={0.49}
+              height={0.13}
+              label="Atrás"
               active={followActive && followType === 'chase'}
+              variant={followActive && followType === 'chase' ? 'water' : 'obsidian'}
               onClick={() => {
                 setFollowActive(true);
                 setFollowType('chase');
@@ -473,14 +524,17 @@ export function VRMenu3D({
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
             <VRButton3D
               id="btn-cam-side"
-              position={[0, 0.25, 0]}
-              width={0.48}
-              height={0.14}
+              position={[0, 0.19, 0]}
+              width={0.49}
+              height={0.13}
               label="Lateral"
               active={followActive && followType === 'side'}
+              variant={followActive && followType === 'side' ? 'water' : 'obsidian'}
               onClick={() => {
                 setFollowActive(true);
                 setFollowType('side');
@@ -488,14 +542,17 @@ export function VRMenu3D({
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
             <VRButton3D
               id="btn-cam-roof"
-              position={[0.53, 0.25, 0]}
-              width={0.48}
-              height={0.14}
+              position={[0.54, 0.19, 0]}
+              width={0.49}
+              height={0.13}
               label="Techo"
               active={followActive && followType === 'roof'}
+              variant={followActive && followType === 'roof' ? 'water' : 'obsidian'}
               onClick={() => {
                 setFollowActive(true);
                 setFollowType('roof');
@@ -503,89 +560,105 @@ export function VRMenu3D({
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
 
             {/* SECCION 2: CONTROL DEL AUTO */}
-            <Text position={[-0.75, 0.12, 0.01]} fontSize={0.038} color="#64748b" anchorX="left">
+            <Text position={[-0.78, 0.07, 0.01]} fontSize={0.038} color="#94a3b8" anchorX="left">
               RECORRIDO DEL AUTO
             </Text>
             <VRButton3D
               id="btn-play-pause"
-              position={[-0.4, 0.01, 0]}
-              width={0.75}
-              height={0.15}
+              position={[-0.42, -0.04, 0]}
+              width={0.76}
+              height={0.14}
               label={isPlaying ? 'Pausar' : 'Reanudar'}
+              icon={isPlaying ? '⏸' : '▶'}
               active={isPlaying}
-              activeColor="#2563eb"
-              idleColor="#f59e0b"
+              variant={isPlaying ? 'water' : 'solar'}
               onClick={() => setIsPlaying(!isPlaying)}
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
             <VRButton3D
               id="btn-restart"
-              position={[0.4, 0.01, 0]}
-              width={0.75}
-              height={0.15}
+              position={[0.42, -0.04, 0]}
+              width={0.76}
+              height={0.14}
               label="Reiniciar"
-              activeColor="#10b981"
-              idleColor="#1e293b"
+              icon="↺"
+              variant="hikuri"
               onClick={onRestart}
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
 
             {/* Selector de velocidad */}
             <VRButton3D
               id="btn-spd-1"
-              position={[-0.53, -0.16, 0]}
-              width={0.48}
-              height={0.13}
+              position={[-0.54, -0.19, 0]}
+              width={0.49}
+              height={0.12}
               label="1.0x"
               active={speed === 1.0}
+              variant={speed === 1.0 ? 'solar' : 'obsidian'}
               onClick={() => setSpeed(1.0)}
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
             <VRButton3D
               id="btn-spd-2"
-              position={[0, -0.16, 0]}
-              width={0.48}
-              height={0.13}
+              position={[0, -0.19, 0]}
+              width={0.49}
+              height={0.12}
               label="2.0x"
               active={speed === 2.0}
+              variant={speed === 2.0 ? 'solar' : 'obsidian'}
               onClick={() => setSpeed(2.0)}
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
             <VRButton3D
               id="btn-spd-05"
-              position={[0.53, -0.16, 0]}
-              width={0.48}
-              height={0.13}
+              position={[0.54, -0.19, 0]}
+              width={0.49}
+              height={0.12}
               label="0.5x"
               active={speed === 0.5}
+              variant={speed === 0.5 ? 'solar' : 'obsidian'}
               onClick={() => setSpeed(0.5)}
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
 
             {/* SECCION 3: PUNTOS DE VISTA FIJOS */}
-            <Text position={[-0.75, -0.28, 0.01]} fontSize={0.038} color="#64748b" anchorX="left">
+            <Text position={[-0.78, -0.30, 0.01]} fontSize={0.038} color="#94a3b8" anchorX="left">
               PUNTOS DE VISTA FIJOS
             </Text>
             <VRButton3D
               id="btn-view-origin"
-              position={[-0.53, -0.39, 0]}
-              width={0.48}
-              height={0.13}
+              position={[-0.54, -0.40, 0]}
+              width={0.49}
+              height={0.12}
               label="Salida"
               active={!followActive && fixedView === 'origin'}
+              variant={!followActive && fixedView === 'origin' ? 'kauyumari' : 'obsidian'}
               onClick={() => {
                 setFollowActive(false);
                 setFixedView('origin');
@@ -593,14 +666,17 @@ export function VRMenu3D({
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
             <VRButton3D
               id="btn-view-center"
-              position={[0, -0.39, 0]}
-              width={0.48}
-              height={0.13}
+              position={[0, -0.40, 0]}
+              width={0.49}
+              height={0.12}
               label="Acera"
               active={!followActive && fixedView === 'center'}
+              variant={!followActive && fixedView === 'center' ? 'kauyumari' : 'obsidian'}
               onClick={() => {
                 setFollowActive(false);
                 setFixedView('center');
@@ -608,14 +684,17 @@ export function VRMenu3D({
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
             <VRButton3D
               id="btn-view-aerial"
-              position={[0.53, -0.39, 0]}
-              width={0.48}
-              height={0.13}
-              label="Aerea"
+              position={[0.54, -0.40, 0]}
+              width={0.49}
+              height={0.12}
+              label="Aérea"
               active={!followActive && fixedView === 'aerial'}
+              variant={!followActive && fixedView === 'aerial' ? 'kauyumari' : 'obsidian'}
               onClick={() => {
                 setFollowActive(false);
                 setFixedView('aerial');
@@ -623,66 +702,78 @@ export function VRMenu3D({
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
 
             {/* SECCION 4: ILUMINACION */}
-            <Text position={[-0.75, -0.51, 0.01]} fontSize={0.038} color="#64748b" anchorX="left">
-              ILUMINACION
+            <Text position={[-0.78, -0.51, 0.01]} fontSize={0.038} color="#94a3b8" anchorX="left">
+              ILUMINACIÓN SAGRADA
             </Text>
             <VRButton3D
               id="btn-light-day"
-              position={[-0.53, -0.62, 0]}
-              width={0.48}
-              height={0.13}
-              label="Dia"
+              position={[-0.54, -0.61, 0]}
+              width={0.49}
+              height={0.12}
+              label="Día"
+              icon="☀️"
               active={lightMode === 'day'}
-              activeColor="#eab308"
+              variant={lightMode === 'day' ? 'solar' : 'obsidian'}
               onClick={() => setLightMode('day')}
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
             <VRButton3D
               id="btn-light-sunset"
-              position={[0, -0.62, 0]}
-              width={0.48}
-              height={0.13}
+              position={[0, -0.61, 0]}
+              width={0.49}
+              height={0.12}
               label="Tarde"
+              icon="🌅"
               active={lightMode === 'sunset'}
-              activeColor="#f97316"
+              variant={lightMode === 'sunset' ? 'danger' : 'obsidian'}
               onClick={() => setLightMode('sunset')}
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
             <VRButton3D
               id="btn-light-night"
-              position={[0.53, -0.62, 0]}
-              width={0.48}
-              height={0.13}
+              position={[0.54, -0.61, 0]}
+              width={0.49}
+              height={0.12}
               label="Noche"
+              icon="🌙"
               active={lightMode === 'night'}
-              activeColor="#6366f1"
+              variant={lightMode === 'night' ? 'kauyumari' : 'obsidian'}
               onClick={() => setLightMode('night')}
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
 
-            {/* BOTON OCULTAR MENU */}
+            {/* BOTON OCULTAR MENU / BOTONES (ABAJO) */}
             <VRButton3D
               id="btn-hide-menu"
-              position={[0, -0.79, 0]}
-              width={1.55}
+              position={[0, -0.78, 0]}
+              width={1.60}
               height={0.14}
-              label="Ocultar Menu (Modo Libre)"
-              activeColor="#ef4444"
-              idleColor="#7f1d1d"
-              textColor="#fecaca"
+              label="Ocultar Botones / Menú (Modo Libre)"
+              icon="👁️‍🗨️"
+              variant="danger"
               onClick={() => setMinimized(true)}
               onRegister={registerButton}
               onUnregister={unregisterButton}
               hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
             />
           </group>
         )}
