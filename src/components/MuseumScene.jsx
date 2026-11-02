@@ -200,7 +200,7 @@ export function MuseumScene({
       <pointLight position={[0, 4, 0]} intensity={1.0} distance={14} color="#ffe8cc" />
       <hemisphereLight skyColor="#ffffff" groundColor="#332a26" intensity={0.7} />
 
-      {/* Modelo 3D del Museo Wixarika v12 */}
+      {/* Modelo 3D del Museo Wixarika v13 */}
       <Suspense fallback={null}>
         <MuseumModel />
       </Suspense>
