@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { SoundFX } from '../../services/audioService.js';
 import { WIXARIKA_VARIANTS, calculateAngularSize } from './wixarikaTheme.js';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
+import { LucideVRIcon } from './LucideVRIcon.jsx';
 
 /**
  * WixarikaVRButton - Botón 3D Reutilizable para Realidad Virtual
@@ -14,7 +15,8 @@ import { TsikuriDiamond } from './TsikuriDiamond.jsx';
  * @param {string} props.id - Identificador único para el raycaster y Gaze Fuse
  * @param {string} props.label - Texto principal del botón
  * @param {string} [props.sublabel] - Texto secundario opcional
- * @param {string} [props.icon] - Glifo o ícono decorativo (ej. '📚', '👁️', '✕', '☀️')
+ * @param {string} [props.iconName] - Nombre del icono vectorial Lucide (ej. 'sun', 'utensils', 'book-open', 'eye', 'x')
+ * @param {string} [props.icon] - Glifo de texto opcional de compatibilidad
  * @param {Array<number>} [props.position] - Posición 3D [x, y, z]
  * @param {Array<number>} [props.rotation] - Rotación 3D [rx, ry, rz]
  * @param {number} [props.width=1.3] - Ancho del botón en metros
@@ -36,6 +38,7 @@ export function WixarikaVRButton({
   label,
   sublabel,
   icon,
+  iconName,
   position = [0, 0, 0],
   rotation = [0, 0, 0],
   width = 1.3,
@@ -111,8 +114,12 @@ export function WixarikaVRButton({
     ? theme.borderGlow
     : theme.borderColor;
 
+  const isCantera = variant === 'cantera';
+
   const currentTextColor = disabled
     ? '#64748b'
+    : isCantera
+    ? (isHovered ? '#78350f' : '#1c1917')
     : active
     ? '#ffffff'
     : isHovered
@@ -207,17 +214,27 @@ export function WixarikaVRButton({
         </group>
       )}
 
-      {/* 6. Contenido: Ícono, Etiqueta y Subetiqueta con tipografía de alto contraste */}
+      {/* 6. Contenido: Ícono Vectorial Lucide, Etiqueta y Subetiqueta */}
       <group position={[0, sublabel ? 0.018 : 0, 0.01]}>
+        {iconName && (
+          <LucideVRIcon
+            name={iconName}
+            size={Math.min(height * 0.52, 0.085)}
+            color={isCantera ? (isHovered ? '#b45309' : '#78350f') : currentTextColor}
+            position={[label ? -width * 0.36 : 0, 0, 0.002]}
+            strokeWidth={2.4}
+          />
+        )}
+
         <Text
-          position={[0, 0, 0]}
+          position={[iconName && label ? height * 0.22 : 0, 0, 0]}
           fontSize={mainFontSize}
           color={currentTextColor}
           anchorX="center"
           anchorY="middle"
-          maxWidth={width * 0.82}
+          maxWidth={iconName ? width * 0.68 : width * 0.82}
           textAlign="center"
-          outlineWidth={0.002}
+          outlineWidth={isCantera ? 0 : 0.002}
           outlineColor="#040711"
         >
           {icon ? `${icon}  ${label}` : label}
@@ -225,9 +242,9 @@ export function WixarikaVRButton({
 
         {sublabel && (
           <Text
-            position={[0, -mainFontSize * 1.05, 0]}
+            position={[iconName && label ? height * 0.22 : 0, -mainFontSize * 1.05, 0]}
             fontSize={subFontSize}
-            color={theme.borderGlow}
+            color={isCantera ? '#78350f' : theme.borderGlow}
             anchorX="center"
             anchorY="middle"
             maxWidth={width * 0.85}

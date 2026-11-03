@@ -11,6 +11,7 @@ import {
   VR_ANGULAR_THRESHOLDS
 } from './wixarikaTheme.js';
 import { DEFAULT_WIXARIKA_BOOKS } from './WixarikaVRBookPanel.jsx';
+import { LUCIDE_SVG_PATHS, getLucideIconTexture } from './LucideVRIcon.jsx';
 
 describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
   describe('Angular Size Calculations (ISO 9241-210 & WebXR)', () => {
@@ -74,6 +75,13 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(compliance.passesAAA).toBe(true);
       expect(compliance.ratio).toBeGreaterThanOrEqual(10.0); // ~10.1:1
     });
+
+    it('Charcoal text on Cantera Clara surface must exceed WCAG AAA (>= 7.0:1)', () => {
+      const canteraVariant = WIXARIKA_VARIANTS.cantera;
+      const compliance = verifyWcagCompliance(canteraVariant.textColor, canteraVariant.bgIdle);
+      expect(compliance.passesAAA).toBe(true);
+      expect(compliance.ratio).toBeGreaterThanOrEqual(12.0); // ~14:1
+    });
   });
 
   describe('Wixárika Variants & Cultural Color Tokens', () => {
@@ -89,6 +97,25 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
         }
         expect(variant.chaquiraBeads.length).toBeGreaterThanOrEqual(3);
       }
+    });
+  });
+
+  describe('Lucide VR Vector Icons - No Emojis Compliance', () => {
+    it('should include all necessary Lucide SVG paths for museum navigation', () => {
+      const requiredIcons = [
+        'sun', 'utensils', 'sparkles', 'book-open',
+        'rotate-ccw', 'volume-2', 'compass', 'eye', 'eye-off', 'x', 'check', 'bookmark'
+      ];
+
+      for (const icon of requiredIcons) {
+        expect(LUCIDE_SVG_PATHS[icon], `Missing Lucide icon: ${icon}`).toBeDefined();
+        expect(LUCIDE_SVG_PATHS[icon].length).toBeGreaterThan(10);
+      }
+    });
+
+    it('getLucideIconTexture returns texture object with linear filters', () => {
+      const texture = getLucideIconTexture('compass', '#1c1917');
+      expect(texture).toBeDefined();
     });
   });
 

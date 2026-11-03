@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Text } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { MuseumModel } from './MuseumModel.jsx';
 import { WebXRManager } from './WebXRManager.jsx';
@@ -12,8 +12,10 @@ import {
   WixarikaVRCard,
   WixarikaVRFloatingPanel,
   WixarikaVRBookPanel,
+  WixarikaWelcomeDashboard,
   TsikuriDiamond
 } from './wixarika/index.js';
+import { SoundFX } from '../services/audioService.js';
 
 // Estaciones Culturales del Museo Wixarika (HU-03, HU-06 ISO 9241-210)
 // Posicionadas a distancias y alturas ergonómicas (Y=1.35-1.40m a la vista del usuario)
@@ -24,8 +26,8 @@ const CULTURAL_STATIONS = [
     subtitle: 'Cosmovisión y Panteón Sagrado',
     position: [0, 1.40, -2.6],
     rotation: [0, 0, 0],
-    variant: 'solar',
-    icon: '☀️',
+    variant: 'cantera',
+    iconName: 'sun',
     description: 'Panteón sagrado Wixárika: Tatewari (El Abuelo Fuego), Tayau (Padre Sol) y Kauyumari (El Venado Azul). Representan el equilibrio y la fuerza espiritual en Wirikuta.',
     book: 'Libro disponible: "El Fuego Sagrado y los Cantos del Mara\'akame" (Biblioteca Solón Argüello)',
     bookId: 'book-1'
@@ -36,8 +38,8 @@ const CULTURAL_STATIONS = [
     subtitle: 'Alimentos Tradicionales de Nayarit',
     position: [2.6, 1.40, 0],
     rotation: [0, -Math.PI / 2, 0],
-    variant: 'hikuri',
-    icon: '🌽',
+    variant: 'cantera',
+    iconName: 'utensils',
     description: 'Gastronomía ceremonial: Tortillas de maíz criollo, tamales en totomoxtle, caldo de toro nayarita, atole espumoso y perruri tradicional.',
     book: 'Libro disponible: "Sabores del Nayar: Etnobotánica y Cocina Tradicional" (Biblioteca Solón Argüello)',
     bookId: 'book-2'
@@ -48,23 +50,11 @@ const CULTURAL_STATIONS = [
     subtitle: 'Ceremonias de la Sierra',
     position: [-2.6, 1.40, 0],
     rotation: [0, Math.PI / 2, 0],
-    variant: 'water',
-    icon: '◈',
+    variant: 'cantera',
+    iconName: 'sparkles',
     description: 'Ciclo ceremonial: Fiesta del Tambor (Tepu) para la bendición de los niños, Tatei Neixa (Primeros Frutos) y la danza sagrada del Hikuri Neixa.',
     book: 'Libro disponible: "Fiestas Sagradas de la Sierra Wixárika" (Biblioteca Solón Argüello)',
     bookId: 'book-3'
-  },
-  {
-    id: 'biblioteca',
-    name: 'Kiosco y Fomento Lector',
-    subtitle: 'Biblioteca Solón Argüello',
-    position: [0, 1.35, 2.4],
-    rotation: [0, Math.PI, 0],
-    variant: 'kauyumari',
-    icon: '📚',
-    description: 'Módulo de enlace cultural. Al terminar tu recorrido inmersivo, solicita los libros recomendados en el mostrador físico de la biblioteca.',
-    book: 'Servicio: Préstamo a sala y a domicilio con credencial de lector activa.',
-    bookId: 'book-1'
   }
 ];
 
@@ -127,15 +117,15 @@ function LowerToggleButton({
     <group ref={groupRef}>
       <WixarikaVRButton
         id="btn-toggle-station-buttons"
-        label={showButtons ? 'Ocultar Botones' : 'Mostrar Botones'}
-        icon={showButtons ? '👁️‍🗨️' : '👁️'}
-        variant={showButtons ? 'obsidian' : 'solar'}
-        width={1.30}
-        height={0.22}
+        label={showButtons ? 'Ocultar Marcadores' : 'Mostrar Marcadores'}
+        iconName={showButtons ? 'eye-off' : 'eye'}
+        variant="cantera"
+        width={1.45}
+        height={0.24}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
         onClick={() => setShowButtons(!showButtons)}
-        showDiamonds={false}
+        showDiamonds={true}
       />
     </group>
   );
@@ -152,6 +142,7 @@ export function MuseumScene({
   const orbitRef = useRef();
   const cameraRigRef = useRef();
   const [activeStation, setActiveStation] = useState(null);
+  const [showBookCatalog, setShowBookCatalog] = useState(false);
   const [internalShowButtons, setInternalShowButtons] = useState(true);
 
   const showButtons = externalShowButtons !== undefined ? externalShowButtons : internalShowButtons;
@@ -171,6 +162,49 @@ export function MuseumScene({
   const getInteractiveObjects = useCallback(() => {
     return Array.from(interactiveRegistry.current);
   }, []);
+
+  // Navegación guiada hacia salas desde el Dashboard de Bienvenida
+  const handleSelectStation = useCallback((stationId) => {
+    const station = CULTURAL_STATIONS.find((s) => s.id === stationId);
+    if (!station) return;
+    setActiveStation(station);
+    setShowBookCatalog(false);
+
+    if (orbitRef.current) {
+      if (stationId === 'deidades') {
+        orbitRef.current.setAzimuthalAngle?.(Math.PI);
+      } else if (stationId === 'gastronomia') {
+        orbitRef.current.setAzimuthalAngle?.(-Math.PI / 2);
+      } else if (stationId === 'fiestas') {
+        orbitRef.current.setAzimuthalAngle?.(Math.PI / 2);
+      }
+      orbitRef.current.update?.();
+    }
+  }, []);
+
+  // Abrir catálogo de libros de la Biblioteca Solón Argüello
+  const handleOpenBooks = useCallback(() => {
+    setActiveStation(null);
+    setShowBookCatalog(true);
+    if (orbitRef.current) {
+      orbitRef.current.setAzimuthalAngle?.(0);
+      orbitRef.current.update?.();
+    }
+  }, []);
+
+  // Alternar audio cultural tradicional
+  const handleToggleAudio = useCallback(() => {
+    SoundFX.toggleAmbient();
+  }, []);
+
+  // Recentrar visor o controles
+  const handleRecenter = useCallback(() => {
+    if (onRecenterRef?.current) {
+      onRecenterRef.current();
+    } else if (orbitRef.current) {
+      orbitRef.current.reset?.();
+    }
+  }, [onRecenterRef]);
 
   return (
     <Canvas
@@ -205,40 +239,54 @@ export function MuseumScene({
         <MuseumModel />
       </Suspense>
 
-      {/* Estaciones Culturales e Interactivas con Gaze Fuse */}
+      {/* Dashboard Central de Bienvenida en el cuadrante Sur (+Z) */}
+      {!activeStation && !showBookCatalog && showButtons && (
+        <WixarikaWelcomeDashboard
+          position={[0, 1.45, 2.3]}
+          rotation={[0, Math.PI, 0]}
+          onSelectStation={handleSelectStation}
+          onOpenBooks={handleOpenBooks}
+          onToggleAudio={handleToggleAudio}
+          onRecenter={handleRecenter}
+          registerMesh={registerMesh}
+          unregisterMesh={unregisterMesh}
+        />
+      )}
+
+      {/* Catálogo de Fomento Lector (Biblioteca Solón Argüello) */}
+      {showBookCatalog && (
+        <group position={[0, 1.40, 2.2]} rotation={[0, Math.PI, 0]}>
+          <WixarikaVRBookPanel
+            onClose={() => setShowBookCatalog(false)}
+            registerMesh={registerMesh}
+            unregisterMesh={unregisterMesh}
+          />
+        </group>
+      )}
+
+      {/* Estaciones Culturales (Deidades, Gastronomía, Fiestas) con Gaze Fuse */}
       {CULTURAL_STATIONS.map((station) => {
         const isCurrentActive = activeStation?.id === station.id;
 
         return (
           <group key={station.id} position={station.position} rotation={station.rotation}>
             {/* Si NO esta activa la estación Y los botones están visibles, mostrar botón interactivo */}
-            {!activeStation && showButtons && (
+            {!activeStation && !showBookCatalog && showButtons && (
               <WixarikaVRButton
                 id={`btn-station-${station.id}`}
                 label={station.name}
-                icon={station.icon}
-                variant={station.variant || 'solar'}
-                width={1.55}
-                height={0.32}
+                iconName={station.iconName}
+                variant={station.variant || 'cantera'}
+                width={1.65}
+                height={0.34}
                 registerMesh={registerMesh}
                 unregisterMesh={unregisterMesh}
                 onClick={() => setActiveStation(station)}
               />
             )}
 
-            {/* Si esta estación es la Biblioteca, desplegar el Panel Completo de Libros a distancia óptima */}
-            {isCurrentActive && station.id === 'biblioteca' && (
-              <group position={[0, -0.05, 0.4]}>
-                <WixarikaVRBookPanel
-                  onClose={() => setActiveStation(null)}
-                  registerMesh={registerMesh}
-                  unregisterMesh={unregisterMesh}
-                />
-              </group>
-            )}
-
-            {/* Si esta estación es Deidades, Gastronomía o Fiestas, mostrar Tarjeta Cultural Wixárika */}
-            {isCurrentActive && station.id !== 'biblioteca' && (
+            {/* Tarjeta Cultural Wixárika al seleccionar la sala */}
+            {isCurrentActive && (
               <group position={[0, 0, 0.3]}>
                 <WixarikaVRCard
                   title={station.name}
@@ -253,25 +301,22 @@ export function MuseumScene({
                   actions={[
                     {
                       id: `btn-card-read-${station.id}`,
-                      label: 'Ver Libro en Kiosco [📚]',
-                      icon: '📖',
-                      variant: 'solar',
-                      onClick: () => {
-                        const biblioStation = CULTURAL_STATIONS.find((s) => s.id === 'biblioteca');
-                        if (biblioStation) setActiveStation(biblioStation);
-                      }
+                      label: 'Ver Libros Recomendados',
+                      iconName: 'book-open',
+                      variant: 'cantera',
+                      onClick: handleOpenBooks
                     },
                     {
                       id: `btn-card-close-${station.id}`,
-                      label: 'Cerrar [✕]',
-                      icon: '✕',
-                      variant: 'danger',
+                      label: 'Cerrar',
+                      iconName: 'x',
+                      variant: 'cantera',
                       onClick: () => setActiveStation(null)
                     }
                   ]}
                   width={2.40}
                   height={1.30}
-                  variant={station.variant || 'solar'}
+                  variant={station.variant || 'cantera'}
                   registerMesh={registerMesh}
                   unregisterMesh={unregisterMesh}
                 />

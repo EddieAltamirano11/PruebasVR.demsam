@@ -143,12 +143,12 @@ export function WixarikaVRBookPanel({
   return (
     <WixarikaVRFloatingPanel
       title="BIBLIOTECA PÚBLICA PROFESOR SOLÓN ARGÜELLO"
-      subtitle="Fondo de Culturas Vivas • Catálogo de Libros Wixárikas"
+      subtitle="Fondo de Culturas Vivas · Catálogo de Libros Wixárikas"
       width={2.65}
       height={2.10}
       position={position}
       rotation={rotation}
-      variant={currentBook?.variant || 'solar'}
+      variant="cantera"
       onClose={onClose}
       onRegister={onRegister}
       onUnregister={onUnregister}
@@ -161,8 +161,9 @@ export function WixarikaVRBookPanel({
       <group position={[0, 0.70, 0.01]}>
         <WixarikaVRButton
           id="btn-book-prev"
-          label="◀ Anterior"
-          variant="obsidian"
+          label="Anterior"
+          iconName="chevron-left"
+          variant="cantera"
           width={0.62}
           height={0.14}
           position={[-0.92, 0, 0]}
@@ -180,12 +181,12 @@ export function WixarikaVRBookPanel({
         <group position={[0, 0, 0]}>
           <mesh position={[0, 0, -0.001]}>
             <planeGeometry args={[0.92, 0.13]} />
-            <meshBasicMaterial color="#0b1324" transparent opacity={0.88} />
+            <meshBasicMaterial color="#f4ebd8" transparent opacity={0.95} />
           </mesh>
           <Text
             position={[0, 0.022, 0.002]}
             fontSize={0.046}
-            color="#fde047"
+            color="#1c1917"
             anchorX="center"
             anchorY="middle"
           >
@@ -194,7 +195,7 @@ export function WixarikaVRBookPanel({
           <Text
             position={[0, -0.028, 0.002]}
             fontSize={0.030}
-            color="#38bdf8"
+            color="#78350f"
             anchorX="center"
             anchorY="middle"
           >
@@ -204,8 +205,9 @@ export function WixarikaVRBookPanel({
 
         <WixarikaVRButton
           id="btn-book-next"
-          label="Siguiente ▶"
-          variant="obsidian"
+          label="Siguiente"
+          iconName="chevron-right"
+          variant="cantera"
           width={0.62}
           height={0.14}
           position={[0.92, 0, 0]}
@@ -234,22 +236,22 @@ export function WixarikaVRBookPanel({
               {
                 label: 'Disponibilidad',
                 value: loanStatus === 'success'
-                  ? '✓ ¡Apartado para tu visita! Pasa al mostrador con tu credencial.'
-                  : '🟢 Disponible para Préstamo a Sala y Domicilio'
+                  ? 'Apartado para tu visita. Pasa al mostrador con tu credencial.'
+                  : 'Disponible para Préstamo a Sala y Domicilio'
               }
             ]}
             actions={[
               {
                 id: 'btn-loan-request',
-                label: loanStatus === 'success' ? '✓ Libro Solicitado' : 'Apartar en Mostrador [📚]',
-                icon: loanStatus === 'success' ? '✓' : '📖',
-                variant: loanStatus === 'success' ? 'hikuri' : 'solar',
+                label: loanStatus === 'success' ? 'Libro Solicitado' : 'Apartar en Mostrador',
+                iconName: loanStatus === 'success' ? 'check' : 'bookmark',
+                variant: 'cantera',
                 onClick: handleLoan
               }
             ]}
             width={2.40}
             height={1.22}
-            variant={currentBook.variant || 'solar'}
+            variant="cantera"
             onRegister={onRegister}
             onUnregister={onUnregister}
             registerMesh={registerMesh}

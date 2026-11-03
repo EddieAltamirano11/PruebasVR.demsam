@@ -164,6 +164,19 @@ export const WIXARIKA_VARIANTS = {
     accentColor: '#ef4444',
     fuseColor: '#f87171',
     chaquiraBeads: ['#ef4444', '#f59e0b', '#ffffff', '#b91c1c']
+  },
+  cantera: {
+    id: 'cantera',
+    name: 'Cantera Ceremonial (Tonalidad Clara Museo)',
+    bgIdle: '#fbf8f0',
+    bgHover: '#f4ebd8',
+    bgActive: '#edd8b4',
+    borderColor: '#c69214',
+    borderGlow: '#d4af37',
+    textColor: '#1c1917',
+    accentColor: '#b45309',
+    fuseColor: '#b45309',
+    chaquiraBeads: ['#c69214', '#b45309', '#0284c7', '#ffffff']
   }
 };
 

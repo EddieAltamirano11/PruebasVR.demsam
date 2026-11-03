@@ -46,10 +46,15 @@ export function WixarikaVRFloatingPanel({
 }) {
   const panelRef = useRef();
   const { camera } = useThree();
+  const isCantera = variant === 'cantera';
   const theme = WIXARIKA_VARIANTS[variant] || WIXARIKA_VARIANTS.solar;
 
   const halfW = width / 2;
   const halfH = height / 2;
+
+  const baseBg = isCantera ? '#faf6eb' : '#070a14';
+  const titleColor = isCantera ? '#1c1917' : '#ffffff';
+  const subtitleColor = isCantera ? '#78350f' : theme.borderGlow;
 
   // Si billboard está activo, orientar suavemente hacia la cámara
   useFrame(() => {
@@ -66,10 +71,10 @@ export function WixarikaVRFloatingPanel({
         <meshBasicMaterial color={theme.borderColor} transparent opacity={0.7} />
       </mesh>
 
-      {/* 2. Placa de Obsidiana Sagrada translúcida (WCAG AAA) */}
+      {/* 2. Placa base (Cantera o Obsidiana Sagrada) */}
       <mesh position={[0, 0, -0.005]}>
         <planeGeometry args={[width, height]} />
-        <meshBasicMaterial color="#070a14" transparent opacity={0.96} />
+        <meshBasicMaterial color={baseBg} transparent opacity={0.96} />
       </mesh>
 
       {/* 3. Cenefa superior decorativa */}
@@ -102,12 +107,12 @@ export function WixarikaVRFloatingPanel({
         <Text
           position={[0, 0, 0]}
           fontSize={Math.max(0.060, Math.min(0.075, width * 0.030))}
-          color="#ffffff"
+          color={titleColor}
           anchorX="center"
           anchorY="middle"
           maxWidth={onClose ? width * 0.58 : width * 0.85}
           textAlign="center"
-          outlineWidth={0.002}
+          outlineWidth={isCantera ? 0 : 0.002}
           outlineColor="#040711"
         >
           {title}
@@ -117,7 +122,7 @@ export function WixarikaVRFloatingPanel({
           <Text
             position={[0, -0.085, 0]}
             fontSize={Math.max(0.036, Math.min(0.044, width * 0.017))}
-            color={theme.borderGlow}
+            color={subtitleColor}
             anchorX="center"
             anchorY="middle"
             maxWidth={onClose ? width * 0.62 : width * 0.88}
@@ -139,7 +144,8 @@ export function WixarikaVRFloatingPanel({
         <group position={[halfW - 0.28, halfH - 0.14, 0.008]}>
           <WixarikaVRButton
             id="panel-btn-close"
-            label="Cerrar [✕]"
+            label="Cerrar"
+            iconName="x"
             variant="danger"
             width={0.42}
             height={0.13}

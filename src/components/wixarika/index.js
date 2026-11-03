@@ -4,3 +4,5 @@ export * from './WixarikaVRButton.jsx';
 export * from './WixarikaVRCard.jsx';
 export * from './WixarikaVRFloatingPanel.jsx';
 export * from './WixarikaVRBookPanel.jsx';
+export * from './LucideVRIcon.jsx';
+export * from './WixarikaWelcomeDashboard.jsx';

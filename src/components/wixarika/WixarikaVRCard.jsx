@@ -49,12 +49,22 @@ export function WixarikaVRCard({
   fuseProgress = 0,
   distance = 2.2
 }) {
+  const isCantera = variant === 'cantera';
   const theme = WIXARIKA_VARIANTS[variant] || WIXARIKA_VARIANTS.solar;
 
   // Cálculos de espaciado y tamaños tipográficos
   const halfW = width / 2;
   const halfH = height / 2;
   const contentW = width * 0.88;
+
+  const baseBg = isCantera ? '#faf6eb' : (theme.bgIdle || '#070a14');
+  const titleColor = isCantera ? '#1c1917' : '#ffffff';
+  const subtitleColor = isCantera ? '#78350f' : theme.textColor;
+  const descColor = isCantera ? '#292524' : '#f8fafc';
+  const metaLabelColor = isCantera ? '#78350f' : theme.borderGlow;
+  const metaValColor = isCantera ? '#1c1917' : '#ffffff';
+  const badgeBg = isCantera ? '#f3ebd6' : theme.bgActive;
+  const badgeTextColor = isCantera ? '#78350f' : '#ffffff';
 
   // Tipografías ajustadas a tamaño angular ergonómico sin riesgo de solapamiento
   const titleSize = Math.max(0.048, Math.min(0.062, width * 0.032));
@@ -81,13 +91,13 @@ export function WixarikaVRCard({
         <meshBasicMaterial color={theme.borderColor} transparent opacity={0.85} />
       </mesh>
 
-      {/* 2. Placa base de Obsidiana Sagrada de alto contraste (WCAG AAA) */}
+      {/* 2. Placa base (Cantera o fondo sagrado) */}
       <mesh position={[0, 0, -0.002]}>
         <planeGeometry args={[width, height]} />
-        <meshBasicMaterial color="#070a14" transparent opacity={0.96} />
+        <meshBasicMaterial color={baseBg} transparent opacity={0.96} />
       </mesh>
 
-      {/* 3. Cenefa superior decorativa con chaquiras */}
+      {/* 3. Cenefa superior decorativa */}
       <mesh position={[0, halfH - 0.035, 0.001]}>
         <planeGeometry args={[width * 0.94, 0.025]} />
         <meshBasicMaterial color={theme.accentColor} transparent opacity={0.9} />
@@ -110,7 +120,7 @@ export function WixarikaVRCard({
             anchorY="middle"
             letterSpacing={0.08}
           >
-            {`✦ ${category.toUpperCase()}`}
+            {category.toUpperCase()}
           </Text>
         </group>
       )}
@@ -120,12 +130,12 @@ export function WixarikaVRCard({
           {/* Fondo de insignia */}
           <mesh position={[-0.16, 0, -0.001]}>
             <planeGeometry args={[0.38, 0.055]} />
-            <meshBasicMaterial color={theme.bgActive} transparent opacity={0.9} />
+            <meshBasicMaterial color={badgeBg} transparent opacity={0.9} />
           </mesh>
           <Text
             position={[-0.16, 0, 0.001]}
             fontSize={badgeSize * 0.9}
-            color="#ffffff"
+            color={badgeTextColor}
             anchorX="center"
             anchorY="middle"
           >
@@ -138,12 +148,12 @@ export function WixarikaVRCard({
       <Text
         position={[0, titleY, 0.005]}
         fontSize={titleSize}
-        color="#ffffff"
+        color={titleColor}
         anchorX="center"
         anchorY="top"
         maxWidth={contentW * 0.94}
         textAlign="center"
-        outlineWidth={0.002}
+        outlineWidth={isCantera ? 0 : 0.002}
         outlineColor="#040711"
         lineHeight={1.15}
       >
@@ -154,7 +164,7 @@ export function WixarikaVRCard({
         <Text
           position={[0, subtitleY, 0.005]}
           fontSize={subtitleSize}
-          color={theme.textColor}
+          color={subtitleColor}
           anchorX="center"
           anchorY="top"
           maxWidth={contentW * 0.94}
@@ -175,7 +185,7 @@ export function WixarikaVRCard({
         <Text
           position={[0, descY, 0.005]}
           fontSize={descSize}
-          color="#f8fafc"
+          color={descColor}
           anchorX="center"
           anchorY="top"
           maxWidth={contentW * 0.94}
@@ -197,7 +207,7 @@ export function WixarikaVRCard({
                 <Text
                   position={[-contentW / 2 + 0.04, 0, 0]}
                   fontSize={metaSize}
-                  color={theme.borderGlow}
+                  color={metaLabelColor}
                   anchorX="left"
                   anchorY="top"
                 >
@@ -206,7 +216,7 @@ export function WixarikaVRCard({
                 <Text
                   position={[-contentW / 2 + 0.38, 0, 0]}
                   fontSize={metaSize}
-                  color="#ffffff"
+                  color={metaValColor}
                   anchorX="left"
                   anchorY="top"
                   maxWidth={contentW - 0.42}
@@ -236,6 +246,7 @@ export function WixarikaVRCard({
                 id={action.id || `card-btn-${idx}`}
                 label={action.label}
                 icon={action.icon}
+                iconName={action.iconName}
                 variant={action.variant || variant}
                 width={btnWidth}
                 height={btnHeight}
