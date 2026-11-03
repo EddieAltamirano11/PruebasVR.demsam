@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { SoundFX } from '../../services/audioService.js';
@@ -43,7 +43,9 @@ function DashboardTile({
     e.stopPropagation?.();
     try {
       SoundFX.playClick();
-    } catch (_) {}
+    } catch (_err) {
+      // Audio playback best-effort
+    }
     if (onClick) onClick();
   };
 
@@ -51,7 +53,9 @@ function DashboardTile({
     e.stopPropagation?.();
     try {
       SoundFX.playHover();
-    } catch (_) {}
+    } catch (_err) {
+      // Audio playback best-effort
+    }
   };
 
   // Colores claros inspirados en cantera de Tepic y oro ceremonial

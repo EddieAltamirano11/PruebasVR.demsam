@@ -11,7 +11,8 @@ import {
   VR_ANGULAR_THRESHOLDS
 } from './wixarikaTheme.js';
 import { DEFAULT_WIXARIKA_BOOKS } from './WixarikaVRBookPanel.jsx';
-import { DEFAULT_WIXARIKA_VIDEOS } from './WixarikaVRVideoPanel.jsx';
+import { DEFAULT_WIXARIKA_VIDEOS, WixarikaVRVideoPanel } from './WixarikaVRVideoPanel.jsx';
+import { WixarikaWelcomeDashboard } from './WixarikaWelcomeDashboard.jsx';
 import { LUCIDE_SVG_PATHS, getLucideIconTexture } from './LucideVRIcon.jsx';
 
 describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
@@ -178,6 +179,11 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(CARDINAL_AZIMUTH.videos).toBe(Math.PI);
       expect(CARDINAL_AZIMUTH.gastronomia).toBeCloseTo(-Math.PI / 2);
       expect(CARDINAL_AZIMUTH.fiestas).toBeCloseTo(Math.PI / 2);
+    });
+
+    it('WixarikaWelcomeDashboard and WixarikaVRVideoPanel should be valid functional components', () => {
+      expect(typeof WixarikaWelcomeDashboard).toBe('function');
+      expect(typeof WixarikaVRVideoPanel).toBe('function');
     });
   });
 });

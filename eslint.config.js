@@ -3,6 +3,7 @@ import js from '@eslint/js';
 export default [
   js.configs.recommended,
   {
+    files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -25,11 +26,21 @@ export default [
         clearInterval: 'readonly',
         requestAnimationFrame: 'readonly',
         cancelAnimationFrame: 'readonly',
-        process: 'readonly'
+        process: 'readonly',
+        Image: 'readonly',
+        Blob: 'readonly',
+        URL: 'readonly'
       }
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^(React|[A-Z].*|_.*)$',
+          caughtErrorsIgnorePattern: '^_'
+        }
+      ],
       'no-undef': 'error'
     }
   },
