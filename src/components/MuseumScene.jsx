@@ -8,7 +8,7 @@ import { StereoVRManager } from './StereoVRManager.jsx';
 import { GazeReticle } from './GazeReticle.jsx';
 
 // Estaciones Culturales del Museo Wixarika (HU-03, HU-06 ISO 9241-210)
-const CULTURAL_STATIONS = [
+export const CULTURAL_STATIONS = [
   {
     id: 'deidades',
     name: 'Pabellón de Deidades',
@@ -71,11 +71,30 @@ export function MuseumScene({
   vrMode,
   setVrMode,
   onWebXRTriggerRef,
-  onRecenterRef
+  onRecenterRef,
+  activeStation: externalActiveStation,
+  onActiveStationChange,
+  onOpenBooksPanel
 }) {
   const orbitRef = useRef();
   const cameraRigRef = useRef();
-  const [activeStation, setActiveStation] = useState(null);
+  const [internalActiveStation, setInternalActiveStation] = useState(null);
+
+  // Soporta tanto estado controlado por props como estado interno
+  const activeStation =
+    externalActiveStation !== undefined ? externalActiveStation : internalActiveStation;
+
+  const handleSelectStation = useCallback(
+    (station) => {
+      if (externalActiveStation === undefined) {
+        setInternalActiveStation(station);
+      }
+      if (onActiveStationChange) {
+        onActiveStationChange(station);
+      }
+    },
+    [externalActiveStation, onActiveStationChange]
+  );
 
   // Registro de objetos interactivos para el raycaster de Gaze Fuse
   const interactiveRegistry = useRef(new Set());
@@ -134,7 +153,7 @@ export function MuseumScene({
             {/* Si NO esta activa la tarjeta, mostrar el punto de enfoque interactivo */}
             {!activeStation && (
               <InteractiveTriggerMesh
-                onSelect={() => setActiveStation(station)}
+                onSelect={() => handleSelectStation(station)}
                 registerMesh={registerMesh}
                 unregisterMesh={unregisterMesh}
               >
@@ -244,20 +263,49 @@ export function MuseumScene({
                   {station.book}
                 </Text>
 
+                {/* Botón 3D para Abrir Panel Lateral de Libros Recomendados (Sprint 3 - Luis Carlos Durán) */}
+                <InteractiveTriggerMesh
+                  onSelect={() => (onOpenBooksPanel ? onOpenBooksPanel(station) : null)}
+                  registerMesh={registerMesh}
+                  unregisterMesh={unregisterMesh}
+                >
+                  {(booksMeshRef) => (
+                    <group position={[-0.56, -0.52, 0.02]}>
+                      <mesh position={[0, 0, -0.001]}>
+                        <planeGeometry args={[1.22, 0.22]} />
+                        <meshBasicMaterial color="#e5a00d" transparent opacity={0.8} />
+                      </mesh>
+                      <mesh ref={booksMeshRef}>
+                        <planeGeometry args={[1.2, 0.2]} />
+                        <meshBasicMaterial color="#0b1a30" transparent opacity={0.95} />
+                      </mesh>
+                      <Text
+                        position={[0, 0, 0.01]}
+                        fontSize={0.058}
+                        color="#fde047"
+                        anchorX="center"
+                        anchorY="middle"
+                      >
+                        📖 Libros Recomendados
+                      </Text>
+                    </group>
+                  )}
+                </InteractiveTriggerMesh>
+
                 {/* Botón de Cerrar interactivo con Gaze Fuse */}
                 <InteractiveTriggerMesh
-                  onSelect={() => setActiveStation(null)}
+                  onSelect={() => handleSelectStation(null)}
                   registerMesh={registerMesh}
                   unregisterMesh={unregisterMesh}
                 >
                   {(closeMeshRef) => (
-                    <group position={[0, -0.52, 0.02]}>
+                    <group position={[0.64, -0.52, 0.02]}>
                       <mesh position={[0, 0, -0.001]}>
-                        <planeGeometry args={[0.92, 0.22]} />
+                        <planeGeometry args={[0.88, 0.22]} />
                         <meshBasicMaterial color="#ef4444" transparent opacity={0.7} />
                       </mesh>
                       <mesh ref={closeMeshRef}>
-                        <planeGeometry args={[0.9, 0.2]} />
+                        <planeGeometry args={[0.86, 0.2]} />
                         <meshBasicMaterial color="#1e293b" transparent opacity={0.92} />
                       </mesh>
                       <Text
