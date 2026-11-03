@@ -171,6 +171,18 @@ export function WixarikaWelcomeDashboard({
   const panelWidth = 3.20;
   const panelHeight = 1.95;
 
+  const handleSelectDeidades = useCallback(() => {
+    if (onSelectStation) onSelectStation('deidades');
+  }, [onSelectStation]);
+
+  const handleSelectGastronomia = useCallback(() => {
+    if (onSelectStation) onSelectStation('gastronomia');
+  }, [onSelectStation]);
+
+  const handleSelectFiestas = useCallback(() => {
+    if (onSelectStation) onSelectStation('fiestas');
+  }, [onSelectStation]);
+
   return (
     <group position={position} rotation={rotation}>
       {/* 1. Marco exterior de madera de nogal ceremonial */}
@@ -276,6 +288,7 @@ export function WixarikaWelcomeDashboard({
       <group position={[0, 0.14, 0.005]}>
         {/* Opción A: Libros recomendados de la Biblioteca */}
         <DashboardTile
+          key="btn-dash-books"
           id="btn-dash-books"
           title="Libros Recomendados"
           iconName="book-open"
@@ -294,6 +307,7 @@ export function WixarikaWelcomeDashboard({
 
         {/* Opción B: Audio cultural tradicional */}
         <DashboardTile
+          key="btn-dash-audio"
           id="btn-dash-audio"
           title="Audio Cultural"
           iconName="volume-2"
@@ -312,6 +326,7 @@ export function WixarikaWelcomeDashboard({
 
         {/* Opción C: Videos Culturales (sustituye al botón de recalibrar) */}
         <DashboardTile
+          key="btn-dash-videos"
           id="btn-dash-videos"
           title="Videos Culturales"
           iconName="video"
@@ -333,6 +348,7 @@ export function WixarikaWelcomeDashboard({
       <group position={[0, -0.42, 0.005]}>
         {/* Pabellón 1: Deidades (Norte) */}
         <DashboardTile
+          key="btn-dash-deidades"
           id="btn-dash-deidades"
           title="Panteón de Deidades"
           iconName="sun"
@@ -342,7 +358,7 @@ export function WixarikaWelcomeDashboard({
           iconSize={0.12}
           titleSize={0.070}
           position={[-1.00, 0, 0]}
-          onClick={() => onSelectStation && onSelectStation('deidades')}
+          onClick={handleSelectDeidades}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
           hoveredId={hoveredId}
@@ -351,6 +367,7 @@ export function WixarikaWelcomeDashboard({
 
         {/* Pabellón 2: Gastronomía (Este) */}
         <DashboardTile
+          key="btn-dash-gastronomia"
           id="btn-dash-gastronomia"
           title="Gastronomía Tradicional"
           iconName="utensils"
@@ -360,7 +377,7 @@ export function WixarikaWelcomeDashboard({
           iconSize={0.12}
           titleSize={0.070}
           position={[0, 0, 0]}
-          onClick={() => onSelectStation && onSelectStation('gastronomia')}
+          onClick={handleSelectGastronomia}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
           hoveredId={hoveredId}
@@ -369,6 +386,7 @@ export function WixarikaWelcomeDashboard({
 
         {/* Pabellón 3: Fiestas (Oeste) */}
         <DashboardTile
+          key="btn-dash-fiestas"
           id="btn-dash-fiestas"
           title="Fiestas y Ceremonias"
           iconName="sparkles"
@@ -378,7 +396,7 @@ export function WixarikaWelcomeDashboard({
           iconSize={0.12}
           titleSize={0.070}
           position={[1.00, 0, 0]}
-          onClick={() => onSelectStation && onSelectStation('fiestas')}
+          onClick={handleSelectFiestas}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
           hoveredId={hoveredId}

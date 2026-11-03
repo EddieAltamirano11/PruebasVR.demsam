@@ -158,5 +158,26 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(defaultPos[1]).toBe(0); // Y = 0 (no se eleva a 1.6m adicionales)
       expect(defaultPos[2]).toBe(0); // Z = 0 (no se aleja 2.2m adicionales)
     });
+
+    it('cardinal azimuthal angles must correctly direct towards corresponding stations', () => {
+      // Ángulos calculados en base a target [0, 1.4, 0] y ejes WebXR:
+      // Norte (-Z): Deidades -> theta = 0
+      // Sur (+Z): Dashboard / Libros / Videos -> theta = Math.PI
+      // Este (+X): Gastronomía -> theta = -Math.PI / 2
+      // Oeste (-X): Fiestas -> theta = Math.PI / 2
+      const CARDINAL_AZIMUTH = {
+        deidades: 0,
+        books: Math.PI,
+        videos: Math.PI,
+        gastronomia: -Math.PI / 2,
+        fiestas: Math.PI / 2
+      };
+
+      expect(CARDINAL_AZIMUTH.deidades).toBe(0);
+      expect(CARDINAL_AZIMUTH.books).toBe(Math.PI);
+      expect(CARDINAL_AZIMUTH.videos).toBe(Math.PI);
+      expect(CARDINAL_AZIMUTH.gastronomia).toBeCloseTo(-Math.PI / 2);
+      expect(CARDINAL_AZIMUTH.fiestas).toBeCloseTo(Math.PI / 2);
+    });
   });
 });

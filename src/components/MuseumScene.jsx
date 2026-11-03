@@ -175,34 +175,39 @@ export function MuseumScene({
 
     if (orbitRef.current) {
       if (stationId === 'deidades') {
-        orbitRef.current.setAzimuthalAngle?.(Math.PI);
+        // Pabellón de Deidades ubicado en el cuadrante Norte (-Z)
+        orbitRef.current.setAzimuthalAngle?.(0);
       } else if (stationId === 'gastronomia') {
+        // Pabellón Gastronómico ubicado en el cuadrante Este (+X)
         orbitRef.current.setAzimuthalAngle?.(-Math.PI / 2);
       } else if (stationId === 'fiestas') {
+        // Pabellón de Fiestas ubicado en el cuadrante Oeste (-X)
         orbitRef.current.setAzimuthalAngle?.(Math.PI / 2);
       }
       orbitRef.current.update?.();
     }
   }, []);
 
-  // Abrir catálogo de libros de la Biblioteca Solón Argüello
+  // Abrir catálogo de libros de la Biblioteca Solón Argüello en el cuadrante Sur (+Z)
   const handleOpenBooks = useCallback(() => {
     setActiveStation(null);
     setShowVideoCatalog(false);
     setShowBookCatalog(true);
     if (orbitRef.current) {
-      orbitRef.current.setAzimuthalAngle?.(0);
+      // Panel de libros orientado en el cuadrante Sur (+Z)
+      orbitRef.current.setAzimuthalAngle?.(Math.PI);
       orbitRef.current.update?.();
     }
   }, []);
 
-  // Abrir catálogo de videos culturales
+  // Abrir catálogo de videos culturales en el cuadrante Sur (+Z)
   const handleOpenVideos = useCallback(() => {
     setActiveStation(null);
     setShowBookCatalog(false);
     setShowVideoCatalog(true);
     if (orbitRef.current) {
-      orbitRef.current.setAzimuthalAngle?.(0);
+      // Panel de videos orientado en el cuadrante Sur (+Z)
+      orbitRef.current.setAzimuthalAngle?.(Math.PI);
       orbitRef.current.update?.();
     }
   }, []);
@@ -212,12 +217,13 @@ export function MuseumScene({
     SoundFX.toggleAmbient();
   }, []);
 
-  // Recentrar visor o controles
+  // Recentrar visor o controles hacia el Dashboard de Bienvenida (Sur +Z)
   const handleRecenter = useCallback(() => {
     if (onRecenterRef?.current) {
       onRecenterRef.current();
     } else if (orbitRef.current) {
-      orbitRef.current.reset?.();
+      orbitRef.current.setAzimuthalAngle?.(Math.PI);
+      orbitRef.current.update?.();
     }
   }, [onRecenterRef]);
 
@@ -227,11 +233,11 @@ export function MuseumScene({
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       dpr={[1, 2]}
     >
-      {/* Rig de camara para modo normal y modo VR */}
+      {/* Rig de camara para modo normal y modo VR (iniciando hacia el Dashboard en Sur +Z) */}
       <group ref={cameraRigRef} position={[0, 0, 0]}>
         <PerspectiveCamera
           makeDefault
-          position={vrMode ? [0, 1.6, 0] : [0, 1.6, 2.5]}
+          position={vrMode ? [0, 1.6, 0] : [0, 1.6, -2.5]}
           fov={75}
           near={0.05}
           far={1000}
