@@ -13,7 +13,7 @@ import {
   EyeOff
 } from 'lucide-react';
 
-export function LoginView({ onBypassDemo }) {
+export function LoginView({ onBypassDemo, onBackToMuseum }) {
   const { signIn, signUp, resetPassword } = useAuth();
 
   const [mode, setMode] = useState('login'); // 'login' | 'register' | 'forgot' | 'email-sent'
@@ -282,7 +282,7 @@ export function LoginView({ onBypassDemo }) {
             )}
 
             {/* MODO ACCESO RÁPIDO / DEMO */}
-            <div className="mt-6 pt-4 border-t border-slate-800 text-center">
+            <div className="mt-6 pt-4 border-t border-slate-800 flex flex-col items-center gap-2 text-center">
               <button
                 type="button"
                 onClick={onBypassDemo}
@@ -291,6 +291,15 @@ export function LoginView({ onBypassDemo }) {
                 <ShieldCheck size={14} className="text-[#E5A00D]" />
                 <span>Explorar Panel como Administrador Demo</span>
               </button>
+              {onBackToMuseum && (
+                <button
+                  type="button"
+                  onClick={onBackToMuseum}
+                  className="text-xs text-slate-400 hover:text-[#38bdf8] transition-colors underline cursor-pointer"
+                >
+                  ← Volver a la Experiencia 3D del Museo
+                </button>
+              )}
             </div>
           </>
         )}
