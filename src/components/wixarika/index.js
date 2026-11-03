@@ -6,3 +6,4 @@ export * from './WixarikaVRFloatingPanel.jsx';
 export * from './WixarikaVRBookPanel.jsx';
 export * from './LucideVRIcon.jsx';
 export * from './WixarikaWelcomeDashboard.jsx';
+export * from './WixarikaVRVideoPanel.jsx';

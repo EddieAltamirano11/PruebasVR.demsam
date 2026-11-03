@@ -139,7 +139,7 @@ export default function App() {
                 </>
               )}
             </svg>
-            <span>{showButtons ? 'Ocultar Marcadores' : 'Mostrar Marcadores'}</span>
+            <span>{showButtons ? 'Ocultar Menús' : 'Mostrar Menús'}</span>
           </button>
 
           {/* Boton flotante para entrar al modo VR */}

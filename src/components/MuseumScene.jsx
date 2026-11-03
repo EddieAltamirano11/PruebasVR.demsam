@@ -12,6 +12,7 @@ import {
   WixarikaVRCard,
   WixarikaVRFloatingPanel,
   WixarikaVRBookPanel,
+  WixarikaVRVideoPanel,
   WixarikaWelcomeDashboard,
   TsikuriDiamond
 } from './wixarika/index.js';
@@ -117,7 +118,7 @@ function LowerToggleButton({
     <group ref={groupRef}>
       <WixarikaVRButton
         id="btn-toggle-station-buttons"
-        label={showButtons ? 'Ocultar Marcadores' : 'Mostrar Marcadores'}
+        label={showButtons ? 'Ocultar Menús' : 'Mostrar Menús'}
         iconName={showButtons ? 'eye-off' : 'eye'}
         variant="cantera"
         width={1.45}
@@ -143,6 +144,7 @@ export function MuseumScene({
   const cameraRigRef = useRef();
   const [activeStation, setActiveStation] = useState(null);
   const [showBookCatalog, setShowBookCatalog] = useState(false);
+  const [showVideoCatalog, setShowVideoCatalog] = useState(false);
   const [internalShowButtons, setInternalShowButtons] = useState(true);
 
   const showButtons = externalShowButtons !== undefined ? externalShowButtons : internalShowButtons;
@@ -169,6 +171,7 @@ export function MuseumScene({
     if (!station) return;
     setActiveStation(station);
     setShowBookCatalog(false);
+    setShowVideoCatalog(false);
 
     if (orbitRef.current) {
       if (stationId === 'deidades') {
@@ -185,7 +188,19 @@ export function MuseumScene({
   // Abrir catálogo de libros de la Biblioteca Solón Argüello
   const handleOpenBooks = useCallback(() => {
     setActiveStation(null);
+    setShowVideoCatalog(false);
     setShowBookCatalog(true);
+    if (orbitRef.current) {
+      orbitRef.current.setAzimuthalAngle?.(0);
+      orbitRef.current.update?.();
+    }
+  }, []);
+
+  // Abrir catálogo de videos culturales
+  const handleOpenVideos = useCallback(() => {
+    setActiveStation(null);
+    setShowBookCatalog(false);
+    setShowVideoCatalog(true);
     if (orbitRef.current) {
       orbitRef.current.setAzimuthalAngle?.(0);
       orbitRef.current.update?.();
@@ -240,13 +255,14 @@ export function MuseumScene({
       </Suspense>
 
       {/* Dashboard Central de Bienvenida en el cuadrante Sur (+Z) */}
-      {!activeStation && !showBookCatalog && showButtons && (
+      {!activeStation && !showBookCatalog && !showVideoCatalog && showButtons && (
         <WixarikaWelcomeDashboard
           position={[0, 1.48, 2.10]}
           rotation={[0, Math.PI, 0]}
           onSelectStation={handleSelectStation}
           onOpenBooks={handleOpenBooks}
           onToggleAudio={handleToggleAudio}
+          onOpenVideos={handleOpenVideos}
           onRecenter={handleRecenter}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
@@ -264,6 +280,17 @@ export function MuseumScene({
         </group>
       )}
 
+      {/* Catálogo de Videos Culturales (Biblioteca Solón Argüello) */}
+      {showVideoCatalog && (
+        <group position={[0, 1.45, 2.05]} rotation={[0, Math.PI, 0]}>
+          <WixarikaVRVideoPanel
+            onClose={() => setShowVideoCatalog(false)}
+            registerMesh={registerMesh}
+            unregisterMesh={unregisterMesh}
+          />
+        </group>
+      )}
+
       {/* Estaciones Culturales (Deidades, Gastronomía, Fiestas) con Gaze Fuse */}
       {CULTURAL_STATIONS.map((station) => {
         const isCurrentActive = activeStation?.id === station.id;
@@ -271,7 +298,7 @@ export function MuseumScene({
         return (
           <group key={station.id} position={station.position} rotation={station.rotation}>
             {/* Si NO esta activa la estación Y los botones están visibles, mostrar botón interactivo */}
-            {!activeStation && !showBookCatalog && showButtons && (
+            {!activeStation && !showBookCatalog && !showVideoCatalog && showButtons && (
               <WixarikaVRButton
                 id={`btn-station-${station.id}`}
                 label={station.name}

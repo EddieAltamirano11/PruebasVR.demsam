@@ -12,14 +12,12 @@ import { LucideVRIcon } from './LucideVRIcon.jsx';
 function DashboardTile({
   id,
   title,
-  subtitle,
   iconName,
   accentColor = '#b45309',
   width = 0.94,
-  height = 0.46,
-  iconSize = 0.115,
-  titleSize = 0.068,
-  subtitleSize = 0.046,
+  height = 0.44,
+  iconSize = 0.12,
+  titleSize = 0.070,
   position = [0, 0, 0],
   onClick,
   registerMesh,
@@ -62,10 +60,9 @@ function DashboardTile({
   const currentBg = isHovered ? bgHover : bgIdle;
   const borderColor = isHovered ? '#b45309' : '#d4af37';
 
-  const halfH = height / 2;
-  const iconY = halfH * 0.44;
-  const titleY = -halfH * 0.12;
-  const subtitleY = -halfH * 0.54;
+  // Centrado vertical limpio de icono y título (sin subtítulo)
+  const iconY = 0.065;
+  const titleY = -0.075;
 
   return (
     <group position={position}>
@@ -136,7 +133,7 @@ function DashboardTile({
         strokeWidth={2.4}
       />
 
-      {/* Título de la opción en carbón oscuro de gran tamaño */}
+      {/* Título de la opción en carbón oscuro de gran tamaño (centrado) */}
       <Text
         position={[0, titleY, 0.005]}
         fontSize={titleSize}
@@ -147,19 +144,6 @@ function DashboardTile({
         textAlign="center"
       >
         {title}
-      </Text>
-
-      {/* Subtítulo descriptivo en tono madera cálida */}
-      <Text
-        position={[0, subtitleY, 0.005]}
-        fontSize={subtitleSize}
-        color="#78350f"
-        anchorX="center"
-        anchorY="middle"
-        maxWidth={width * 0.90}
-        textAlign="center"
-      >
-        {subtitle}
       </Text>
     </group>
   );
@@ -176,6 +160,7 @@ export function WixarikaWelcomeDashboard({
   onSelectStation,
   onOpenBooks,
   onToggleAudio,
+  onOpenVideos,
   onRecenter,
   registerMesh,
   unregisterMesh,
@@ -287,83 +272,18 @@ export function WixarikaWelcomeDashboard({
         </mesh>
       </group>
 
-      {/* 6. Fila Principal: Explorar las 3 Salas / Pabellones Cardinales */}
+      {/* 6. Primera Fila: Servicios y Herramientas Culturales (Libros, Audio, Videos) */}
       <group position={[0, 0.14, 0.005]}>
-        {/* Pabellón 1: Deidades (Norte) */}
-        <DashboardTile
-          id="btn-dash-deidades"
-          title="Panteón de Deidades"
-          subtitle="Norte · Tatewari, Tayau y Venado"
-          iconName="sun"
-          accentColor="#b45309"
-          width={0.94}
-          height={0.48}
-          iconSize={0.115}
-          titleSize={0.068}
-          subtitleSize={0.044}
-          position={[-1.00, 0, 0]}
-          onClick={() => onSelectStation && onSelectStation('deidades')}
-          registerMesh={registerMesh}
-          unregisterMesh={unregisterMesh}
-          hoveredId={hoveredId}
-          fuseProgress={fuseProgress}
-        />
-
-        {/* Pabellón 2: Gastronomía (Este) */}
-        <DashboardTile
-          id="btn-dash-gastronomia"
-          title="Gastronomía Tradicional"
-          subtitle="Este · Maíz sagrado, tamales y caldo"
-          iconName="utensils"
-          accentColor="#a16207"
-          width={0.94}
-          height={0.48}
-          iconSize={0.115}
-          titleSize={0.068}
-          subtitleSize={0.044}
-          position={[0, 0, 0]}
-          onClick={() => onSelectStation && onSelectStation('gastronomia')}
-          registerMesh={registerMesh}
-          unregisterMesh={unregisterMesh}
-          hoveredId={hoveredId}
-          fuseProgress={fuseProgress}
-        />
-
-        {/* Pabellón 3: Fiestas (Oeste) */}
-        <DashboardTile
-          id="btn-dash-fiestas"
-          title="Fiestas y Ceremonias"
-          subtitle="Oeste · Tambor Tepu, Tatei Neixa"
-          iconName="sparkles"
-          accentColor="#047857"
-          width={0.94}
-          height={0.48}
-          iconSize={0.115}
-          titleSize={0.068}
-          subtitleSize={0.044}
-          position={[1.00, 0, 0]}
-          onClick={() => onSelectStation && onSelectStation('fiestas')}
-          registerMesh={registerMesh}
-          unregisterMesh={unregisterMesh}
-          hoveredId={hoveredId}
-          fuseProgress={fuseProgress}
-        />
-      </group>
-
-      {/* 7. Fila Secundaria: Servicios Culturales y Controles */}
-      <group position={[0, -0.42, 0.005]}>
         {/* Opción A: Libros recomendados de la Biblioteca */}
         <DashboardTile
           id="btn-dash-books"
           title="Libros Recomendados"
-          subtitle="Catálogo Fomento Lector Solón Argüello"
           iconName="book-open"
           accentColor="#0284c7"
           width={0.94}
           height={0.44}
-          iconSize={0.105}
-          titleSize={0.064}
-          subtitleSize={0.042}
+          iconSize={0.12}
+          titleSize={0.070}
           position={[-1.00, 0, 0]}
           onClick={onOpenBooks}
           registerMesh={registerMesh}
@@ -376,14 +296,12 @@ export function WixarikaWelcomeDashboard({
         <DashboardTile
           id="btn-dash-audio"
           title="Audio Cultural"
-          subtitle="Ambiente y Cantos Ceremoniales"
           iconName="volume-2"
           accentColor="#57534e"
           width={0.94}
           height={0.44}
-          iconSize={0.105}
-          titleSize={0.064}
-          subtitleSize={0.042}
+          iconSize={0.12}
+          titleSize={0.070}
           position={[0, 0, 0]}
           onClick={onToggleAudio}
           registerMesh={registerMesh}
@@ -392,20 +310,75 @@ export function WixarikaWelcomeDashboard({
           fuseProgress={fuseProgress}
         />
 
-        {/* Opción C: Recentrar orientación de la vista */}
+        {/* Opción C: Videos Culturales (sustituye al botón de recalibrar) */}
         <DashboardTile
-          id="btn-dash-recenter"
-          title="Recentrar Visor"
-          subtitle="Calibrar orientación y mirada VR"
-          iconName="rotate-ccw"
-          accentColor="#57534e"
+          id="btn-dash-videos"
+          title="Videos Culturales"
+          iconName="video"
+          accentColor="#b45309"
           width={0.94}
           height={0.44}
-          iconSize={0.105}
-          titleSize={0.064}
-          subtitleSize={0.042}
+          iconSize={0.12}
+          titleSize={0.070}
           position={[1.00, 0, 0]}
-          onClick={onRecenter}
+          onClick={onOpenVideos}
+          registerMesh={registerMesh}
+          unregisterMesh={unregisterMesh}
+          hoveredId={hoveredId}
+          fuseProgress={fuseProgress}
+        />
+      </group>
+
+      {/* 7. Segunda Fila: Salas y Pabellones Cardinales (Deidades, Gastronomía, Fiestas) */}
+      <group position={[0, -0.42, 0.005]}>
+        {/* Pabellón 1: Deidades (Norte) */}
+        <DashboardTile
+          id="btn-dash-deidades"
+          title="Panteón de Deidades"
+          iconName="sun"
+          accentColor="#b45309"
+          width={0.94}
+          height={0.44}
+          iconSize={0.12}
+          titleSize={0.070}
+          position={[-1.00, 0, 0]}
+          onClick={() => onSelectStation && onSelectStation('deidades')}
+          registerMesh={registerMesh}
+          unregisterMesh={unregisterMesh}
+          hoveredId={hoveredId}
+          fuseProgress={fuseProgress}
+        />
+
+        {/* Pabellón 2: Gastronomía (Este) */}
+        <DashboardTile
+          id="btn-dash-gastronomia"
+          title="Gastronomía Tradicional"
+          iconName="utensils"
+          accentColor="#a16207"
+          width={0.94}
+          height={0.44}
+          iconSize={0.12}
+          titleSize={0.070}
+          position={[0, 0, 0]}
+          onClick={() => onSelectStation && onSelectStation('gastronomia')}
+          registerMesh={registerMesh}
+          unregisterMesh={unregisterMesh}
+          hoveredId={hoveredId}
+          fuseProgress={fuseProgress}
+        />
+
+        {/* Pabellón 3: Fiestas (Oeste) */}
+        <DashboardTile
+          id="btn-dash-fiestas"
+          title="Fiestas y Ceremonias"
+          iconName="sparkles"
+          accentColor="#047857"
+          width={0.94}
+          height={0.44}
+          iconSize={0.12}
+          titleSize={0.070}
+          position={[1.00, 0, 0]}
+          onClick={() => onSelectStation && onSelectStation('fiestas')}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
           hoveredId={hoveredId}

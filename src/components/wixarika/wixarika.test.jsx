@@ -11,6 +11,7 @@ import {
   VR_ANGULAR_THRESHOLDS
 } from './wixarikaTheme.js';
 import { DEFAULT_WIXARIKA_BOOKS } from './WixarikaVRBookPanel.jsx';
+import { DEFAULT_WIXARIKA_VIDEOS } from './WixarikaVRVideoPanel.jsx';
 import { LUCIDE_SVG_PATHS, getLucideIconTexture } from './LucideVRIcon.jsx';
 
 describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
@@ -104,7 +105,7 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
     it('should include all necessary Lucide SVG paths for museum navigation', () => {
       const requiredIcons = [
         'sun', 'utensils', 'sparkles', 'book-open',
-        'rotate-ccw', 'volume-2', 'compass', 'eye', 'eye-off', 'x', 'check', 'bookmark'
+        'rotate-ccw', 'volume-2', 'compass', 'eye', 'eye-off', 'x', 'check', 'bookmark', 'video', 'play'
       ];
 
       for (const icon of requiredIcons) {
@@ -116,6 +117,21 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
     it('getLucideIconTexture returns texture object with linear filters', () => {
       const texture = getLucideIconTexture('compass', '#1c1917');
       expect(texture).toBeDefined();
+    });
+  });
+
+  describe('Biblioteca Solón Argüello - Video Catalogue Integrity', () => {
+    it('should have a curated list of Wixárika cultural documentaries', () => {
+      expect(DEFAULT_WIXARIKA_VIDEOS.length).toBeGreaterThanOrEqual(4);
+
+      DEFAULT_WIXARIKA_VIDEOS.forEach((video) => {
+        expect(video.id).toBeDefined();
+        expect(video.title).toBeTruthy();
+        expect(video.director).toBeTruthy();
+        expect(video.duration).toBeTruthy();
+        expect(video.category).toBeTruthy();
+        expect(video.synopsis).toBeTruthy();
+      });
     });
   });
 
