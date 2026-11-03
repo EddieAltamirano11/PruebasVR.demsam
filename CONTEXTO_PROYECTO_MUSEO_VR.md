@@ -39,19 +39,21 @@
      * `pointLight` cálida en `[0, 4, 0]` y `hemisphereLight` de rebote suelo-cielo.
 
 3. **`src/components/MuseumModel.jsx`**:
-   * Carga declarativa mediante `@react-three/drei` del modelo `public/museo_wixarika_v13.glb`.
-   * Incluye `useGLTF.preload('./museo_wixarika_v13.glb')` para descarga anticipada en red.
+   * Carga declarativa mediante `@react-three/drei` del modelo `public/museo_wixarika_v14.glb`.
+   * Incluye `useGLTF.preload('./museo_wixarika_v14.glb')` para descarga anticipada en red.
    * Inserción limpia con `<primitive object={scene} dispose={null} />`.
 
 ---
 
 ## 3. Modelo 3D y Recursos (`public/`)
 
-* **`public/museo_wixarika_v13.glb`** (y versiones previas v12, base):
+* **`public/museo_wixarika_v14.glb`** (y versiones previas v13, v12, base):
   * Modelo GLB binario 100% autónomo (12.25 MB, sin dependencias externas de texturas).
-  * Contiene los 4 cuadrantes cardinales completos, el óculo sagrado de *Tatewari* en el techo cónico y el tapete ceremonial circular en el suelo.
-  * **Gastronomía:** Doble mesa curva ($R = 5.25\text{ m}$) con los 6 platillos sagrados (*Tortillas, Tamales, Atole, Caldo de Toro, Maíz Tostado, Perruri*) y repisa de elotes cocidos. Vajilla tradicional modelada en 3D (ollas vidriadas, cazuelas, comales, jícaras).
-  * **Letreros gastronómicos:** Dimensiones $66\text{ cm} \times 22\text{ cm}$ inclinados $-26^\circ$ hacia la vista del espectador ($Y = 1.60\text{ m}$). Tipografía monumental de 148 a 230 pt (*Trebuchet Bold*) ocupando el 87–90% de la placa. Eliminado todo subtexto (únicamente el nombre del alimento, e.g. `MAÍZ TOSTADO`).
+  * Diámetro original preservado a $R = 8.0\text{ m}$ (diámetro $16.0\text{ m}$).
+  * **Paredes perpendiculares elevadas:** Muro cilíndrico extendido a $5.40\text{ m}$ de altura vertical, cornisa a $5.30\text{ m}$ y techo cónico con óculo elevado a $Y = 7.00\text{ m}$.
+  * **Pabellón de Deidades centrado verticalmente:** Cuadros elevados a $Y = 2.95\text{ m}$ y escalados a $1.30\times$ ($\approx 2.0\text{ m} \times 2.0\text{ m}$), placas de cédula ergonómicas a $Y = 1.40\text{ m}$.
+  * **Letreros y cédulas sin desbordes:** Marcos de oro, maderas y fondos blancos 100% unificados y acoplados. Letreros colgantes de sección a $Y = 4.10\text{ m}$ ($1.50\times$).
+  * **Gastronomía:** Letreros escalados a $1.35\times$ ($89\text{ cm} \times 30\text{ cm}$) con $38\text{ cm}$ de despeje frontal sobre la comida y $1.02\text{ m}$ entre centros para eliminar cualquier encimado.
 
 ---
 

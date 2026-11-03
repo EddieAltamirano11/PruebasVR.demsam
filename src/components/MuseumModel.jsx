@@ -3,8 +3,8 @@ import { useGLTF } from '@react-three/drei';
 
 export function MuseumModel() {
   const group = useRef();
-  // Carga del modelo 3D oficial v13 con todas las salas, cédulas y gastronomía
-  const { scene } = useGLTF('./museo_wixarika_v13.glb');
+  // Carga del modelo 3D oficial v14 con paredes elevadas, letreros monumentales y deidades centradas
+  const { scene } = useGLTF('./museo_wixarika_v14.glb');
 
   return (
     <primitive
@@ -16,4 +16,4 @@ export function MuseumModel() {
   );
 }
 
-useGLTF.preload('./museo_wixarika_v13.glb');
+useGLTF.preload('./museo_wixarika_v14.glb');

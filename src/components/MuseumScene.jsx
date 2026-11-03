@@ -191,16 +191,16 @@ export function MuseumScene({
 
       {/* Iluminacion Museografica Integral */}
       <ambientLight color="#ffffff" intensity={1.3} />
-      <directionalLight position={[0, 7, 0]} intensity={1.2} color="#fffcf5" castShadow={false} />
+      <directionalLight position={[0, 8.5, 0]} intensity={1.2} color="#fffcf5" castShadow={false} />
       {/* Luces de relleno para los 4 cuadrantes cardinales */}
       <directionalLight position={[0, 3.5, -4.5]} intensity={0.6} color="#ffffff" /> {/* Deidades (-Z) */}
       <directionalLight position={[4.5, 3.5, 0]} intensity={0.6} color="#ffffff" />  {/* Gastronomía (+X) */}
       <directionalLight position={[0, 3.5, 4.5]} intensity={0.6} color="#ffffff" />  {/* Bienvenida (+Z) */}
       <directionalLight position={[-4.5, 3.5, 0]} intensity={0.6} color="#ffffff" /> {/* Fiestas (-X) */}
-      <pointLight position={[0, 4, 0]} intensity={1.0} distance={14} color="#ffe8cc" />
+      <pointLight position={[0, 4.5, 0]} intensity={1.0} distance={16} color="#ffe8cc" />
       <hemisphereLight skyColor="#ffffff" groundColor="#332a26" intensity={0.7} />
 
-      {/* Modelo 3D del Museo Wixarika v13 */}
+      {/* Modelo 3D del Museo Wixarika v14 */}
       <Suspense fallback={null}>
         <MuseumModel />
       </Suspense>
