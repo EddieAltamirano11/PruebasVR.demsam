@@ -76,10 +76,10 @@ class AudioService {
           try {
             this.ambientGain?.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.4);
             setTimeout(() => {
-              try { this.ambientOsc?.stop(); } catch (_) {}
+              try { this.ambientOsc?.stop(); } catch { /* ignore */ }
               this.ambientOsc = null;
             }, 500);
-          } catch (_) {}
+          } catch { /* ignore */ }
         }
         this.ambientPlaying = false;
         return false;
