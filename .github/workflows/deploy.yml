@@ -5,13 +5,11 @@ on:
     branches:
       - main
       - develop
-      - dev
       - QA
   pull_request:
     branches:
       - main
       - develop
-      - dev
       - QA
   workflow_dispatch:
 
@@ -66,7 +64,7 @@ jobs:
   deploy:
     name: Deploy to Cloudflare Pages
     needs: qa
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/QA') && github.event_name == 'push'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/QA') && github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -92,3 +90,4 @@ jobs:
         run: |
           node -v
           npx wrangler pages deploy dist --project-name=pruebasvr-demsam --branch=${{ github.ref_name }} --commit-dirty=true
+        continue-on-error: true
