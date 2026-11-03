@@ -217,13 +217,12 @@ export function MuseumScene({
     SoundFX.toggleAmbient();
   }, []);
 
-  // Recentrar visor o controles hacia el Dashboard de Bienvenida (Sur +Z)
+  // Recentrar visor o controles
   const handleRecenter = useCallback(() => {
     if (onRecenterRef?.current) {
       onRecenterRef.current();
     } else if (orbitRef.current) {
-      orbitRef.current.setAzimuthalAngle?.(Math.PI);
-      orbitRef.current.update?.();
+      orbitRef.current.reset?.();
     }
   }, [onRecenterRef]);
 
@@ -233,11 +232,11 @@ export function MuseumScene({
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       dpr={[1, 2]}
     >
-      {/* Rig de camara para modo normal y modo VR (iniciando hacia el Dashboard en Sur +Z) */}
+      {/* Rig de camara para modo normal y modo VR */}
       <group ref={cameraRigRef} position={[0, 0, 0]}>
         <PerspectiveCamera
           makeDefault
-          position={vrMode ? [0, 1.6, 0] : [0, 1.6, -2.5]}
+          position={vrMode ? [0, 1.6, 0] : [0, 1.6, 2.5]}
           fov={75}
           near={0.05}
           far={1000}
