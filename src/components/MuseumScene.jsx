@@ -333,13 +333,6 @@ export function MuseumScene({
                   ]}
                   actions={[
                     {
-                      id: `btn-card-read-${station.id}`,
-                      label: 'Ver Libros Recomendados',
-                      iconName: 'book-open',
-                      variant: 'cantera',
-                      onClick: handleOpenBooks
-                    },
-                    {
                       id: `btn-card-close-${station.id}`,
                       label: 'Cerrar',
                       iconName: 'x',

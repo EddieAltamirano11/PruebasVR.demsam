@@ -113,15 +113,12 @@ export function WixarikaVRBookPanel({
     return 0;
   });
 
-  const [loanStatus, setLoanStatus] = useState(null); // null | 'success'
-
   const currentBook = books[currentIndex] || books[0];
   const totalBooks = books.length;
 
   const handlePrev = () => {
     const nextIdx = (currentIndex - 1 + totalBooks) % totalBooks;
     setCurrentIndex(nextIdx);
-    setLoanStatus(null);
     SoundFX.playClick();
     onSelectBook?.(books[nextIdx]);
   };
@@ -129,15 +126,8 @@ export function WixarikaVRBookPanel({
   const handleNext = () => {
     const nextIdx = (currentIndex + 1) % totalBooks;
     setCurrentIndex(nextIdx);
-    setLoanStatus(null);
     SoundFX.playClick();
     onSelectBook?.(books[nextIdx]);
-  };
-
-  const handleLoan = () => {
-    setLoanStatus('success');
-    SoundFX.playClick();
-    onLoanRequest?.(currentBook);
   };
 
   return (
@@ -235,20 +225,10 @@ export function WixarikaVRBookPanel({
               { label: 'Cota de Biblioteca', value: currentBook.callNumber },
               {
                 label: 'Disponibilidad',
-                value: loanStatus === 'success'
-                  ? 'Apartado para tu visita. Pasa al mostrador con tu credencial.'
-                  : 'Disponible para Préstamo a Sala y Domicilio'
+                value: 'Disponible para Consulta en Sala y Préstamo'
               }
             ]}
-            actions={[
-              {
-                id: 'btn-loan-request',
-                label: loanStatus === 'success' ? 'Libro Solicitado' : 'Apartar en Mostrador',
-                iconName: loanStatus === 'success' ? 'check' : 'bookmark',
-                variant: 'cantera',
-                onClick: handleLoan
-              }
-            ]}
+            actions={[]}
             width={2.40}
             height={1.22}
             variant="cantera"
