@@ -15,8 +15,11 @@ function DashboardTile({
   subtitle,
   iconName,
   accentColor = '#b45309',
-  width = 0.72,
-  height = 0.38,
+  width = 0.94,
+  height = 0.46,
+  iconSize = 0.115,
+  titleSize = 0.068,
+  subtitleSize = 0.046,
   position = [0, 0, 0],
   onClick,
   registerMesh,
@@ -58,13 +61,17 @@ function DashboardTile({
   const bgHover = '#f3ebd6';
   const currentBg = isHovered ? bgHover : bgIdle;
   const borderColor = isHovered ? '#b45309' : '#d4af37';
-  const borderWidth = isHovered ? 0.007 : 0.004;
+
+  const halfH = height / 2;
+  const iconY = halfH * 0.44;
+  const titleY = -halfH * 0.12;
+  const subtitleY = -halfH * 0.54;
 
   return (
     <group position={position}>
       {/* Marco de oro bruñido exterior */}
       <mesh position={[0, 0, -0.001]}>
-        <planeGeometry args={[width + 0.012, height + 0.012]} />
+        <planeGeometry args={[width + 0.016, height + 0.016]} />
         <meshBasicMaterial color={borderColor} />
       </mesh>
 
@@ -82,75 +89,74 @@ function DashboardTile({
       {/* Rombos protectores Tsikuri en esquinas */}
       <group position={[0, 0, 0.003]}>
         <TsikuriDiamond
-          size={0.024}
-          position={[-width / 2 + 0.025, height / 2 - 0.025, 0]}
+          size={0.032}
+          position={[-width / 2 + 0.032, height / 2 - 0.032, 0]}
           colors={['#d4af37', accentColor, '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.024}
-          position={[width / 2 - 0.025, height / 2 - 0.025, 0]}
+          size={0.032}
+          position={[width / 2 - 0.032, height / 2 - 0.032, 0]}
           colors={['#d4af37', accentColor, '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.024}
-          position={[-width / 2 + 0.025, -height / 2 + 0.025, 0]}
+          size={0.032}
+          position={[-width / 2 + 0.032, -height / 2 + 0.032, 0]}
           colors={['#d4af37', accentColor, '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.024}
-          position={[width / 2 - 0.025, -height / 2 + 0.025, 0]}
+          size={0.032}
+          position={[width / 2 - 0.032, -height / 2 + 0.032, 0]}
           colors={['#d4af37', accentColor, '#ffffff']}
         />
       </group>
 
       {/* Barra de progreso de Gaze Fuse */}
       {isHovered && fuseProgress > 0 && (
-        <group position={[0, -height / 2 + 0.012, 0.005]}>
+        <group position={[0, -height / 2 + 0.015, 0.005]}>
           <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[width * 0.85, 0.014]} />
+            <planeGeometry args={[width * 0.88, 0.016]} />
             <meshBasicMaterial color="#e7dec8" />
           </mesh>
           <mesh
-            position={[-((width * 0.85) * (1 - fuseProgress)) / 2, 0, 0.001]}
+            position={[-((width * 0.88) * (1 - fuseProgress)) / 2, 0, 0.001]}
             scale={[fuseProgress, 1, 1]}
           >
-            <planeGeometry args={[width * 0.85, 0.012]} />
+            <planeGeometry args={[width * 0.88, 0.014]} />
             <meshBasicMaterial color={accentColor} />
           </mesh>
         </group>
       )}
 
-      {/* Icono Lucide vectorial (sin emojis) */}
+      {/* Icono Lucide vectorial nítido */}
       <LucideVRIcon
         name={iconName}
-        size={0.085}
+        size={iconSize}
         color={accentColor}
-        position={[0, 0.075, 0.004]}
+        position={[0, iconY, 0.004]}
         strokeWidth={2.4}
       />
 
-      {/* Título de la opción en carbón oscuro */}
+      {/* Título de la opción en carbón oscuro de gran tamaño */}
       <Text
-        position={[0, -0.025, 0.005]}
-        fontSize={0.048}
+        position={[0, titleY, 0.005]}
+        fontSize={titleSize}
         color="#1c1917"
         anchorX="center"
         anchorY="middle"
-        maxWidth={width * 0.88}
+        maxWidth={width * 0.90}
         textAlign="center"
-        font={undefined}
       >
         {title}
       </Text>
 
       {/* Subtítulo descriptivo en tono madera cálida */}
       <Text
-        position={[0, -0.095, 0.005]}
-        fontSize={0.032}
+        position={[0, subtitleY, 0.005]}
+        fontSize={subtitleSize}
         color="#78350f"
         anchorX="center"
         anchorY="middle"
-        maxWidth={width * 0.88}
+        maxWidth={width * 0.90}
         textAlign="center"
       >
         {subtitle}
@@ -165,7 +171,7 @@ function DashboardTile({
  * Estética clara de cantera y madera noble con iconos Lucide y navegación por salas.
  */
 export function WixarikaWelcomeDashboard({
-  position = [0, 1.45, 2.5],
+  position = [0, 1.48, 2.10],
   rotation = [0, Math.PI, 0],
   onSelectStation,
   onOpenBooks,
@@ -177,20 +183,20 @@ export function WixarikaWelcomeDashboard({
   fuseProgress = 0,
   onMinimize
 }) {
-  const panelWidth = 2.44;
-  const panelHeight = 1.48;
+  const panelWidth = 3.20;
+  const panelHeight = 1.95;
 
   return (
     <group position={position} rotation={rotation}>
       {/* 1. Marco exterior de madera de nogal ceremonial */}
       <mesh position={[0, 0, -0.003]}>
-        <planeGeometry args={[panelWidth + 0.04, panelHeight + 0.04]} />
+        <planeGeometry args={[panelWidth + 0.05, panelHeight + 0.05]} />
         <meshBasicMaterial color="#5c381e" />
       </mesh>
 
       {/* 2. Bisel perimetral de oro bruñido */}
       <mesh position={[0, 0, -0.002]}>
-        <planeGeometry args={[panelWidth + 0.016, panelHeight + 0.016]} />
+        <planeGeometry args={[panelWidth + 0.02, panelHeight + 0.02]} />
         <meshBasicMaterial color="#c69214" />
       </mesh>
 
@@ -203,46 +209,46 @@ export function WixarikaWelcomeDashboard({
       {/* 4. Rombos protectores Tsikuri en las 4 esquinas del panel mayor */}
       <group position={[0, 0, 0.004]}>
         <TsikuriDiamond
-          size={0.05}
-          position={[-panelWidth / 2 + 0.05, panelHeight / 2 - 0.05, 0]}
+          size={0.065}
+          position={[-panelWidth / 2 + 0.065, panelHeight / 2 - 0.065, 0]}
           colors={['#c69214', '#b45309', '#0284c7', '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.05}
-          position={[panelWidth / 2 - 0.05, panelHeight / 2 - 0.05, 0]}
+          size={0.065}
+          position={[panelWidth / 2 - 0.065, panelHeight / 2 - 0.065, 0]}
           colors={['#c69214', '#b45309', '#0284c7', '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.05}
-          position={[-panelWidth / 2 + 0.05, -panelHeight / 2 + 0.05, 0]}
+          size={0.065}
+          position={[-panelWidth / 2 + 0.065, -panelHeight / 2 + 0.065, 0]}
           colors={['#c69214', '#b45309', '#0284c7', '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.05}
-          position={[panelWidth / 2 - 0.05, -panelHeight / 2 + 0.05, 0]}
+          size={0.065}
+          position={[panelWidth / 2 - 0.065, -panelHeight / 2 + 0.065, 0]}
           colors={['#c69214', '#b45309', '#0284c7', '#ffffff']}
         />
       </group>
 
-      {/* 5. Cabecera del Dashboard */}
-      <group position={[0, 0.53, 0.005]}>
+      {/* 5. Cabecera del Dashboard con tipografía aumentada */}
+      <group position={[0, 0.67, 0.005]}>
         {/* Icono Lucide Compass centrado */}
         <LucideVRIcon
           name="compass"
-          size={0.09}
+          size={0.12}
           color="#b45309"
-          position={[0, 0.095, 0]}
-          strokeWidth={2.4}
+          position={[0, 0.135, 0]}
+          strokeWidth={2.6}
         />
 
         {/* Título Principal */}
         <Text
-          position={[0, 0.01, 0]}
-          fontSize={0.082}
+          position={[0, 0.015, 0]}
+          fontSize={0.115}
           color="#1c1917"
           anchorX="center"
           anchorY="middle"
-          maxWidth={panelWidth * 0.9}
+          maxWidth={panelWidth * 0.92}
           textAlign="center"
         >
           MUSEO VIRTUAL WIXÁRIKA
@@ -250,12 +256,12 @@ export function WixarikaWelcomeDashboard({
 
         {/* Subtítulo institucional */}
         <Text
-          position={[0, -0.065, 0]}
-          fontSize={0.038}
+          position={[0, -0.085, 0]}
+          fontSize={0.050}
           color="#78350f"
           anchorX="center"
           anchorY="middle"
-          maxWidth={panelWidth * 0.9}
+          maxWidth={panelWidth * 0.92}
           textAlign="center"
         >
           PORTAL CEREMONIAL Y GUÍA DEL VISITANTE · BIBLIOTECA SOLÓN ARGÜELLO
@@ -263,26 +269,26 @@ export function WixarikaWelcomeDashboard({
 
         {/* Lema de bienvenida en Wixárika */}
         <Text
-          position={[0, -0.118, 0]}
-          fontSize={0.034}
+          position={[0, -0.150, 0]}
+          fontSize={0.044}
           color="#a16207"
           anchorX="center"
           anchorY="middle"
-          maxWidth={panelWidth * 0.9}
+          maxWidth={panelWidth * 0.92}
           textAlign="center"
         >
           «Taikiyari xanepu» · Bienvenidos al Kalihuey Sagrado
         </Text>
 
         {/* Línea divisoria dorada */}
-        <mesh position={[0, -0.155, 0]}>
-          <planeGeometry args={[panelWidth * 0.88, 0.004]} />
+        <mesh position={[0, -0.195, 0]}>
+          <planeGeometry args={[panelWidth * 0.90, 0.005]} />
           <meshBasicMaterial color="#d4af37" />
         </mesh>
       </group>
 
       {/* 6. Fila Principal: Explorar las 3 Salas / Pabellones Cardinales */}
-      <group position={[0, 0.12, 0.005]}>
+      <group position={[0, 0.14, 0.005]}>
         {/* Pabellón 1: Deidades (Norte) */}
         <DashboardTile
           id="btn-dash-deidades"
@@ -290,9 +296,12 @@ export function WixarikaWelcomeDashboard({
           subtitle="Norte · Tatewari, Tayau y Venado"
           iconName="sun"
           accentColor="#b45309"
-          width={0.72}
-          height={0.34}
-          position={[-0.76, 0, 0]}
+          width={0.94}
+          height={0.48}
+          iconSize={0.115}
+          titleSize={0.068}
+          subtitleSize={0.044}
+          position={[-1.00, 0, 0]}
           onClick={() => onSelectStation && onSelectStation('deidades')}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
@@ -307,8 +316,11 @@ export function WixarikaWelcomeDashboard({
           subtitle="Este · Maíz sagrado, tamales y caldo"
           iconName="utensils"
           accentColor="#a16207"
-          width={0.72}
-          height={0.34}
+          width={0.94}
+          height={0.48}
+          iconSize={0.115}
+          titleSize={0.068}
+          subtitleSize={0.044}
           position={[0, 0, 0]}
           onClick={() => onSelectStation && onSelectStation('gastronomia')}
           registerMesh={registerMesh}
@@ -324,9 +336,12 @@ export function WixarikaWelcomeDashboard({
           subtitle="Oeste · Tambor Tepu, Tatei Neixa"
           iconName="sparkles"
           accentColor="#047857"
-          width={0.72}
-          height={0.34}
-          position={[0.76, 0, 0]}
+          width={0.94}
+          height={0.48}
+          iconSize={0.115}
+          titleSize={0.068}
+          subtitleSize={0.044}
+          position={[1.00, 0, 0]}
           onClick={() => onSelectStation && onSelectStation('fiestas')}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
@@ -336,7 +351,7 @@ export function WixarikaWelcomeDashboard({
       </group>
 
       {/* 7. Fila Secundaria: Servicios Culturales y Controles */}
-      <group position={[0, -0.32, 0.005]}>
+      <group position={[0, -0.42, 0.005]}>
         {/* Opción A: Libros recomendados de la Biblioteca */}
         <DashboardTile
           id="btn-dash-books"
@@ -344,9 +359,12 @@ export function WixarikaWelcomeDashboard({
           subtitle="Catálogo Fomento Lector Solón Argüello"
           iconName="book-open"
           accentColor="#0284c7"
-          width={0.72}
-          height={0.30}
-          position={[-0.76, 0, 0]}
+          width={0.94}
+          height={0.44}
+          iconSize={0.105}
+          titleSize={0.064}
+          subtitleSize={0.042}
+          position={[-1.00, 0, 0]}
           onClick={onOpenBooks}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
@@ -361,8 +379,11 @@ export function WixarikaWelcomeDashboard({
           subtitle="Ambiente y Cantos Ceremoniales"
           iconName="volume-2"
           accentColor="#57534e"
-          width={0.72}
-          height={0.30}
+          width={0.94}
+          height={0.44}
+          iconSize={0.105}
+          titleSize={0.064}
+          subtitleSize={0.042}
           position={[0, 0, 0]}
           onClick={onToggleAudio}
           registerMesh={registerMesh}
@@ -378,9 +399,12 @@ export function WixarikaWelcomeDashboard({
           subtitle="Calibrar orientación y mirada VR"
           iconName="rotate-ccw"
           accentColor="#57534e"
-          width={0.72}
-          height={0.30}
-          position={[0.76, 0, 0]}
+          width={0.94}
+          height={0.44}
+          iconSize={0.105}
+          titleSize={0.064}
+          subtitleSize={0.042}
+          position={[1.00, 0, 0]}
           onClick={onRecenter}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
@@ -390,14 +414,14 @@ export function WixarikaWelcomeDashboard({
       </group>
 
       {/* 8. Pie de página y guía rápida de interacción */}
-      <group position={[0, -0.60, 0.005]}>
+      <group position={[0, -0.79, 0.005]}>
         <Text
           position={[0, 0, 0]}
-          fontSize={0.034}
+          fontSize={0.046}
           color="#57534e"
           anchorX="center"
           anchorY="middle"
-          maxWidth={panelWidth * 0.85}
+          maxWidth={panelWidth * 0.88}
           textAlign="center"
         >
           ⊙ Fija tu mirada durante 1.2 segundos o pulsa la pantalla / gatillo para explorar cada sala

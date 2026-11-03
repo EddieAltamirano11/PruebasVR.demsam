@@ -242,7 +242,7 @@ export function MuseumScene({
       {/* Dashboard Central de Bienvenida en el cuadrante Sur (+Z) */}
       {!activeStation && !showBookCatalog && showButtons && (
         <WixarikaWelcomeDashboard
-          position={[0, 1.45, 2.3]}
+          position={[0, 1.48, 2.10]}
           rotation={[0, Math.PI, 0]}
           onSelectStation={handleSelectStation}
           onOpenBooks={handleOpenBooks}
@@ -255,7 +255,7 @@ export function MuseumScene({
 
       {/* Catálogo de Fomento Lector (Biblioteca Solón Argüello) */}
       {showBookCatalog && (
-        <group position={[0, 1.40, 2.2]} rotation={[0, Math.PI, 0]}>
+        <group position={[0, 1.45, 2.05]} rotation={[0, Math.PI, 0]}>
           <WixarikaVRBookPanel
             onClose={() => setShowBookCatalog(false)}
             registerMesh={registerMesh}
