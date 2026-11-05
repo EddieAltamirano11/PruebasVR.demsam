@@ -1,8 +1,115 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Text } from '@react-three/drei';
+import * as THREE from 'three';
 import { WixarikaVRFloatingPanel } from './WixarikaVRFloatingPanel.jsx';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';
+import { TsikuriDiamond } from './TsikuriDiamond.jsx';
 import { SoundFX } from '../../services/audioService.js';
+import { fetchRecommendedBooks } from '../../services/bookService.js';
+
+/**
+ * Componente 3D para renderizar la portada del libro con textura segura.
+ * Se muestra únicamente si existe una URL de portada válida.
+ */
+function BookCoverMesh({ url, width = 0.58, height = 0.82, position = [0, 0, 0] }) {
+  const [texture, setTexture] = useState(null);
+
+  useEffect(() => {
+    if (!url) {
+      setTexture(null);
+      return;
+    }
+
+    let isMounted = true;
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+    loader.load(
+      url,
+      (loadedTex) => {
+        if (isMounted) {
+          loadedTex.colorSpace = THREE.SRGBColorSpace;
+          setTexture(loadedTex);
+        }
+      },
+      undefined,
+      (err) => {
+        console.warn('[BookCoverMesh] Error cargando portada:', url, err);
+        if (isMounted) setTexture(null);
+      }
+    );
+
+    return () => {
+      isMounted = false;
+      if (texture) texture.dispose();
+    };
+  }, [url]);
+
+  return (
+    <group position={position}>
+      {/* 1. Marco exterior de madera / cantera */}
+      <mesh position={[0, 0, -0.003]}>
+        <planeGeometry args={[width + 0.04, height + 0.04]} />
+        <meshBasicMaterial color="#5c381e" />
+      </mesh>
+
+      {/* 2. Filete de oro ceremonial */}
+      <mesh position={[0, 0, -0.002]}>
+        <planeGeometry args={[width + 0.016, height + 0.016]} />
+        <meshBasicMaterial color="#d4af37" />
+      </mesh>
+
+      {/* 3. Superficie de la portada con textura o fondo de respaldo */}
+      <mesh position={[0, 0, 0]}>
+        <planeGeometry args={[width, height]} />
+        {texture ? (
+          <meshBasicMaterial map={texture} />
+        ) : (
+          <meshBasicMaterial color="#1e293b" />
+        )}
+      </mesh>
+
+      {/* 4. Rombos Tsikuri decorativos en las 4 esquinas */}
+      <group position={[0, 0, 0.003]}>
+        <TsikuriDiamond
+          size={0.024}
+          position={[-width / 2 + 0.018, height / 2 - 0.018, 0]}
+          colors={['#d4af37', '#b45309', '#ffffff']}
+        />
+        <TsikuriDiamond
+          size={0.024}
+          position={[width / 2 - 0.018, height / 2 - 0.018, 0]}
+          colors={['#d4af37', '#b45309', '#ffffff']}
+        />
+        <TsikuriDiamond
+          size={0.024}
+          position={[-width / 2 + 0.018, -height / 2 + 0.018, 0]}
+          colors={['#d4af37', '#b45309', '#ffffff']}
+        />
+        <TsikuriDiamond
+          size={0.024}
+          position={[width / 2 - 0.018, -height / 2 + 0.018, 0]}
+          colors={['#d4af37', '#b45309', '#ffffff']}
+        />
+      </group>
+
+      {/* 5. Etiqueta inferior de Portada */}
+      <group position={[0, -height / 2 - 0.04, 0.002]}>
+        <mesh position={[0, 0, -0.001]}>
+          <planeGeometry args={[width, 0.05]} />
+          <meshBasicMaterial color="#f3ebd6" />
+        </mesh>
+        <Text
+          fontSize={0.024}
+          color="#78350f"
+          anchorX="center"
+          anchorY="middle"
+        >
+          PORTADA ORIGINAL
+        </Text>
+      </group>
+    </group>
+  );
+}
 
 /**
  * Catálogo base de libros de la cultura Wixárika disponibles
@@ -23,6 +130,7 @@ export const DEFAULT_WIXARIKA_BOOKS = [
     available: true,
     year: "2022",
     variant: "solar",
+    portadaUrl: null,
     synopsis: "Estudio testimonial y cantos ceremoniales dedicados a Tatewari (El Abuelo Fuego) y la ruta sagrada a Wirikuta."
   },
   {
@@ -38,6 +146,7 @@ export const DEFAULT_WIXARIKA_BOOKS = [
     available: true,
     year: "2021",
     variant: "hikuri",
+    portadaUrl: null,
     synopsis: "Recetario patrimonial que documenta el perruri de maíz tostado y atoles ancestrales de la sierra nayarita."
   },
   {
@@ -53,6 +162,7 @@ export const DEFAULT_WIXARIKA_BOOKS = [
     available: true,
     year: "2023",
     variant: "water",
+    portadaUrl: null,
     synopsis: "Crónica etnográfica del ciclo ritual de las 5 estaciones sagradas: Tatei Neixa y la Fiesta del Tambor."
   },
   {
@@ -68,6 +178,7 @@ export const DEFAULT_WIXARIKA_BOOKS = [
     available: true,
     year: "2024",
     variant: "kauyumari",
+    portadaUrl: null,
     synopsis: "Cartografía de los puntos cardinales del pueblo Wixárika desde Haramara hasta Wirikuta."
   },
   {
@@ -83,6 +194,7 @@ export const DEFAULT_WIXARIKA_BOOKS = [
     available: true,
     year: "2023",
     variant: "obsidian",
+    portadaUrl: null,
     synopsis: "Guía de lectura iconográfica sobre tablas de estambre y jícaras sagradas (rukuri)."
   }
 ];
@@ -109,6 +221,7 @@ export const DEFAULT_WIXARIKA_BOOKS = [
  * @param {number} [props.fuseProgress=0] - Progreso del temporizador Gaze Fuse
  */
 export function WixarikaVRBookPanel({
+  books: initialBooksProp,
   books = DEFAULT_WIXARIKA_BOOKS,
   stationId = null,
   stationName = null,
@@ -124,10 +237,31 @@ export function WixarikaVRBookPanel({
   hoveredId,
   fuseProgress = 0
 }) {
+  const [loadedBooks, setLoadedBooks] = useState(initialBooksProp || books || DEFAULT_WIXARIKA_BOOKS);
+
+  // Carga complementaria desde Supabase si está disponible
+  useEffect(() => {
+    if (initialBooksProp && initialBooksProp.length > 0) {
+      setLoadedBooks(initialBooksProp);
+      return;
+    }
+
+    const abortCtrl = new AbortController();
+    fetchRecommendedBooks(abortCtrl.signal).then((remoteBooks) => {
+      if (remoteBooks && remoteBooks.length > 0) {
+        setLoadedBooks(remoteBooks);
+      }
+    });
+
+    return () => abortCtrl.abort();
+  }, [initialBooksProp]);
+
   // 1. Filtrar estrictamente según el tema que el usuario esté viendo
+  const sourceList = loadedBooks && loadedBooks.length > 0 ? loadedBooks : (books || DEFAULT_WIXARIKA_BOOKS);
+
   const filteredBooks = useMemo(() => {
-    if (!stationId || stationId === 'all') return books;
-    const matched = books.filter(
+    if (!stationId || stationId === 'all') return sourceList;
+    const matched = sourceList.filter(
       (b) =>
         b.stationId === stationId ||
         b.themeId === stationId ||
@@ -136,8 +270,8 @@ export function WixarikaVRBookPanel({
         (stationId === 'gastronomia' && b.category === 'Gastronomía') ||
         (stationId === 'fiestas' && (b.category === 'Ceremonias' || b.category === 'Fiestas'))
     );
-    return matched.length > 0 ? matched : books;
-  }, [books, stationId]);
+    return matched.length > 0 ? matched : sourceList;
+  }, [sourceList, stationId]);
 
   const [currentIndex, setCurrentIndex] = useState(() => {
     if (initialBookId) {
@@ -153,7 +287,7 @@ export function WixarikaVRBookPanel({
   }, [stationId]);
 
   const totalBooks = filteredBooks.length;
-  const currentBook = filteredBooks[currentIndex] || filteredBooks[0];
+  const currentBook = filteredBooks[currentIndex] || filteredBooks[0] || DEFAULT_WIXARIKA_BOOKS[0];
 
   const handlePrev = () => {
     const nextIdx = (currentIndex - 1 + totalBooks) % totalBooks;
@@ -188,11 +322,14 @@ export function WixarikaVRBookPanel({
 
   const hasMultipleBooks = totalBooks > 1;
 
+  // Verificación condicional: ¿Tiene portada asignada?
+  const hasCover = Boolean(currentBook?.portadaUrl && currentBook.portadaUrl.trim() !== '');
+
   return (
     <WixarikaVRFloatingPanel
       title="LIBROS DE LA BIBLIOTECA"
       subtitle={themeSubtitle}
-      width={2.45}
+      width={hasCover ? 2.85 : 2.45}
       height={1.48}
       position={position}
       rotation={rotation}
@@ -263,9 +400,18 @@ export function WixarikaVRBookPanel({
         </group>
       )}
 
-      {/* 2. Información Esencial del Libro (ÚNICAMENTE Título, Autor y Código de libro) */}
+      {/* 2. Área del Libro: Portada opcional + ÚNICAMENTE Título, Autor y Código */}
       {currentBook && (
-        <group position={[0, hasMultipleBooks ? -0.06 : 0.02, 0.01]}>
+        <group position={[hasCover ? 0.35 : 0, hasMultipleBooks ? -0.06 : 0.02, 0.01]}>
+          {hasCover && (
+            <BookCoverMesh
+              url={currentBook.portadaUrl}
+              width={0.52}
+              height={0.76}
+              position={[-0.95, 0, 0]}
+            />
+          )}
+
           {/* TÍTULO DEL LIBRO (Grande, claro, alto contraste) */}
           <Text
             position={[0, 0.18, 0.005]}
@@ -273,7 +419,7 @@ export function WixarikaVRBookPanel({
             color="#1c1917"
             anchorX="center"
             anchorY="top"
-            maxWidth={2.15}
+            maxWidth={hasCover ? 1.6 : 2.15}
             textAlign="center"
             lineHeight={1.18}
           >
@@ -287,7 +433,7 @@ export function WixarikaVRBookPanel({
             color="#78350f"
             anchorX="center"
             anchorY="top"
-            maxWidth={2.15}
+            maxWidth={hasCover ? 1.6 : 2.15}
             textAlign="center"
           >
             {`Autor: ${bookAuthor}`}
@@ -295,7 +441,6 @@ export function WixarikaVRBookPanel({
 
           {/* CÓDIGO DE LIBRO (Cota de biblioteca / Estantería física) */}
           <group position={[0, -0.15, 0.005]}>
-            {/* Placa destacada para el código */}
             <mesh position={[0, 0, -0.001]}>
               <planeGeometry args={[1.25, 0.13]} />
               <meshBasicMaterial color="#f3ebd6" transparent opacity={0.95} />
