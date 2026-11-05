@@ -150,6 +150,22 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
         expect(typeof book.available).toBe('boolean');
       });
     });
+
+    it('books must be classified by theme and have code for minimal VR representation', () => {
+      DEFAULT_WIXARIKA_BOOKS.forEach((book) => {
+        expect(book.stationId).toBeDefined();
+        expect(['deidades', 'gastronomia', 'fiestas']).toContain(book.stationId);
+        expect(book.code || book.callNumber).toBeTruthy();
+      });
+
+      const deidadesBooks = DEFAULT_WIXARIKA_BOOKS.filter((b) => b.stationId === 'deidades');
+      const gastroBooks = DEFAULT_WIXARIKA_BOOKS.filter((b) => b.stationId === 'gastronomia');
+      const fiestasBooks = DEFAULT_WIXARIKA_BOOKS.filter((b) => b.stationId === 'fiestas');
+
+      expect(deidadesBooks.length).toBeGreaterThanOrEqual(1);
+      expect(gastroBooks.length).toBeGreaterThanOrEqual(1);
+      expect(fiestasBooks.length).toBeGreaterThanOrEqual(1);
+    });
   });
 
   describe('VR Layout & Non-overlapping Text Integrity', () => {

@@ -173,13 +173,8 @@ function AppContent() {
         activeStation={activeStation}
         onActiveStationChange={handleStationChange}
         onOpenBooksPanel={handleOpenBooksPanel}
-      />
-
-      {/* Panel Lateral Interactivo de Libros Recomendados en la Escena (Sprint 3 - Luis Carlos Durán Ocampo) */}
-      <RecommendedBooksPanel
-        isOpen={isBooksOpen && !vrMode}
-        onClose={() => setIsBooksOpen(false)}
-        activeStation={activeStation}
+        isBooksOpen={isBooksOpen}
+        onToggleBooksOpen={setIsBooksOpen}
       />
 
       {/* Barra de Controles Superior (No VR) */}
@@ -224,45 +219,6 @@ function AppContent() {
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', pointerEvents: 'auto' }}>
-            {/* Botón en la escena para alternar el Panel Lateral de Libros (Sprint 3) */}
-            <button
-              onClick={() => setIsBooksOpen((prev) => !prev)}
-              style={{
-                padding: '9px 16px',
-                fontSize: '13px',
-                fontWeight: '700',
-                color: isBooksOpen ? '#0f172a' : '#fde047',
-                background: isBooksOpen
-                  ? '#e5a00d'
-                  : 'rgba(11, 26, 48, 0.85)',
-                border: isBooksOpen ? '1px solid #fde047' : '1px solid rgba(229, 160, 13, 0.6)',
-                borderRadius: '24px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
-                backdropFilter: 'blur(8px)',
-                transition: 'all 0.2s ease'
-              }}
-              title="Panel lateral interactivo de Libros Recomendados en la escena (Sprint 3)"
-            >
-              <span>📖</span>
-              <span>Libros Recomendados</span>
-              {activeStation && (
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: '#10b981',
-                    display: 'inline-block'
-                  }}
-                  title="Elemento activo enfocado"
-                />
-              )}
-            </button>
-
             {/* Botón de recentrar orientación */}
             <button
               onClick={() => onRecenterRef.current?.()}
@@ -293,44 +249,6 @@ function AppContent() {
             </button>
           </div>
         </div>
-      )}
-
-      {/* Pestaña lateral derecha cuando el panel está cerrado */}
-      {!vrMode && !isBooksOpen && (
-        <button
-          onClick={() => setIsBooksOpen(true)}
-          style={{
-            position: 'fixed',
-            right: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: 900,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '12px 14px 12px 12px',
-            background: 'linear-gradient(135deg, #0b1a30 0%, #172554 100%)',
-            color: '#fde047',
-            borderTopLeftRadius: '16px',
-            borderBottomLeftRadius: '16px',
-            border: '1px solid rgba(229, 160, 13, 0.5)',
-            borderRight: 'none',
-            boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.45)',
-            cursor: 'pointer',
-            backdropFilter: 'blur(8px)',
-            transition: 'all 0.2s ease',
-            writingMode: 'vertical-rl',
-            textOrientation: 'mixed',
-            letterSpacing: '1px',
-            fontSize: '12px',
-            fontWeight: '700'
-          }}
-          title="Abrir Libros Recomendados"
-          aria-label="Abrir panel de libros recomendados"
-        >
-          <span style={{ transform: 'rotate(90deg)', display: 'inline-block', marginBottom: '4px' }}>📖</span>
-          <span>Libros Recomendados</span>
-        </button>
       )}
 
       {/* Barra de Controles Inferior (Abajo) */}

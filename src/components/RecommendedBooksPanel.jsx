@@ -133,32 +133,30 @@ export function RecommendedBooksPanel({
   // Determinar la estación activa a filtrar
   const currentStationId = activeStation?.id || (selectedStationFilter !== 'all' ? selectedStationFilter : null);
 
-  // Fuente de libros: reales de la BD, o demo si está activo el switch
+  // Fuente de libros: registros de Supabase si existen, o catálogo base de la Biblioteca Solón Argüello
   const rawBooks =
     supabaseBooks && supabaseBooks.length > 0
       ? supabaseBooks
-      : showDemoPreview
-      ? MOCK_RECOMMENDED_BOOKS
-      : [];
+      : MOCK_RECOMMENDED_BOOKS;
 
-  // Filtrar según elemento activo y término de búsqueda
+  // Filtrar estrictamente según el tema que se esté visualizando en la biblioteca
   const filteredBooks = useMemo(() => {
     return rawBooks.filter((book) => {
+      const targetStationId = activeStation?.id || (selectedStationFilter !== 'all' ? selectedStationFilter : null);
       const matchStation =
-        !currentStationId ||
-        book.stationId === currentStationId ||
-        book.seccion_id === currentStationId ||
-        selectedStationFilter === 'all';
+        !targetStationId ||
+        book.stationId === targetStationId ||
+        book.themeId === targetStationId ||
+        book.seccion_id === targetStationId;
 
       const matchQuery =
         !searchQuery ||
-        book.titulo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.autor?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (book.cultura && book.cultura.toLowerCase().includes(searchQuery.toLowerCase()));
+        (book.titulo && book.titulo.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (book.autor && book.autor.toLowerCase().includes(searchQuery.toLowerCase()));
 
       return matchStation && matchQuery;
     });
-  }, [rawBooks, currentStationId, selectedStationFilter, searchQuery]);
+  }, [rawBooks, activeStation, selectedStationFilter, searchQuery]);
 
   const handleRequestBook = (book) => {
     setRequestedBookId(book.id);
@@ -345,54 +343,27 @@ export function RecommendedBooksPanel({
               return (
                 <article
                   key={book.id}
-                  className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/90 transition-all shadow-sm flex flex-col justify-between gap-3"
+                  className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-[#E5A00D]/50 hover:bg-slate-900 transition-all shadow-sm flex flex-col justify-between gap-3"
                 >
                   <div className="space-y-1.5">
-                    {/* Badge de contexto cultural */}
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-[#4A0E0E]/40 text-rose-300 border border-rose-900/40">
-                        <Bookmark size={10} />
-                        <span>{book.cultura || 'Cultura Wixárika'}</span>
-                      </span>
-                      <span className="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
-                        <CheckCircle2 size={12} />
-                        <span>{book.stock || 1} en sala</span>
-                      </span>
-                    </div>
-
-                    {/* Título y Autor */}
-                    <h4 className="text-sm font-bold text-white leading-snug">
-                      {book.titulo}
+                    {/* Título del libro */}
+                    <h4 className="text-sm sm:text-base font-bold text-white leading-snug">
+                      {book.titulo || book.title}
                     </h4>
-                    <p className="text-xs text-slate-300">
-                      Por: <strong className="text-slate-200">{book.autor}</strong>
+
+                    {/* Autor */}
+                    <p className="text-xs text-amber-300 font-medium">
+                      Autor: <span className="text-slate-200">{book.autor || book.author}</span>
                     </p>
 
-                    {/* Descripción o sinopsis breve */}
-                    {book.descripcionCorta && (
-                      <p className="text-[11px] text-slate-400 leading-relaxed pt-1">
-                        {book.descripcionCorta}
-                      </p>
-                    )}
-
-                    {/* Ficha técnica mínima */}
-                    <div className="pt-2 text-[11px] text-slate-400 flex flex-wrap gap-x-3 gap-y-1 border-t border-slate-800/80">
-                      {book.editorial && <span>Editorial: {book.editorial}</span>}
-                      {book.anio && <span>Año: {book.anio}</span>}
-                      {book.seccion && (
-                        <span className="text-amber-400/90 font-medium">
-                          Ubicación: {book.seccion}
-                        </span>
-                      )}
+                    {/* Código de libro */}
+                    <div className="inline-block mt-1 px-2.5 py-1 rounded bg-[#0B1A30] border border-amber-500/40 text-xs font-mono text-slate-200">
+                      Código: <strong className="text-amber-400">{book.isbn || book.callNumber || book.codigo || book.code || 'SEC-VR-01'}</strong>
                     </div>
                   </div>
 
                   {/* Botón de Acción Interactivo */}
-                  <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between">
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      ISBN: {book.isbn || 'Sin asignar'}
-                    </span>
-
+                  <div className="pt-2 border-t border-slate-800/60 flex items-center justify-end">
                     <button
                       onClick={() => handleRequestBook(book)}
                       disabled={isRequested}

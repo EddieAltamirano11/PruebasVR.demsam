@@ -3,7 +3,8 @@ import {
   filterBooksByStation,
   searchRecommendedBooks,
   isValidBookRecommendation,
-  getAvailabilityLabel
+  getAvailabilityLabel,
+  formatBookMinimal
 } from './recommendationsService.js';
 
 describe('RecommendationsService (Sprint 3 - Luis Carlos Durán Ocampo)', () => {
@@ -70,5 +71,19 @@ describe('RecommendationsService (Sprint 3 - Luis Carlos Durán Ocampo)', () => 
     expect(getAvailabilityLabel({ stock: 1 })).toBe('1 ejemplar disponible');
     expect(getAvailabilityLabel({ stock: 4 })).toBe('4 ejemplares disponibles');
     expect(getAvailabilityLabel(null)).toBe('No disponible');
+  });
+
+  it('should format book to minimal structure containing strictly title, author, and book code', () => {
+    const formatted = formatBookMinimal({
+      id: 'b1',
+      title: "El Fuego Sagrado y los Cantos del Mara'akame",
+      author: 'Ramón Medina Silva',
+      callNumber: '299.72 ECH-2022',
+      synopsis: 'Largo texto antropológico no requerido en la vista VR minimalista',
+      year: 2022
+    });
+    expect(formatted.title).toBe("El Fuego Sagrado y los Cantos del Mara'akame");
+    expect(formatted.author).toBe('Ramón Medina Silva');
+    expect(formatted.code).toBe('299.72 ECH-2022');
   });
 });

@@ -141,11 +141,14 @@ export function MuseumScene({
   setShowButtons: externalSetShowButtons,
   activeStation: externalActiveStation,
   onActiveStationChange,
-  onOpenBooksPanel
+  onOpenBooksPanel,
+  isBooksOpen: externalIsBooksOpen,
+  onToggleBooksOpen
 }) {
   const orbitRef = useRef();
   const cameraRigRef = useRef();
   const [internalActiveStation, setInternalActiveStation] = useState(null);
+  const [internalStationBooksOpen, setInternalStationBooksOpen] = useState(false);
   const [showBookCatalog, setShowBookCatalog] = useState(false);
   const [showVideoCatalog, setShowVideoCatalog] = useState(false);
   const [internalShowButtons, setInternalShowButtons] = useState(true);
@@ -153,6 +156,10 @@ export function MuseumScene({
   // Soporta tanto estado controlado por props como estado interno
   const activeStation =
     externalActiveStation !== undefined ? externalActiveStation : internalActiveStation;
+
+  const stationBooksOpen =
+    externalIsBooksOpen !== undefined ? externalIsBooksOpen : internalStationBooksOpen;
+  const setStationBooksOpen = onToggleBooksOpen || setInternalStationBooksOpen;
 
   const showButtons =
     externalShowButtons !== undefined ? externalShowButtons : internalShowButtons;
@@ -186,6 +193,7 @@ export function MuseumScene({
       if (externalActiveStation === undefined) {
         setInternalActiveStation(station);
       }
+      setStationBooksOpen(false);
       if (onActiveStationChange) {
         onActiveStationChange(station);
       }
@@ -298,16 +306,6 @@ export function MuseumScene({
         />
       )}
 
-      {/* Catálogo de Fomento Lector (Biblioteca Solón Argüello) */}
-      {showBookCatalog && (
-        <group position={[0, 1.45, 2.05]} rotation={[0, Math.PI, 0]}>
-          <WixarikaVRBookPanel
-            onClose={() => setShowBookCatalog(false)}
-            registerMesh={registerMesh}
-            unregisterMesh={unregisterMesh}
-          />
-        </group>
-      )}
 
       {/* Catálogo de Videos Culturales (Biblioteca Solón Argüello) */}
       {showVideoCatalog && (
@@ -342,7 +340,7 @@ export function MuseumScene({
             )}
 
             {/* Tarjeta Cultural Wixárika al seleccionar la sala */}
-            {isCurrentActive && (
+            {isCurrentActive && !stationBooksOpen && (
               <group position={[0, 0, 0.3]}>
                 <WixarikaVRCard
                   title={station.name}
@@ -351,7 +349,6 @@ export function MuseumScene({
                   badge="RECORRIDO GUIADO"
                   description={station.description}
                   metadata={[
-                    { label: 'Lectura Recomendada', value: station.book },
                     { label: 'Sede Cultural', value: 'Biblioteca Solón Argüello (Tepic, Nayarit)' }
                   ]}
                   actions={[
@@ -360,7 +357,10 @@ export function MuseumScene({
                       label: 'Libros Recomendados',
                       iconName: 'book-open',
                       variant: 'ambar',
-                      onClick: () => (onOpenBooksPanel ? onOpenBooksPanel(station) : null)
+                      onClick: () => {
+                        setStationBooksOpen(true);
+                        if (onOpenBooksPanel) onOpenBooksPanel(station);
+                      }
                     },
                     {
                       id: `btn-card-close-${station.id}`,
@@ -378,6 +378,19 @@ export function MuseumScene({
                 />
               </group>
             )}
+
+            {/* Panel 3D de Libros Recomendados en Realidad Virtual (filtrado por el tema visualizado) */}
+            {isCurrentActive && stationBooksOpen && (
+              <group position={[0, 0, 0.32]}>
+                <WixarikaVRBookPanel
+                  stationId={station.id}
+                  stationName={station.name}
+                  onClose={() => setStationBooksOpen(false)}
+                  registerMesh={registerMesh}
+                  unregisterMesh={unregisterMesh}
+                />
+              </group>
+            )}
           </group>
         );
       })}
@@ -388,7 +401,7 @@ export function MuseumScene({
         setShowButtons={setShowButtons}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
-        activeStation={activeStation}
+        activeStation={activeStation || stationBooksOpen}
       />
 
       {/* Reticula Central con Gaze Fuse interactivo a 1.2 segundos */}

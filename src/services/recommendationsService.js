@@ -19,6 +19,7 @@ export function filterBooksByStation(books = [], stationId = null) {
   return books.filter(
     (b) =>
       b.stationId === stationId ||
+      b.themeId === stationId ||
       b.seccion_id === stationId ||
       b.cultura_id === stationId
   );
@@ -68,3 +69,21 @@ export function getAvailabilityLabel(book) {
   if (stock === 1) return '1 ejemplar disponible';
   return `${stock} ejemplares disponibles`;
 }
+
+/**
+ * Formatea un libro para la vista minimalista de VR (solo título, autor y código de libro)
+ * @param {Object} book
+ * @returns {{ id: string, title: string, author: string, code: string }}
+ */
+export function formatBookMinimal(book) {
+  if (!book || typeof book !== 'object') {
+    return { id: 'unknown', title: 'Sin título', author: 'Autor no especificado', code: 'S/C' };
+  }
+  return {
+    id: book.id || 'book-unknown',
+    title: book.title || book.titulo || 'Sin título',
+    author: book.author || book.autor || 'Autor no especificado',
+    code: book.code || book.callNumber || book.codigo || book.isbn || 'SEC-VR-01'
+  };
+}
+

@@ -290,19 +290,19 @@ export function WixarikaWelcomeDashboard({
 
       {/* 6. Primera Fila: Servicios y Herramientas Culturales (Libros, Audio, Videos) */}
       <group position={[0, 0.14, 0.005]}>
-        {/* Opción A: Libros recomendados de la Biblioteca */}
+        {/* Opción A: Recentrar Visor VR */}
         <DashboardTile
-          key="btn-dash-books"
-          id="btn-dash-books"
-          title="Libros Recomendados"
-          iconName="book-open"
+          key="btn-dash-recenter"
+          id="btn-dash-recenter"
+          title="Recentrar Visor"
+          iconName="rotate-ccw"
           accentColor="#0284c7"
           width={0.94}
           height={0.44}
           iconSize={0.12}
           titleSize={0.070}
           position={[-1.00, 0, 0]}
-          onClick={onOpenBooks}
+          onClick={onRecenter}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
           hoveredId={hoveredId}
