@@ -14,3 +14,22 @@ export {
   formatBytesMB,
   probeHttpRangeSupport
 } from './videoService.js';
+export {
+  filterBooksByStation,
+  filterBooksByCulture,
+  searchRecommendedBooks,
+  isValidBookRecommendation,
+  getAvailabilityLabel,
+  formatBookMinimal
+} from './recommendationsService.js';
+export {
+  cultureRegistry,
+  DEFAULT_CULTURES,
+  hexToRgb,
+  calculateRelativeLuminance,
+  calculateContrastRatio,
+  isWcagCompliant,
+  buildErgonomicStationLayout,
+  filterContentByCulture,
+  mapSupabaseCultureToVR
+} from './cultureService.js';

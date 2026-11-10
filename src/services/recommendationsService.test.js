@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   filterBooksByStation,
+  filterBooksByCulture,
   searchRecommendedBooks,
   isValidBookRecommendation,
   getAvailabilityLabel,
@@ -45,6 +46,21 @@ describe('RecommendationsService (Sprint 3 - Luis Carlos Durán Ocampo)', () => 
 
     const emptyFilter = filterBooksByStation(sampleBooks, null);
     expect(emptyFilter).toHaveLength(3);
+  });
+
+  it('should filter books by specific culture (Wixárika, Cora, Tepehuano)', () => {
+    const wixBooks = filterBooksByCulture(sampleBooks, 'Wixárika');
+    expect(wixBooks).toHaveLength(2);
+
+    const coraBooks = filterBooksByCulture(sampleBooks, 'cora');
+    expect(coraBooks).toHaveLength(1);
+    expect(coraBooks[0].titulo).toContain('Sabores del Nayar');
+
+    const tepeBooks = filterBooksByCulture(sampleBooks, 'tepehuano');
+    expect(tepeBooks).toHaveLength(0);
+
+    const allBooks = filterBooksByCulture(sampleBooks, 'all');
+    expect(allBooks).toHaveLength(3);
   });
 
   it('should search books by title, author, or culture query', () => {

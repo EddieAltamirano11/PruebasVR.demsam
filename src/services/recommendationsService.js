@@ -26,6 +26,52 @@ export function filterBooksByStation(books = [], stationId = null) {
 }
 
 /**
+ * Normaliza una cadena para comparaciones insensibles a mayúsculas, espacios y acentos diacríticos.
+ * @param {string} str
+ * @returns {string}
+ */
+function normalizeDiacritics(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
+ * Filtra libros por cultura específica (ej. 'wixarika', 'cora', 'tepehuano', 'mexicanero')
+ * @param {Array} books Lista de libros
+ * @param {string|null} cultureId Identificador o nombre de la cultura
+ * @returns {Array} Libros de dicha cultura
+ */
+export function filterBooksByCulture(books = [], cultureId = null) {
+  if (!Array.isArray(books)) return [];
+  if (!cultureId || cultureId === 'all') return books;
+
+  const target = normalizeDiacritics(cultureId);
+  return books.filter((b) => {
+    if (!b || typeof b !== 'object') return false;
+
+    const candidateValues = [
+      b.cultura_id,
+      b.cultureId,
+      b.cultura,
+      b.culture,
+      b.culturas?.nombre,
+      b.seccion_id,
+      b.themeId
+    ];
+
+    return candidateValues.some((val) => {
+      if (!val) return false;
+      const normalizedVal = normalizeDiacritics(val.toString());
+      return normalizedVal === target || normalizedVal.includes(target) || target.includes(normalizedVal);
+    });
+  });
+}
+
+/**
  * Busca libros por término en título, autor o cultura
  * @param {Array} books
  * @param {string} query
