@@ -11,7 +11,7 @@ export function VRPrototypeView({ onBackToDashboard }) {
   const [vrMode, setVrMode] = useState(false);
   const [activeStation, setActiveStation] = useState(null);
   const [isBooksPanelOpen, setIsBooksPanelOpen] = useState(false);
-  const [autoOpenOnFocus, setAutoOpenOnFocus] = useState(true);
+  const [autoOpenOnFocus, _setAutoOpenOnFocus] = useState(true);
 
   const onRecenterRef = useRef(null);
   const onWebXRTriggerRef = useRef(null);

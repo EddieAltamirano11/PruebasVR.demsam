@@ -29,7 +29,12 @@ export default [
         process: 'readonly',
         Image: 'readonly',
         Blob: 'readonly',
-        URL: 'readonly'
+        URL: 'readonly',
+        fetch: 'readonly',
+        AbortController: 'readonly',
+        Headers: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly'
       }
     },
     rules: {

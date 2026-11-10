@@ -16,7 +16,7 @@ const INITIAL_BOOKS = [
 export function BooksManagementView() {
   const [books, setBooks] = useState(INITIAL_BOOKS);
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Intentar sincronizar con la tabla libros de Supabase si existe

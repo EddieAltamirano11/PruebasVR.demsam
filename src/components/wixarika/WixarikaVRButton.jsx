@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { SoundFX } from '../../services/audioService.js';
@@ -43,7 +43,7 @@ export function WixarikaVRButton({
   rotation = [0, 0, 0],
   width = 1.3,
   height = 0.22,
-  depth = 0.012,
+  depth: _depth = 0.012,
   active = false,
   variant = 'solar',
   onClick,
@@ -134,7 +134,7 @@ export function WixarikaVRButton({
   // Tamaño de texto adaptado para cumplir tamaño angular (mínimo 0.6° en VR)
   const mainFontSize = Math.max(0.045, height * (sublabel ? 0.34 : 0.42));
   const subFontSize = Math.max(0.03, height * 0.22);
-  const angularHeight = calculateAngularSize(height, distance);
+  const _angularHeight = calculateAngularSize(height, distance);
 
   return (
     <group position={position} rotation={rotation}>

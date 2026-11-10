@@ -130,9 +130,6 @@ export function RecommendedBooksPanel({
     };
   }, []);
 
-  // Determinar la estación activa a filtrar
-  const currentStationId = activeStation?.id || (selectedStationFilter !== 'all' ? selectedStationFilter : null);
-
   // Fuente de libros: registros de Supabase si existen, o catálogo base de la Biblioteca Solón Argüello
   const rawBooks =
     supabaseBooks && supabaseBooks.length > 0

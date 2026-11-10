@@ -5,8 +5,6 @@ import {
   calculateAngularSize,
   metersFromAngularSize,
   verifyAngularCompliance,
-  getRelativeLuminance,
-  getWcagContrastRatio,
   verifyWcagCompliance,
   VR_ANGULAR_THRESHOLDS
 } from './wixarikaTheme.js';

@@ -162,7 +162,7 @@ export function WixarikaWelcomeDashboard({
   position = [0, 1.48, 2.10],
   rotation = [0, Math.PI, 0],
   onSelectStation,
-  onOpenBooks,
+  _onOpenBooks,
   onToggleAudio,
   onOpenVideos,
   onRecenter,
@@ -170,7 +170,7 @@ export function WixarikaWelcomeDashboard({
   unregisterMesh,
   hoveredId,
   fuseProgress = 0,
-  onMinimize
+  _onMinimize
 }) {
   const panelWidth = 3.20;
   const panelHeight = 1.95;
