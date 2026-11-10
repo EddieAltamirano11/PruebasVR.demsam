@@ -12,6 +12,7 @@ import {
 } from './wixarikaTheme.js';
 import { DEFAULT_WIXARIKA_BOOKS } from './WixarikaVRBookPanel.jsx';
 import { DEFAULT_WIXARIKA_VIDEOS, WixarikaVRVideoPanel } from './WixarikaVRVideoPanel.jsx';
+import { WixarikaVRVideoPlayer } from './WixarikaVRVideoPlayer.jsx';
 import { WixarikaWelcomeDashboard } from './WixarikaWelcomeDashboard.jsx';
 import { LUCIDE_SVG_PATHS, getLucideIconTexture } from './LucideVRIcon.jsx';
 
@@ -106,7 +107,7 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
     it('should include all necessary Lucide SVG paths for museum navigation', () => {
       const requiredIcons = [
         'sun', 'utensils', 'sparkles', 'book-open',
-        'rotate-ccw', 'volume-2', 'compass', 'eye', 'eye-off', 'x', 'check', 'bookmark', 'video', 'play'
+        'rotate-ccw', 'rotate-cw', 'volume-2', 'volume-x', 'compass', 'eye', 'eye-off', 'x', 'check', 'bookmark', 'video', 'play', 'pause', 'maximize-2', 'minimize-2'
       ];
 
       for (const icon of requiredIcons) {
@@ -132,6 +133,9 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
         expect(video.duration).toBeTruthy();
         expect(video.category).toBeTruthy();
         expect(video.synopsis).toBeTruthy();
+        expect(video.sources?.['720p']).toBeTruthy();
+        expect(video.sources?.['480p']).toBeTruthy();
+        expect(video.poster).toBeTruthy();
       });
     });
   });
@@ -184,6 +188,7 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
     it('WixarikaWelcomeDashboard and WixarikaVRVideoPanel should be valid functional components', () => {
       expect(typeof WixarikaWelcomeDashboard).toBe('function');
       expect(typeof WixarikaVRVideoPanel).toBe('function');
+      expect(typeof WixarikaVRVideoPlayer).toBe('function');
     });
   });
 });

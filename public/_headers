@@ -1,4 +1,4 @@
-﻿# Reglas de cache inmutable para assets pesados y versionados
+# Reglas de cache inmutable para assets pesados y versionados
 /bocho_optimized.glb
   Cache-Control: public, max-age=31536000, immutable
   Access-Control-Allow-Origin: *
@@ -9,6 +9,14 @@
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# Streaming progresivo de video MP4 720p/480p con soporte HTTP 206 Byte-Range
+/videos/*
+  Accept-Ranges: bytes
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Headers: Range
+  Access-Control-Expose-Headers: Content-Range, Content-Length, Accept-Ranges
+  Cache-Control: public, max-age=604800
 
 # Reglas para el HTML principal (siempre fresco para detectar nuevos despliegues)
 /*

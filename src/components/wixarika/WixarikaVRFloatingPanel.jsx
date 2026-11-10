@@ -103,14 +103,14 @@ export function WixarikaVRFloatingPanel({
       />
 
       {/* 6. Encabezado del Panel (Con ancho protegido para evitar colisión con el botón cerrar) */}
-      <group position={[onClose ? -0.15 : 0, halfH - 0.16, 0.005]}>
+      <group position={[onClose ? -0.20 : 0, halfH - 0.16, 0.005]}>
         <Text
-          position={[0, 0, 0]}
-          fontSize={Math.max(0.060, Math.min(0.075, width * 0.030))}
+          position={[0, subtitle ? 0 : -0.025, 0]}
+          fontSize={Math.max(0.060, Math.min(0.092, width * 0.028))}
           color={titleColor}
           anchorX="center"
           anchorY="middle"
-          maxWidth={onClose ? width * 0.58 : width * 0.85}
+          maxWidth={onClose ? width * 0.60 : width * 0.85}
           textAlign="center"
           outlineWidth={isCantera ? 0 : 0.002}
           outlineColor="#040711"
@@ -133,7 +133,7 @@ export function WixarikaVRFloatingPanel({
         )}
 
         {/* Separador */}
-        <mesh position={[onClose ? 0.15 : 0, -0.15, 0]}>
+        <mesh position={[onClose ? 0.20 : 0, -0.15, 0]}>
           <planeGeometry args={[width * 0.88, 0.004]} />
           <meshBasicMaterial color={theme.borderGlow} transparent opacity={0.5} />
         </mesh>
@@ -141,14 +141,14 @@ export function WixarikaVRFloatingPanel({
 
       {/* 7. Botón de Cerrar (Posicionado en esquina superior derecha sin colisión) */}
       {onClose && (
-        <group position={[halfW - 0.28, halfH - 0.14, 0.008]}>
+        <group position={[halfW - 0.38, halfH - 0.18, 0.008]}>
           <WixarikaVRButton
             id="panel-btn-close"
             label="Cerrar"
             iconName="x"
-            variant="danger"
-            width={0.42}
-            height={0.13}
+            variant={isCantera ? 'cantera' : 'danger'}
+            width={0.44}
+            height={0.14}
             onClick={onClose}
             onRegister={onRegister}
             onUnregister={onUnregister}
