@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useFrame, useThree, createPortal } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
@@ -17,8 +17,8 @@ function VRButton3D({
   variant = 'solar',
   activeColor,
   idleColor,
-  hoverColor,
-  textColor,
+  _hoverColor,
+  _textColor,
   onClick,
   onRegister,
   onUnregister,

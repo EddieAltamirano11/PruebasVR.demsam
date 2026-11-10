@@ -1,6 +1,6 @@
 # Módulo Inmersivo WebXR — Difusión de Culturas Vivas de Nayarit
 
-> **Taller Full Stack | Equipo 10**  
+> **Taller Full Stack**  
 > **Sede:** Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)  
 > **Stack Base:** React 18, Three.js, React Three Fiber, WebXR (`@react-three/xr`), Tailwind CSS, Vite y Cloudflare Pages.
 

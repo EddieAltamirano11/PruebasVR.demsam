@@ -19,3 +19,13 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Office temporary files
+~$*
+*.tmp
+

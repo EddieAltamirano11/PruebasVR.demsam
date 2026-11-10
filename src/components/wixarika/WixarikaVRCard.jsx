@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
-import { WIXARIKA_VARIANTS, calculateAngularSize } from './wixarikaTheme.js';
+import { WIXARIKA_VARIANTS } from './wixarikaTheme.js';
 import { TsikuriDiamond, ChaquiraBorder } from './TsikuriDiamond.jsx';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';
 
@@ -53,7 +53,6 @@ export function WixarikaVRCard({
   const theme = WIXARIKA_VARIANTS[variant] || WIXARIKA_VARIANTS.solar;
 
   // Cálculos de espaciado y tamaños tipográficos
-  const halfW = width / 2;
   const halfH = height / 2;
   const contentW = width * 0.88;
 

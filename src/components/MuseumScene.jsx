@@ -20,7 +20,7 @@ import { SoundFX } from '../services/audioService.js';
 
 // Estaciones Culturales del Museo Wixarika (HU-03, HU-06 ISO 9241-210)
 // Posicionadas a distancias y alturas ergonómicas (Y=1.35-1.40m a la vista del usuario)
-const CULTURAL_STATIONS = [
+export const CULTURAL_STATIONS = [
   {
     id: 'deidades',
     name: 'Pabellón de Deidades',
@@ -138,16 +138,31 @@ export function MuseumScene({
   onWebXRTriggerRef,
   onRecenterRef,
   showButtons: externalShowButtons,
-  setShowButtons: externalSetShowButtons
+  setShowButtons: externalSetShowButtons,
+  activeStation: externalActiveStation,
+  onActiveStationChange,
+  onOpenBooksPanel,
+  isBooksOpen: externalIsBooksOpen,
+  onToggleBooksOpen
 }) {
   const orbitRef = useRef();
   const cameraRigRef = useRef();
-  const [activeStation, setActiveStation] = useState(null);
+  const [internalActiveStation, setInternalActiveStation] = useState(null);
+  const [internalStationBooksOpen, setInternalStationBooksOpen] = useState(false);
   const [showBookCatalog, setShowBookCatalog] = useState(false);
   const [showVideoCatalog, setShowVideoCatalog] = useState(false);
   const [internalShowButtons, setInternalShowButtons] = useState(true);
 
-  const showButtons = externalShowButtons !== undefined ? externalShowButtons : internalShowButtons;
+  // Soporta tanto estado controlado por props como estado interno
+  const activeStation =
+    externalActiveStation !== undefined ? externalActiveStation : internalActiveStation;
+
+  const stationBooksOpen =
+    externalIsBooksOpen !== undefined ? externalIsBooksOpen : internalStationBooksOpen;
+  const setStationBooksOpen = onToggleBooksOpen || setInternalStationBooksOpen;
+
+  const showButtons =
+    externalShowButtons !== undefined ? externalShowButtons : internalShowButtons;
   const setShowButtons = externalSetShowButtons || setInternalShowButtons;
 
   // Registro de objetos interactivos para el raycaster de Gaze Fuse
@@ -165,32 +180,49 @@ export function MuseumScene({
     return Array.from(interactiveRegistry.current);
   }, []);
 
-  // Navegación guiada hacia salas desde el Dashboard de Bienvenida
-  const handleSelectStation = useCallback((stationId) => {
-    const station = CULTURAL_STATIONS.find((s) => s.id === stationId);
-    if (!station) return;
-    setActiveStation(station);
-    setShowBookCatalog(false);
-    setShowVideoCatalog(false);
+  // Navegación guiada hacia salas desde el Dashboard de Bienvenida o botones 3D
+  const handleSelectStation = useCallback(
+    (stationOrId) => {
+      const station =
+        !stationOrId
+          ? null
+          : typeof stationOrId === 'string'
+          ? CULTURAL_STATIONS.find((s) => s.id === stationOrId) || null
+          : stationOrId;
 
-    if (orbitRef.current) {
-      if (stationId === 'deidades') {
-        // Pabellón de Deidades ubicado en el cuadrante Norte (-Z)
-        orbitRef.current.setAzimuthalAngle?.(0);
-      } else if (stationId === 'gastronomia') {
-        // Pabellón Gastronómico ubicado en el cuadrante Este (+X)
-        orbitRef.current.setAzimuthalAngle?.(-Math.PI / 2);
-      } else if (stationId === 'fiestas') {
-        // Pabellón de Fiestas ubicado en el cuadrante Oeste (-X)
-        orbitRef.current.setAzimuthalAngle?.(Math.PI / 2);
+      if (externalActiveStation === undefined) {
+        setInternalActiveStation(station);
       }
-      orbitRef.current.update?.();
-    }
-  }, []);
+      setStationBooksOpen(false);
+      if (onActiveStationChange) {
+        onActiveStationChange(station);
+      }
+
+      if (station) {
+        setShowBookCatalog(false);
+        setShowVideoCatalog(false);
+
+        if (orbitRef.current) {
+          if (station.id === 'deidades') {
+            // Pabellón de Deidades ubicado en el cuadrante Norte (-Z)
+            orbitRef.current.setAzimuthalAngle?.(0);
+          } else if (station.id === 'gastronomia') {
+            // Pabellón Gastronómico ubicado en el cuadrante Este (+X)
+            orbitRef.current.setAzimuthalAngle?.(-Math.PI / 2);
+          } else if (station.id === 'fiestas') {
+            // Pabellón de Fiestas ubicado en el cuadrante Oeste (-X)
+            orbitRef.current.setAzimuthalAngle?.(Math.PI / 2);
+          }
+          orbitRef.current.update?.();
+        }
+      }
+    },
+    [externalActiveStation, onActiveStationChange]
+  );
 
   // Abrir catálogo de libros de la Biblioteca Solón Argüello en el cuadrante Sur (+Z)
   const handleOpenBooks = useCallback(() => {
-    setActiveStation(null);
+    handleSelectStation(null);
     setShowVideoCatalog(false);
     setShowBookCatalog(true);
     if (orbitRef.current) {
@@ -198,11 +230,11 @@ export function MuseumScene({
       orbitRef.current.setAzimuthalAngle?.(Math.PI);
       orbitRef.current.update?.();
     }
-  }, []);
+  }, [handleSelectStation]);
 
   // Abrir catálogo de videos culturales en el cuadrante Sur (+Z)
   const handleOpenVideos = useCallback(() => {
-    setActiveStation(null);
+    handleSelectStation(null);
     setShowBookCatalog(false);
     setShowVideoCatalog(true);
     if (orbitRef.current) {
@@ -210,7 +242,7 @@ export function MuseumScene({
       orbitRef.current.setAzimuthalAngle?.(Math.PI);
       orbitRef.current.update?.();
     }
-  }, []);
+  }, [handleSelectStation]);
 
   // Alternar audio cultural tradicional
   const handleToggleAudio = useCallback(() => {
@@ -274,16 +306,6 @@ export function MuseumScene({
         />
       )}
 
-      {/* Catálogo de Fomento Lector (Biblioteca Solón Argüello) */}
-      {showBookCatalog && (
-        <group position={[0, 1.45, 2.05]} rotation={[0, Math.PI, 0]}>
-          <WixarikaVRBookPanel
-            onClose={() => setShowBookCatalog(false)}
-            registerMesh={registerMesh}
-            unregisterMesh={unregisterMesh}
-          />
-        </group>
-      )}
 
       {/* Catálogo de Videos Culturales (Biblioteca Solón Argüello) */}
       {showVideoCatalog && (
@@ -313,12 +335,12 @@ export function MuseumScene({
                 height={0.34}
                 registerMesh={registerMesh}
                 unregisterMesh={unregisterMesh}
-                onClick={() => setActiveStation(station)}
+                onClick={() => handleSelectStation(station)}
               />
             )}
 
             {/* Tarjeta Cultural Wixárika al seleccionar la sala */}
-            {isCurrentActive && (
+            {isCurrentActive && !stationBooksOpen && (
               <group position={[0, 0, 0.3]}>
                 <WixarikaVRCard
                   title={station.name}
@@ -327,21 +349,43 @@ export function MuseumScene({
                   badge="RECORRIDO GUIADO"
                   description={station.description}
                   metadata={[
-                    { label: 'Lectura Recomendada', value: station.book },
                     { label: 'Sede Cultural', value: 'Biblioteca Solón Argüello (Tepic, Nayarit)' }
                   ]}
                   actions={[
+                    {
+                      id: `btn-card-books-${station.id}`,
+                      label: 'Libros Recomendados',
+                      iconName: 'book-open',
+                      variant: 'ambar',
+                      onClick: () => {
+                        setStationBooksOpen(true);
+                        if (onOpenBooksPanel) onOpenBooksPanel(station);
+                      }
+                    },
                     {
                       id: `btn-card-close-${station.id}`,
                       label: 'Cerrar',
                       iconName: 'x',
                       variant: 'cantera',
-                      onClick: () => setActiveStation(null)
+                      onClick: () => handleSelectStation(null)
                     }
                   ]}
                   width={2.40}
                   height={1.30}
                   variant={station.variant || 'cantera'}
+                  registerMesh={registerMesh}
+                  unregisterMesh={unregisterMesh}
+                />
+              </group>
+            )}
+
+            {/* Panel 3D de Libros Recomendados en Realidad Virtual (filtrado por el tema visualizado) */}
+            {isCurrentActive && stationBooksOpen && (
+              <group position={[0, 0, 0.32]}>
+                <WixarikaVRBookPanel
+                  stationId={station.id}
+                  stationName={station.name}
+                  onClose={() => setStationBooksOpen(false)}
                   registerMesh={registerMesh}
                   unregisterMesh={unregisterMesh}
                 />
@@ -357,7 +401,7 @@ export function MuseumScene({
         setShowButtons={setShowButtons}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
-        activeStation={activeStation}
+        activeStation={activeStation || stationBooksOpen}
       />
 
       {/* Reticula Central con Gaze Fuse interactivo a 1.2 segundos */}

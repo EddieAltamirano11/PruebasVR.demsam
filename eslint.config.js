@@ -31,7 +31,10 @@ export default [
         Blob: 'readonly',
         URL: 'readonly',
         fetch: 'readonly',
-        AbortController: 'readonly'
+        AbortController: 'readonly',
+        Headers: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly'
       }
     },
     rules: {

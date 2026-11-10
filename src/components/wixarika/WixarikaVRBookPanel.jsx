@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { WixarikaVRFloatingPanel } from './WixarikaVRFloatingPanel.jsx';
-import { WixarikaVRCard } from './WixarikaVRCard.jsx';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
 import { SoundFX } from '../../services/audioService.js';
@@ -113,86 +112,121 @@ function BookCoverMesh({ url, width = 0.58, height = 0.82, position = [0, 0, 0] 
 }
 
 /**
- * Catálogo base de libros de respaldo (offline fallback) de la cultura Wixárika
- * disponibles en la Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit).
+ * Catálogo base de libros de la cultura Wixárika disponibles
+ * en la Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit).
+ * Clasificados por tema/pabellón cultural para su consulta en VR.
  */
 export const DEFAULT_WIXARIKA_BOOKS = [
   {
     id: 'book-1',
+    stationId: 'deidades',
+    themeId: 'deidades',
     title: "El Fuego Sagrado y los Cantos del Mara'akame",
     author: "Rocío Echevarría & Consejo de Ancianos Wixárika",
+    callNumber: "299.72 ECH-2022",
+    code: "299.72 ECH-2022",
     category: "Cosmovisión",
     badge: "SALA DE LECTURA",
-    callNumber: "299.72 ECH-2022",
     available: true,
     year: "2022",
     variant: "solar",
     portadaUrl: null,
-    synopsis: "Estudio testimonial y cantos ceremoniales dedicados a Tatewari (El Abuelo Fuego) y la ruta sagrada a Wirikuta. Incluye transcripciones bilingües wixárika-español y oraciones tradicionales."
+    synopsis: "Estudio testimonial y cantos ceremoniales dedicados a Tatewari (El Abuelo Fuego) y la ruta sagrada a Wirikuta."
   },
   {
     id: 'book-2',
+    stationId: 'gastronomia',
+    themeId: 'gastronomia',
     title: "Sabores del Nayar: Etnobotánica y Cocina Tradicional",
     author: "Mtra. Candelaria Valdés & Etnobotánicos del Estado",
+    callNumber: "641.59 VAL-2021",
+    code: "641.59 VAL-2021",
     category: "Gastronomía",
     badge: "ESTANTERÍA G-04",
-    callNumber: "641.59 VAL-2021",
     available: true,
     year: "2021",
     variant: "hikuri",
     portadaUrl: null,
-    synopsis: "Recetario patrimonial que documenta el perruri de maíz tostado, el caldo de toro ceremonial, los tamales en totomoxtle y los atoles curativos de la sierra nayarita."
+    synopsis: "Recetario patrimonial que documenta el perruri de maíz tostado y atoles ancestrales de la sierra nayarita."
   },
   {
     id: 'book-3',
+    stationId: 'fiestas',
+    themeId: 'fiestas',
     title: "Fiestas Sagradas y Ritos de la Sierra Wixárika",
     author: "Dr. Benjamín Maldonado & Centro de Estudios Nayaritas",
+    callNumber: "394.2 MAL-2023",
+    code: "394.2 MAL-2023",
     category: "Ceremonias",
     badge: "SALA GENERAL",
-    callNumber: "394.2 MAL-2023",
     available: true,
     year: "2023",
     variant: "water",
     portadaUrl: null,
-    synopsis: "Crónica etnográfica del ciclo ritual de las 5 estaciones sagradas: Tatei Neixa (bendición de infantes y primeros elotes), la Fiesta del Tambor y el peregrinaje sagrado."
+    synopsis: "Crónica etnográfica del ciclo ritual de las 5 estaciones sagradas: Tatei Neixa y la Fiesta del Tambor."
   },
   {
     id: 'book-4',
+    stationId: 'deidades',
+    themeId: 'deidades',
     title: "El Venado Azul y la Geografía Mística de Wirikuta",
     author: "Kauyumari Hernández & Cronistas de Nayarit",
+    callNumber: "972.33 HER-2024",
+    code: "972.33 HER-2024",
     category: "Historia Viva",
     badge: "COLECCIÓN LOCAL",
-    callNumber: "972.33 HER-2024",
     available: true,
     year: "2024",
     variant: "kauyumari",
     portadaUrl: null,
-    synopsis: "Cartografía de los puntos cardinales del pueblo Wixárika, desde San Blas (Haramara) hasta Real de Catorce (Wirikuta), detallando la cosmovisión del Venado Azul."
+    synopsis: "Cartografía de los puntos cardinales del pueblo Wixárika desde Haramara hasta Wirikuta."
   },
   {
     id: 'book-5',
+    stationId: 'deidades',
+    themeId: 'deidades',
     title: "Chaquira y Estambre: El Lenguaje Simbólico del Arte Wixárika",
     author: "Artesanos Unidos de Santa Catarina Cuexcomatitlán",
+    callNumber: "745.5 ART-2023",
+    code: "745.5 ART-2023",
     category: "Arte Tradicional",
     badge: "SALA DE ARTE",
-    callNumber: "745.5 ART-2023",
     available: true,
     year: "2023",
     variant: "obsidian",
     portadaUrl: null,
-    synopsis: "Guía de lectura iconográfica sobre tablas de estambre, jícaras sagradas (rukuri) y bordados con chaquira: cómo descifrar el águila bicéfala, el peyote y la flor de cuatro pétalos."
+    synopsis: "Guía de lectura iconográfica sobre tablas de estambre y jícaras sagradas (rukuri)."
   }
 ];
 
 /**
- * WixarikaVRBookPanel - Panel 3D de Libros y Fomento Lector en VR.
- * Conexión automática a Supabase y soporte para recuadro de portada condicional.
+ * WixarikaVRBookPanel - Panel 3D de Libros y Fomento Lector en VR
+ * Diseñado exclusivamente con la información requerida:
+ * Título, Autor y Código de libro, filtrado por el tema que se esté viendo.
+ * 
+ * @param {Object} props
+ * @param {Array} [props.books] - Catálogo de libros (usa DEFAULT_WIXARIKA_BOOKS por defecto)
+ * @param {string} [props.stationId] - ID de la estación cultural (deidades, gastronomia, fiestas)
+ * @param {string} [props.stationName] - Nombre amigable del tema visualizado
+ * @param {string} [props.initialBookId] - ID del libro inicialmente seleccionado
+ * @param {Function} [props.onSelectBook] - Callback al cambiar de libro
+ * @param {Function} [props.onClose] - Callback para cerrar el panel y volver a la sala
+ * @param {Array<number>} [props.position] - Posición en espacio 3D
+ * @param {Array<number>} [props.rotation] - Rotación 3D
+ * @param {Function} [props.onRegister] - Registro en raycaster Gaze Fuse
+ * @param {Function} [props.onUnregister] - Desregistro
+ * @param {Function} [props.registerMesh] - Registro de malla interactiva
+ * @param {Function} [props.unregisterMesh] - Desregistro de malla
+ * @param {string} [props.hoveredId] - ID del elemento enfocado con la mirada
+ * @param {number} [props.fuseProgress=0] - Progreso del temporizador Gaze Fuse
  */
 export function WixarikaVRBookPanel({
   books: initialBooksProp,
+  books = DEFAULT_WIXARIKA_BOOKS,
+  stationId = null,
+  stationName = null,
   initialBookId,
   onSelectBook,
-  onLoanRequest,
   onClose,
   position = [0, 0, 0],
   rotation = [0, 0, 0],
@@ -203,10 +237,9 @@ export function WixarikaVRBookPanel({
   hoveredId,
   fuseProgress = 0
 }) {
-  const [loadedBooks, setLoadedBooks] = useState(initialBooksProp || DEFAULT_WIXARIKA_BOOKS);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [loadedBooks, setLoadedBooks] = useState(initialBooksProp || books || DEFAULT_WIXARIKA_BOOKS);
 
-  // Carga automática desde Supabase si no se pasaron libros fijos por prop
+  // Carga complementaria desde Supabase si está disponible
   useEffect(() => {
     if (initialBooksProp && initialBooksProp.length > 0) {
       setLoadedBooks(initialBooksProp);
@@ -217,59 +250,91 @@ export function WixarikaVRBookPanel({
     fetchRecommendedBooks(abortCtrl.signal).then((remoteBooks) => {
       if (remoteBooks && remoteBooks.length > 0) {
         setLoadedBooks(remoteBooks);
-        if (initialBookId) {
-          const idx = remoteBooks.findIndex((b) => b.id === initialBookId);
-          if (idx !== -1) setCurrentIndex(idx);
-        }
       }
     });
 
     return () => abortCtrl.abort();
-  }, [initialBooksProp, initialBookId]);
+  }, [initialBooksProp]);
 
-  // Si cambia initialBookId sincronizar índice
-  useEffect(() => {
-    if (initialBookId && loadedBooks.length > 0) {
-      const idx = loadedBooks.findIndex((b) => b.id === initialBookId);
-      if (idx !== -1) setCurrentIndex(idx);
+  // 1. Filtrar estrictamente según el tema que el usuario esté viendo
+  const sourceList = loadedBooks && loadedBooks.length > 0 ? loadedBooks : (books || DEFAULT_WIXARIKA_BOOKS);
+
+  const filteredBooks = useMemo(() => {
+    if (!stationId || stationId === 'all') return sourceList;
+    const matched = sourceList.filter(
+      (b) =>
+        b.stationId === stationId ||
+        b.themeId === stationId ||
+        b.seccion_id === stationId ||
+        (stationId === 'deidades' && (b.category === 'Cosmovisión' || b.category === 'Historia Viva' || b.category === 'Arte Tradicional')) ||
+        (stationId === 'gastronomia' && b.category === 'Gastronomía') ||
+        (stationId === 'fiestas' && (b.category === 'Ceremonias' || b.category === 'Fiestas'))
+    );
+    return matched.length > 0 ? matched : sourceList;
+  }, [sourceList, stationId]);
+
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    if (initialBookId) {
+      const idx = filteredBooks.findIndex((b) => b.id === initialBookId);
+      if (idx !== -1) return idx;
     }
-  }, [initialBookId, loadedBooks]);
+    return 0;
+  });
 
-  const totalBooks = loadedBooks.length;
-  const currentBook = loadedBooks[currentIndex] || loadedBooks[0] || DEFAULT_WIXARIKA_BOOKS[0];
+  // Si cambia el tema / estación, reiniciar el índice
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [stationId]);
+
+  const totalBooks = filteredBooks.length;
+  const currentBook = filteredBooks[currentIndex] || filteredBooks[0] || DEFAULT_WIXARIKA_BOOKS[0];
 
   const handlePrev = () => {
     const nextIdx = (currentIndex - 1 + totalBooks) % totalBooks;
     setCurrentIndex(nextIdx);
     SoundFX.playClick();
-    onSelectBook?.(loadedBooks[nextIdx]);
+    onSelectBook?.(filteredBooks[nextIdx]);
   };
 
   const handleNext = () => {
     const nextIdx = (currentIndex + 1) % totalBooks;
     setCurrentIndex(nextIdx);
     SoundFX.playClick();
-    onSelectBook?.(loadedBooks[nextIdx]);
+    onSelectBook?.(filteredBooks[nextIdx]);
   };
 
-  // Verificación condicional estricta: ¿Tiene portada asignada?
-  const hasCover = Boolean(currentBook?.portadaUrl && currentBook.portadaUrl.trim() !== '');
+  const handleClose = () => {
+    SoundFX.playClick();
+    onClose?.();
+  };
 
-  // Dimensionamiento dinámico de la tarjeta según si hay recuadro de portada o no
-  const cardWidth = hasCover ? 1.70 : 2.40;
-  const cardX = hasCover ? 0.36 : 0;
-  const coverX = -0.88;
+  // Título y código normalizados
+  const bookTitle = currentBook?.title || currentBook?.titulo || 'Libro sin título';
+  const bookAuthor = currentBook?.author || currentBook?.autor || 'Autor no especificado';
+  const bookCode = currentBook?.code || currentBook?.callNumber || currentBook?.codigo || currentBook?.isbn || 'SEC-VR-01';
+
+  // Nombre del tema a mostrar en el subtítulo
+  const themeSubtitle = stationName
+    ? `Tema: ${stationName}`
+    : currentBook?.category
+    ? `Tema: ${currentBook.category}`
+    : 'Biblioteca Pública Solón Argüello';
+
+  const hasMultipleBooks = totalBooks > 1;
+
+  // Verificación condicional: ¿Tiene portada asignada?
+  const hasCover = Boolean(currentBook?.portadaUrl && currentBook.portadaUrl.trim() !== '');
 
   return (
     <WixarikaVRFloatingPanel
-      title="BIBLIOTECA PÚBLICA PROFESOR SOLÓN ARGÜELLO"
-      subtitle="Fondo de Culturas Vivas · Libros Recomendados"
-      width={2.65}
-      height={2.10}
+      title="LIBROS DE LA BIBLIOTECA"
+      subtitle={themeSubtitle}
+      width={hasCover ? 2.85 : 2.45}
+      height={1.48}
       position={position}
       rotation={rotation}
       variant="cantera"
-      onClose={onClose}
+      onClose={handleClose}
       onRegister={onRegister}
       onUnregister={onUnregister}
       registerMesh={registerMesh}
@@ -277,61 +342,138 @@ export function WixarikaVRBookPanel({
       hoveredId={hoveredId}
       fuseProgress={fuseProgress}
     >
-      {/* 1. Barra de Navegación de Libros (Anterior / Índice / Siguiente) */}
-      <group position={[0, 0.70, 0.01]}>
-        <WixarikaVRButton
-          id="btn-book-prev"
-          label="Anterior"
-          iconName="chevron-left"
-          variant="cantera"
-          width={0.62}
-          height={0.14}
-          position={[-0.92, 0, 0]}
-          onClick={handlePrev}
-          onRegister={onRegister}
-          onUnregister={onUnregister}
-          registerMesh={registerMesh}
-          unregisterMesh={unregisterMesh}
-          hoveredId={hoveredId}
-          fuseProgress={fuseProgress}
-          showDiamonds={false}
-        />
+      {/* 1. Barra de Navegación (Solo si hay más de 1 libro para el tema activo) */}
+      {hasMultipleBooks && (
+        <group position={[0, 0.32, 0.01]}>
+          <WixarikaVRButton
+            id="btn-book-prev"
+            label="Anterior"
+            iconName="chevron-left"
+            variant="cantera"
+            width={0.54}
+            height={0.13}
+            position={[-0.78, 0, 0]}
+            onClick={handlePrev}
+            onRegister={onRegister}
+            onUnregister={onUnregister}
+            registerMesh={registerMesh}
+            unregisterMesh={unregisterMesh}
+            hoveredId={hoveredId}
+            fuseProgress={fuseProgress}
+            showDiamonds={false}
+          />
 
-        {/* Indicador de Página / Cantidad */}
-        <group position={[0, 0, 0]}>
-          <mesh position={[0, 0, -0.001]}>
-            <planeGeometry args={[0.92, 0.13]} />
-            <meshBasicMaterial color="#f4ebd8" transparent opacity={0.95} />
-          </mesh>
+          {/* Indicador de posición del libro */}
+          <group position={[0, 0, 0]}>
+            <mesh position={[0, 0, -0.001]}>
+              <planeGeometry args={[0.78, 0.11]} />
+              <meshBasicMaterial color="#f3ebd6" transparent opacity={0.95} />
+            </mesh>
+            <Text
+              position={[0, 0, 0.002]}
+              fontSize={0.038}
+              color="#1c1917"
+              anchorX="center"
+              anchorY="middle"
+            >
+              {`Libro ${currentIndex + 1} de ${totalBooks}`}
+            </Text>
+          </group>
+
+          <WixarikaVRButton
+            id="btn-book-next"
+            label="Siguiente"
+            iconName="chevron-right"
+            variant="cantera"
+            width={0.54}
+            height={0.13}
+            position={[0.78, 0, 0]}
+            onClick={handleNext}
+            onRegister={onRegister}
+            onUnregister={onUnregister}
+            registerMesh={registerMesh}
+            unregisterMesh={unregisterMesh}
+            hoveredId={hoveredId}
+            fuseProgress={fuseProgress}
+            showDiamonds={false}
+          />
+        </group>
+      )}
+
+      {/* 2. Área del Libro: Portada opcional + ÚNICAMENTE Título, Autor y Código */}
+      {currentBook && (
+        <group position={[hasCover ? 0.35 : 0, hasMultipleBooks ? -0.06 : 0.02, 0.01]}>
+          {hasCover && (
+            <BookCoverMesh
+              url={currentBook.portadaUrl}
+              width={0.52}
+              height={0.76}
+              position={[-0.95, 0, 0]}
+            />
+          )}
+
+          {/* TÍTULO DEL LIBRO (Grande, claro, alto contraste) */}
           <Text
-            position={[0, 0.022, 0.002]}
-            fontSize={0.046}
+            position={[0, 0.18, 0.005]}
+            fontSize={0.054}
             color="#1c1917"
             anchorX="center"
-            anchorY="middle"
+            anchorY="top"
+            maxWidth={hasCover ? 1.6 : 2.15}
+            textAlign="center"
+            lineHeight={1.18}
           >
-            {`Libro ${currentIndex + 1} de ${totalBooks}`}
+            {bookTitle}
           </Text>
+
+          {/* AUTOR DEL LIBRO */}
           <Text
-            position={[0, -0.028, 0.002]}
-            fontSize={0.030}
+            position={[0, 0.02, 0.005]}
+            fontSize={0.038}
             color="#78350f"
             anchorX="center"
-            anchorY="middle"
+            anchorY="top"
+            maxWidth={hasCover ? 1.6 : 2.15}
+            textAlign="center"
           >
-            {`Categoría: ${currentBook?.category || 'General'}`}
+            {`Autor: ${bookAuthor}`}
           </Text>
-        </group>
 
+          {/* CÓDIGO DE LIBRO (Cota de biblioteca / Estantería física) */}
+          <group position={[0, -0.15, 0.005]}>
+            <mesh position={[0, 0, -0.001]}>
+              <planeGeometry args={[1.25, 0.13]} />
+              <meshBasicMaterial color="#f3ebd6" transparent opacity={0.95} />
+            </mesh>
+            <mesh position={[0, 0, -0.002]}>
+              <planeGeometry args={[1.28, 0.16]} />
+              <meshBasicMaterial color="#d97706" transparent opacity={0.8} />
+            </mesh>
+            <Text
+              position={[0, 0, 0.002]}
+              fontSize={0.040}
+              color="#1c1917"
+              anchorX="center"
+              anchorY="middle"
+              letterSpacing={0.04}
+            >
+              {`Código: ${bookCode}`}
+            </Text>
+          </group>
+        </group>
+      )}
+
+      {/* 3. Botón para Cerrar y Volver a la Sala */}
+      <group position={[0, -0.52, 0.01]}>
         <WixarikaVRButton
-          id="btn-book-next"
-          label="Siguiente"
-          iconName="chevron-right"
+          id="btn-book-close-bottom"
+          label="Volver a la Sala"
+          iconName="arrow-left"
           variant="cantera"
-          width={0.62}
-          height={0.14}
-          position={[0.92, 0, 0]}
-          onClick={handleNext}
+          width={1.05}
+          height={0.16}
+          position={[0, 0, 0]}
+          onClick={handleClose}
           onRegister={onRegister}
           onUnregister={onUnregister}
           registerMesh={registerMesh}
@@ -341,50 +483,6 @@ export function WixarikaVRBookPanel({
           showDiamonds={false}
         />
       </group>
-
-      {/* 2. Área Central: Recuadro de Portada (solo si hay datos) + Tarjeta 3D */}
-      {currentBook && (
-        <group position={[0, -0.15, 0.01]}>
-          {/* Recuadro de Portada: Se renderiza ÚNICAMENTE si currentBook.portadaUrl existe */}
-          {hasCover && (
-            <BookCoverMesh
-              url={currentBook.portadaUrl}
-              width={0.56}
-              height={0.84}
-              position={[coverX, 0.02, 0]}
-            />
-          )}
-
-          {/* Tarjeta con los datos del Libro (adaptada en ancho si hay portada) */}
-          <WixarikaVRCard
-            title={currentBook.title}
-            subtitle={`Autor: ${currentBook.author} (${currentBook.year})`}
-            category={currentBook.category}
-            badge={currentBook.badge}
-            description={currentBook.synopsis}
-            metadata={[
-              { label: 'Cota de Biblioteca / ISBN', value: currentBook.callNumber },
-              {
-                label: 'Disponibilidad',
-                value: currentBook.available
-                  ? 'Disponible para Consulta en Sala y Préstamo'
-                  : 'En Préstamo (Solicitar reserva)'
-              }
-            ]}
-            actions={[]}
-            width={cardWidth}
-            height={1.22}
-            position={[cardX, 0, 0]}
-            variant="cantera"
-            onRegister={onRegister}
-            onUnregister={onUnregister}
-            registerMesh={registerMesh}
-            unregisterMesh={unregisterMesh}
-            hoveredId={hoveredId}
-            fuseProgress={fuseProgress}
-          />
-        </group>
-      )}
     </WixarikaVRFloatingPanel>
   );
 }

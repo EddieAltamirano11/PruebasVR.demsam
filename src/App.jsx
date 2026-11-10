@@ -1,13 +1,67 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { MuseumScene } from './components/MuseumScene.jsx';
+import { RecommendedBooksPanel } from './components/RecommendedBooksPanel.jsx';
+import { AdminLayout } from './components/AdminLayout.jsx';
+import { DashboardView } from './views/DashboardView.jsx';
+import { BooksManagementView } from './views/BooksManagementView.jsx';
+import { WireframesView } from './views/WireframesView.jsx';
+import { VRPrototypeView } from './views/VRPrototypeView.jsx';
+import { LoginView } from './views/LoginView.jsx';
 
-export default function App() {
+/**
+ * Contenedor principal de la aplicación
+ * Integra la experiencia 3D/VR del Museo Wixárika con el Panel Lateral de Libros Recomendados (Sprint 3)
+ * y el Portal de Gestión Administrativa BiblioVR.
+ */
+function AppContent() {
+  const { user, signOut } = useAuth();
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [viewMode, setViewMode] = useState('museum'); // 'museum' | 'admin'
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'books' | 'wireframes' | 'vr'
+
+  // Estados de la experiencia 3D y VR
   const [vrMode, setVrMode] = useState(false);
   const [showButtons, setShowButtons] = useState(true);
+  const [activeStation, setActiveStation] = useState(null);
+  const [isBooksOpen, setIsBooksOpen] = useState(false);
+  const [autoOpenOnFocus] = useState(false);
+
   const onRecenterRef = useRef(null);
   const onWebXRTriggerRef = useRef(null);
 
-  // Funcion para entrar y salir del modo VR
+  const isAuthenticated = Boolean(user) || isDemoMode;
+
+  const handleSignOut = async () => {
+    if (isDemoMode) {
+      setIsDemoMode(false);
+    } else {
+      await signOut();
+    }
+    setActiveTab('dashboard');
+    setViewMode('museum');
+  };
+
+  // Manejador cuando cambia la estación enfocada en 3D
+  const handleStationChange = useCallback(
+    (station) => {
+      setActiveStation(station);
+      if (station && autoOpenOnFocus && !vrMode) {
+        setIsBooksOpen(true);
+      }
+    },
+    [autoOpenOnFocus, vrMode]
+  );
+
+  // Manejador para abrir panel de recomendaciones (desde botón 3D de la tarjeta)
+  const handleOpenBooksPanel = useCallback((station) => {
+    if (station) {
+      setActiveStation(station);
+    }
+    setIsBooksOpen(true);
+  }, []);
+
+  // Entrar a Modo VR (WebXR nativo o fallback estereoscópico móvil)
   const enterVR = useCallback(async () => {
     // 1. Si WebXR nativo está disponible y soportado en el navegador:
     if (navigator.xr && onWebXRTriggerRef.current) {
@@ -65,6 +119,47 @@ export default function App() {
     }
   }, []);
 
+  // Si el usuario decide entrar a la vista administrativa de BiblioVR:
+  if (viewMode === 'admin') {
+    if (!isAuthenticated) {
+      return (
+        <LoginView
+          onBypassDemo={() => setIsDemoMode(true)}
+          onBackToMuseum={() => setViewMode('museum')}
+        />
+      );
+    }
+
+    return (
+      <AdminLayout
+        activeTab={activeTab}
+        onSelectTab={(tab) => {
+          if (tab === 'vr') {
+            setViewMode('museum');
+          } else {
+            setActiveTab(tab);
+          }
+        }}
+        onSignOut={handleSignOut}
+      >
+        {activeTab === 'dashboard' && (
+          <DashboardView
+            onNavigate={(tab) => {
+              if (tab === 'vr') setViewMode('museum');
+              else setActiveTab(tab);
+            }}
+          />
+        )}
+        {activeTab === 'books' && <BooksManagementView />}
+        {activeTab === 'wireframes' && <WireframesView />}
+        {activeTab === 'vr' && (
+          <VRPrototypeView onBackToDashboard={() => setActiveTab('dashboard')} />
+        )}
+      </AdminLayout>
+    );
+  }
+
+  // Vista principal: Museo Virtual Wixárika 3D con Panel Lateral de Libros Recomendados (Sprint 3)
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       {/* Escena 3D del Museo Wixarika */}
@@ -75,7 +170,86 @@ export default function App() {
         onRecenterRef={onRecenterRef}
         showButtons={showButtons}
         setShowButtons={setShowButtons}
+        activeStation={activeStation}
+        onActiveStationChange={handleStationChange}
+        onOpenBooksPanel={handleOpenBooksPanel}
+        isBooksOpen={isBooksOpen}
+        onToggleBooksOpen={setIsBooksOpen}
       />
+
+      {/* Barra de Controles Superior (No VR) */}
+      {!vrMode && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '16px',
+            left: '16px',
+            right: '16px',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            pointerEvents: 'none'
+          }}
+        >
+          {/* Botón para acceder al Panel de Administración BiblioVR */}
+          <button
+            onClick={() => setViewMode('admin')}
+            style={{
+              padding: '9px 16px',
+              fontSize: '13px',
+              fontWeight: '700',
+              color: '#f8fafc',
+              background: 'rgba(11, 26, 48, 0.85)',
+              border: '1px solid rgba(229, 160, 13, 0.6)',
+              borderRadius: '24px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(8px)',
+              pointerEvents: 'auto',
+              transition: 'all 0.2s ease'
+            }}
+            title="Abrir Panel de Gestión BiblioVR (Dashboard, Libros, Wireframes)"
+          >
+            <span style={{ fontSize: '15px' }}>🏛️</span>
+            <span>Panel BiblioVR</span>
+          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', pointerEvents: 'auto' }}>
+            {/* Botón de recentrar orientación */}
+            <button
+              onClick={() => onRecenterRef.current?.()}
+              style={{
+                padding: '9px 14px',
+                fontSize: '13px',
+                fontWeight: '600',
+                color: '#cbd5e1',
+                background: 'rgba(15, 23, 42, 0.85)',
+                border: '1px solid rgba(148, 163, 184, 0.3)',
+                borderRadius: '24px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                backdropFilter: 'blur(8px)'
+              }}
+              title="Recentrar orientación"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="22" y1="12" x2="18" y2="12" />
+                <line x1="6" y1="12" x2="2" y2="12" />
+                <line x1="12" y1="6" x2="12" y2="2" />
+                <line x1="12" y1="22" x2="12" y2="18" />
+              </svg>
+              <span>Recentrar</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Barra de Controles Inferior (Abajo) */}
       {!vrMode && (
@@ -102,7 +276,9 @@ export default function App() {
               fontWeight: '700',
               letterSpacing: '0.5px',
               color: showButtons ? '#fde047' : '#ffffff',
-              background: showButtons ? 'rgba(7, 10, 20, 0.90)' : 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+              background: showButtons
+                ? 'rgba(7, 10, 20, 0.90)'
+                : 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
               border: showButtons ? '2px solid #f59e0b' : '2px solid #fde047',
               borderRadius: '50px',
               cursor: 'pointer',
@@ -214,5 +390,13 @@ export default function App() {
         </button>
       )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
