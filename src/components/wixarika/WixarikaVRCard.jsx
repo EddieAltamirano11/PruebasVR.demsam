@@ -1,32 +1,13 @@
 import React from 'react';
 import { Text } from '@react-three/drei';
-import * as THREE from 'three';
-import { WIXARIKA_VARIANTS } from './wixarikaTheme.js';
-import { TsikuriDiamond, ChaquiraBorder } from './TsikuriDiamond.jsx';
+import { WIXARIKA_VARIANTS, VR_TYPOGRAPHY_PALETTE } from './wixarikaTheme.js';
+import { TsikuriDiamond } from './TsikuriDiamond.jsx';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';
 
 /**
  * WixarikaVRCard - Tarjeta 3D Reutilizable con Identidad Cultural Wixárika
- * Diseñada para fichas de libros, estaciones de museo, cédulas culturales y detalles.
- * 
- * @param {Object} props
- * @param {string} props.title - Título principal
- * @param {string} [props.subtitle] - Subtítulo o autor
- * @param {string} [props.category] - Categoría (ej. 'COSMOVISIÓN', 'LIBRO FÍSICO')
- * @param {string} [props.badge] - Insignia destacada (ej. 'DISPONIBLE EN SALA')
- * @param {string} [props.description] - Descripción o sinopsis
- * @param {Array<{label: string, value: string}>} [props.metadata] - Metadatos adicionales
- * @param {Array<Object>} [props.actions] - Botones de acción inferiores
- * @param {number} [props.width=1.8] - Ancho de la tarjeta en metros
- * @param {number} [props.height=1.4] - Alto de la tarjeta en metros
- * @param {Array<number>} [props.position] - Posición 3D [x, y, z]
- * @param {Array<number>} [props.rotation] - Rotación 3D [rx, ry, rz]
- * @param {'solar'|'water'|'hikuri'|'kauyumari'|'obsidian'} [props.variant='solar']
- * @param {Function} [props.onRegister] - Para registrar botones interactivos
- * @param {Function} [props.onUnregister] - Para desregistrar botones
- * @param {string} [props.hoveredId] - ID de botón actualmente enfocado
- * @param {number} [props.fuseProgress=0] - Progreso del Gaze Fuse
- * @param {number} [props.distance=2.2] - Distancia en metros al usuario
+ * Diseñada para máxima legibilidad en VR: paleta estricta de 2 colores,
+ * tipografías ampliadas y síntesis de contenido por palabras clave.
  */
 export function WixarikaVRCard({
   title,
@@ -36,8 +17,8 @@ export function WixarikaVRCard({
   description,
   metadata = [],
   actions = [],
-  width = 1.8,
-  height = 1.4,
+  width = 2.4,
+  height = 1.45,
   position = [0, 0, 0],
   rotation = [0, 0, 0],
   variant = 'solar',
@@ -52,35 +33,34 @@ export function WixarikaVRCard({
   const isCantera = variant === 'cantera';
   const theme = WIXARIKA_VARIANTS[variant] || WIXARIKA_VARIANTS.solar;
 
-  // Cálculos de espaciado y tamaños tipográficos
+  // Paleta estricta de 2 colores para tipografía
+  const textColor1 = isCantera ? '#1c1917' : VR_TYPOGRAPHY_PALETTE.primary;   // Blanco o carbón profundo
+  const textColor2 = isCantera ? '#78350f' : VR_TYPOGRAPHY_PALETTE.secondary; // Oro sagrado cálido o ámbar oscuro
+
+  // Cálculos de espaciado y tamaños tipográficos ampliados
   const halfH = height / 2;
   const contentW = width * 0.88;
 
   const baseBg = isCantera ? '#faf6eb' : (theme.bgIdle || '#070a14');
-  const titleColor = isCantera ? '#1c1917' : '#ffffff';
-  const subtitleColor = isCantera ? '#78350f' : theme.textColor;
-  const descColor = isCantera ? '#292524' : '#f8fafc';
-  const metaLabelColor = isCantera ? '#78350f' : theme.borderGlow;
-  const metaValColor = isCantera ? '#1c1917' : '#ffffff';
-  const badgeBg = isCantera ? '#f3ebd6' : theme.bgActive;
-  const badgeTextColor = isCantera ? '#78350f' : '#ffffff';
+  const badgeBg = isCantera ? '#f3ebd6' : 'rgba(245, 158, 11, 0.18)';
 
-  // Tipografías ajustadas a tamaño angular ergonómico sin riesgo de solapamiento
-  const titleSize = Math.max(0.048, Math.min(0.062, width * 0.032));
-  const subtitleSize = Math.max(0.034, Math.min(0.040, width * 0.020));
-  const descSize = Math.max(0.032, Math.min(0.038, width * 0.019));
-  const metaSize = Math.max(0.030, Math.min(0.034, width * 0.017));
-  const badgeSize = Math.max(0.030, Math.min(0.034, width * 0.016));
+  // Tipografías ampliadas para superar con margen los umbrales de legibilidad VR (>= 0.048m a 2.2m)
+  const titleSize = Math.max(0.075, Math.min(0.092, width * 0.038));
+  const subtitleSize = Math.max(0.046, Math.min(0.054, width * 0.022));
+  const descSize = Math.max(0.046, Math.min(0.054, width * 0.022));
+  const metaSize = Math.max(0.042, Math.min(0.048, width * 0.020));
+  const badgeSize = Math.max(0.038, Math.min(0.044, width * 0.018));
 
-  // Espacio vertical para las secciones (con anclaje superior explícito)
-  const badgeY = halfH - 0.08;
-  const titleY = badgeY - 0.07;
+  // Posicionamiento vertical limpio
+  const badgeY = halfH - 0.09;
+  const titleY = badgeY - 0.085;
   const isTitleLong = (title?.length || 0) > 28;
-  const subtitleY = titleY - (isTitleLong ? 0.12 : 0.075);
-  const separatorY = subtitleY - 0.055;
-  const descY = separatorY - 0.025;
-  const metaY = description ? descY - 0.14 : separatorY - 0.04;
-  const actionsY = -halfH + 0.11;
+  const subtitleY = titleY - (isTitleLong ? 0.13 : 0.095);
+  const separatorY = subtitleY - 0.065;
+  const descY = separatorY - 0.04;
+  const descLineCount = (description?.split('\n')?.length) || 1;
+  const metaY = description ? descY - (descLineCount * 0.065 + 0.06) : separatorY - 0.05;
+  const actionsY = -halfH + 0.12;
 
   return (
     <group position={position} rotation={rotation}>
@@ -109,15 +89,15 @@ export function WixarikaVRCard({
         colors={theme.chaquiraBeads}
       />
 
-      {/* 5. Categoría e insignia destacada */}
+      {/* 5. Categoría e insignia destacada (usando paleta de 2 colores) */}
       {category && (
         <group position={[-contentW / 2 + 0.02, badgeY, 0.005]}>
           <Text
             fontSize={badgeSize}
-            color={theme.accentColor}
+            color={textColor2}
             anchorX="left"
             anchorY="middle"
-            letterSpacing={0.08}
+            letterSpacing={0.06}
           >
             {category.toUpperCase()}
           </Text>
@@ -126,28 +106,28 @@ export function WixarikaVRCard({
 
       {badge && (
         <group position={[contentW / 2 - 0.02, badgeY, 0.005]}>
-          {/* Fondo de insignia */}
-          <mesh position={[-0.16, 0, -0.001]}>
-            <planeGeometry args={[0.38, 0.055]} />
+          <mesh position={[-0.20, 0, -0.001]}>
+            <planeGeometry args={[0.44, 0.065]} />
             <meshBasicMaterial color={badgeBg} transparent opacity={0.9} />
           </mesh>
           <Text
-            position={[-0.16, 0, 0.001]}
-            fontSize={badgeSize * 0.9}
-            color={badgeTextColor}
+            position={[-0.20, 0, 0.001]}
+            fontSize={badgeSize * 0.95}
+            color={textColor2}
             anchorX="center"
             anchorY="middle"
+            letterSpacing={0.04}
           >
             {badge}
           </Text>
         </group>
       )}
 
-      {/* 6. Título y Subtítulo con alto contraste (anclaje top para evitar solapamiento) */}
+      {/* 6. Título principal (Color 1 - Blanco/Carbón de alto impacto) */}
       <Text
         position={[0, titleY, 0.005]}
         fontSize={titleSize}
-        color={titleColor}
+        color={textColor1}
         anchorX="center"
         anchorY="top"
         maxWidth={contentW * 0.94}
@@ -159,11 +139,12 @@ export function WixarikaVRCard({
         {title}
       </Text>
 
+      {/* 7. Subtítulo (Color 2 - Oro Sagrado / Ámbar) */}
       {subtitle && (
         <Text
           position={[0, subtitleY, 0.005]}
           fontSize={subtitleSize}
-          color={subtitleColor}
+          color={textColor2}
           anchorX="center"
           anchorY="top"
           maxWidth={contentW * 0.94}
@@ -173,40 +154,40 @@ export function WixarikaVRCard({
         </Text>
       )}
 
-      {/* 7. Separador geométrico */}
+      {/* 8. Separador geométrico */}
       <mesh position={[0, separatorY, 0.003]}>
-        <planeGeometry args={[contentW * 0.75, 0.004]} />
+        <planeGeometry args={[contentW * 0.85, 0.004]} />
         <meshBasicMaterial color={theme.borderGlow} transparent opacity={0.6} />
       </mesh>
 
-      {/* 8. Descripción o sinopsis del libro/estación */}
+      {/* 9. Descripción sintetizada en palabras clave (Color 1 / Color 2) */}
       {description && (
         <Text
           position={[0, descY, 0.005]}
           fontSize={descSize}
-          color={descColor}
+          color={textColor1}
           anchorX="center"
           anchorY="top"
           maxWidth={contentW * 0.94}
           textAlign="center"
-          lineHeight={1.3}
+          lineHeight={1.35}
         >
           {description}
         </Text>
       )}
 
-      {/* 9. Metadatos (Autor, Disponibilidad, Cota de biblioteca) */}
+      {/* 10. Metadatos (Etiqueta en Color 2, Valor en Color 1) */}
       {metadata.length > 0 && (
         <group position={[0, metaY, 0.005]}>
           {metadata.map((item, idx) => {
-            const spacing = 0.052;
+            const spacing = 0.062;
             const yPos = -idx * spacing;
             return (
               <group key={idx} position={[0, yPos, 0]}>
                 <Text
                   position={[-contentW / 2 + 0.04, 0, 0]}
                   fontSize={metaSize}
-                  color={metaLabelColor}
+                  color={textColor2}
                   anchorX="left"
                   anchorY="top"
                 >
@@ -215,7 +196,7 @@ export function WixarikaVRCard({
                 <Text
                   position={[-contentW / 2 + 0.38, 0, 0]}
                   fontSize={metaSize}
-                  color={metaValColor}
+                  color={textColor1}
                   anchorX="left"
                   anchorY="top"
                   maxWidth={contentW - 0.42}
@@ -228,7 +209,7 @@ export function WixarikaVRCard({
         </group>
       )}
 
-      {/* 10. Botones de Acción (con soporte Gaze Fuse) */}
+      {/* 11. Botones de Acción */}
       {actions.length > 0 && (
         <group position={[0, actionsY, 0.008]}>
           {actions.map((action, idx) => {

@@ -29,7 +29,7 @@ export const CULTURAL_STATIONS = [
     rotation: [0, 0, 0],
     variant: 'cantera',
     iconName: 'sun',
-    description: 'Panteón sagrado Wixárika: Tatewari (El Abuelo Fuego), Tayau (Padre Sol) y Kauyumari (El Venado Azul). Representan el equilibrio y la fuerza espiritual en Wirikuta.',
+    description: '• Tatewari: Abuelo Fuego Sagrado\n• Tayau: Padre Sol y Fuerza Creadora\n• Kauyumari: Venado Azul y Guía Espiritual',
     book: 'Libro disponible: "El Fuego Sagrado y los Cantos del Mara\'akame" (Biblioteca Solón Argüello)',
     bookId: 'book-1'
   },
@@ -41,7 +41,7 @@ export const CULTURAL_STATIONS = [
     rotation: [0, -Math.PI / 2, 0],
     variant: 'cantera',
     iconName: 'utensils',
-    description: 'Gastronomía ceremonial: Tortillas de maíz criollo, tamales en totomoxtle, caldo de toro nayarita, atole espumoso y perruri tradicional.',
+    description: '• Maíz Criollo Sagrado y Tortillas de Comal\n• Caldo de Toro Ceremonial y Tamales Totomoxtle\n• Tejuino Ritual y Perruri de Semillas',
     book: 'Libro disponible: "Sabores del Nayar: Etnobotánica y Cocina Tradicional" (Biblioteca Solón Argüello)',
     bookId: 'book-2'
   },
@@ -53,7 +53,7 @@ export const CULTURAL_STATIONS = [
     rotation: [0, Math.PI / 2, 0],
     variant: 'cantera',
     iconName: 'sparkles',
-    description: 'Ciclo ceremonial: Fiesta del Tambor (Tepu) para la bendición de los niños, Tatei Neixa (Primeros Frutos) y la danza sagrada del Hikuri Neixa.',
+    description: '• Fiesta del Tambor: Protección de la Niñez\n• Tatei Neixa: Bendición de Primeros Frutos\n• Hikuri Neixa: Danza Sagrada del Peyote',
     book: 'Libro disponible: "Fiestas Sagradas de la Sierra Wixárika" (Biblioteca Solón Argüello)',
     bookId: 'book-3'
   }
@@ -262,7 +262,7 @@ export function MuseumScene({
     <Canvas
       style={{ width: '100%', height: '100%', background: '#0a0f1d' }}
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-      dpr={[1, 2]}
+      dpr={[1, typeof window !== 'undefined' ? Math.min(2.5, window.devicePixelRatio || 2) : 2]}
     >
       {/* Rig de camara para modo normal y modo VR */}
       <group ref={cameraRigRef} position={[0, 0, 0]}>
@@ -371,7 +371,7 @@ export function MuseumScene({
                     }
                   ]}
                   width={2.40}
-                  height={1.30}
+                  height={1.48}
                   variant={station.variant || 'cantera'}
                   registerMesh={registerMesh}
                   unregisterMesh={unregisterMesh}

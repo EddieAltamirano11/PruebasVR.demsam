@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   WIXARIKA_COLORS,
   WIXARIKA_VARIANTS,
+  VR_TYPOGRAPHY_PALETTE,
   calculateAngularSize,
   metersFromAngularSize,
   verifyAngularCompliance,
@@ -203,6 +204,37 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(typeof WixarikaWelcomeDashboard).toBe('function');
       expect(typeof WixarikaVRVideoPanel).toBe('function');
       expect(typeof WixarikaVRVideoPlayer).toBe('function');
+    });
+  });
+
+  describe('VR Strict 2-Color Typography Palette & Readability', () => {
+    it('should define exactly 2 typography colors for VR', () => {
+      expect(VR_TYPOGRAPHY_PALETTE.primary).toBe('#ffffff');
+      expect(VR_TYPOGRAPHY_PALETTE.secondary).toBe('#fde047');
+      expect(Object.keys(VR_TYPOGRAPHY_PALETTE)).toHaveLength(2);
+    });
+
+    it('both typography colors must achieve WCAG AAA (>= 7.0:1) on Obsidian surface', () => {
+      const obsidianBg = WIXARIKA_COLORS.obsidian.surface;
+      const primaryCompliance = verifyWcagCompliance(VR_TYPOGRAPHY_PALETTE.primary, obsidianBg);
+      const secondaryCompliance = verifyWcagCompliance(VR_TYPOGRAPHY_PALETTE.secondary, obsidianBg);
+
+      expect(primaryCompliance.passesAAA).toBe(true);
+      expect(primaryCompliance.ratio).toBeGreaterThanOrEqual(15.0);
+      expect(secondaryCompliance.passesAAA).toBe(true);
+      expect(secondaryCompliance.ratio).toBeGreaterThanOrEqual(13.0);
+    });
+
+    it('enlarged title size (>0.085m) at 2.4m viewing distance exceeds header angular threshold', () => {
+      const titleCompliance = verifyAngularCompliance(0.088, 2.4, 'header');
+      expect(titleCompliance.passes).toBe(true);
+      expect(titleCompliance.angularDeg).toBeGreaterThanOrEqual(2.0);
+    });
+
+    it('enlarged body text (>0.050m) at 2.4m viewing distance comfortably exceeds body text threshold', () => {
+      const bodyCompliance = verifyAngularCompliance(0.052, 2.4, 'body');
+      expect(bodyCompliance.passes).toBe(true);
+      expect(bodyCompliance.angularDeg).toBeGreaterThanOrEqual(1.2);
     });
   });
 });

@@ -1,4 +1,4 @@
-﻿import { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
@@ -38,8 +38,20 @@ export function WebXRManager({ onSessionChange, onTriggerRef }) {
     // 4. Escuchar eventos de inicio y fin de sesion VR
     const onStart = () => {
       console.log('Sesion WebXR iniciada');
+
+      // Maximizar nitidez: factor de escala 1.5 en el framebuffer WebXR
+      if (typeof gl.xr.setFramebufferScaleFactor === 'function') {
+        gl.xr.setFramebufferScaleFactor(1.5);
+      }
+
+      // Eliminar foveación periférica para evitar textos borrosos
+      if (typeof gl.xr.setFoveation === 'function') {
+        gl.xr.setFoveation(0);
+      }
+
       if (onSessionChange) onSessionChange(true);
     };
+
     const onEnd = () => {
       console.log('Sesion WebXR finalizada');
       if (onSessionChange) onSessionChange(false);

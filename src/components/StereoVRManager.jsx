@@ -1,4 +1,4 @@
-﻿import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 
@@ -23,7 +23,8 @@ export function StereoVRManager({ eyeSep = 0.064 }) {
 
   // Bucle de renderizado prioritario (priority 1) exclusivo para el modo estereoscopico
   useFrame(({ scene, camera }) => {
-    gl.getSize(sizeVec.current);
+    // Usar el tamaño físico real del búfer WebGL (getDrawingBufferSize) para evitar submuestreo de píxeles
+    gl.getDrawingBufferSize(sizeVec.current);
     const w = sizeVec.current.x;
     const h = sizeVec.current.y;
     if (w <= 0 || h <= 0) return;
@@ -35,6 +36,9 @@ export function StereoVRManager({ eyeSep = 0.064 }) {
     stereoCam.cameraR.far = camera.far || 50000;
     stereoCam.aspect = 0.5;
     stereoCam.eyeSep = eyeSep;
+
+    // Calibrar la convergencia focal a la distancia de visualización de paneles (2.2m)
+    camera.focus = 2.2;
 
     // Actualizar la camara base y proyectar los dos ojos
     camera.updateMatrixWorld();
@@ -51,13 +55,13 @@ export function StereoVRManager({ eyeSep = 0.064 }) {
     gl.autoClear = false;
     gl.clear();
 
-    // 1. OJO IZQUIERDO (Mitad izquierda de la pantalla)
+    // 1. OJO IZQUIERDO (Mitad izquierda de la pantalla física)
     gl.setViewport(0, 0, halfW, h);
     gl.setScissor(0, 0, halfW, h);
     gl.setScissorTest(true);
     gl.render(scene, stereoCam.cameraL);
 
-    // 2. OJO DERECHO (Mitad derecha de la pantalla)
+    // 2. OJO DERECHO (Mitad derecha de la pantalla física)
     gl.setViewport(halfW, 0, w - halfW, h);
     gl.setScissor(halfW, 0, w - halfW, h);
     gl.setScissorTest(true);

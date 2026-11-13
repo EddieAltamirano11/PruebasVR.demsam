@@ -1,30 +1,14 @@
 import React, { useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
-import * as THREE from 'three';
-import { WIXARIKA_VARIANTS } from './wixarikaTheme.js';
+import { WIXARIKA_VARIANTS, VR_TYPOGRAPHY_PALETTE } from './wixarikaTheme.js';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';
 
 /**
  * WixarikaVRFloatingPanel - Panel Flotante Espacial Reutilizable
  * Base para menús, paneles de lectura, diálogos y módulos interactivos.
- * 
- * @param {Object} props
- * @param {string} props.title - Título del panel
- * @param {string} [props.subtitle] - Subtítulo descriptivo
- * @param {number} [props.width=2.4] - Ancho del panel en metros
- * @param {number} [props.height=1.8] - Alto del panel en metros
- * @param {Array<number>} [props.position] - Posición en espacio 3D
- * @param {Array<number>} [props.rotation] - Rotación 3D
- * @param {boolean} [props.billboard=false] - Si debe orientarse automáticamente al observador
- * @param {'solar'|'water'|'hikuri'|'kauyumari'|'obsidian'} [props.variant='solar']
- * @param {Function} [props.onClose] - Callback para cerrar el panel
- * @param {Function} [props.onRegister] - Callback de registro para raycaster
- * @param {Function} [props.onUnregister] - Callback de desregistro
- * @param {string} [props.hoveredId] - ID de botón enfocado
- * @param {number} [props.fuseProgress=0] - Progreso del Gaze Fuse
- * @param {React.ReactNode} [props.children] - Contenido hijo dentro del panel
+ * Aplica paleta estricta de 2 colores y tipografía de alto impacto en VR.
  */
 export function WixarikaVRFloatingPanel({
   title,
@@ -53,8 +37,9 @@ export function WixarikaVRFloatingPanel({
   const halfH = height / 2;
 
   const baseBg = isCantera ? '#faf6eb' : '#070a14';
-  const titleColor = isCantera ? '#1c1917' : '#ffffff';
-  const subtitleColor = isCantera ? '#78350f' : theme.borderGlow;
+  // Paleta estricta de 2 colores para textos
+  const titleColor = isCantera ? '#1c1917' : VR_TYPOGRAPHY_PALETTE.primary;     // Blanco o carbón profundo
+  const subtitleColor = isCantera ? '#78350f' : VR_TYPOGRAPHY_PALETTE.secondary; // Oro sagrado cálido o ámbar
 
   // Si billboard está activo, orientar suavemente hacia la cámara
   useFrame(() => {
@@ -106,7 +91,7 @@ export function WixarikaVRFloatingPanel({
       <group position={[onClose ? -0.20 : 0, halfH - 0.16, 0.005]}>
         <Text
           position={[0, subtitle ? 0 : -0.025, 0]}
-          fontSize={Math.max(0.060, Math.min(0.092, width * 0.028))}
+          fontSize={Math.max(0.068, Math.min(0.094, width * 0.030))}
           color={titleColor}
           anchorX="center"
           anchorY="middle"
@@ -120,8 +105,8 @@ export function WixarikaVRFloatingPanel({
 
         {subtitle && (
           <Text
-            position={[0, -0.085, 0]}
-            fontSize={Math.max(0.036, Math.min(0.044, width * 0.017))}
+            position={[0, -0.088, 0]}
+            fontSize={Math.max(0.042, Math.min(0.052, width * 0.020))}
             color={subtitleColor}
             anchorX="center"
             anchorY="middle"

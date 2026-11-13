@@ -72,15 +72,23 @@ export const WIXARIKA_COLORS = {
     border: '#1e293b',    // Borde sutil
     glass: 'rgba(7, 10, 20, 0.94)'
   },
-  // Neutrales de Alto Contraste (WCAG AAA)
+  // Neutrales de Alto Contraste (WCAG AAA) - Paleta estricta de 2 colores (#ffffff y #fde047)
   text: {
-    primary: '#ffffff',   // Blanco absoluto (18:1 vs superficie obsidiana)
-    solar: '#fde047',     // Amarillo solar (14:1 vs superficie obsidiana)
-    turquoise: '#38bdf8', // Turquesa cielo (9:1 vs superficie obsidiana)
-    hikuri: '#34d399',    // Menta medicinal (10:1 vs superficie obsidiana)
-    secondary: '#cbd5e1', // Gris perla claro (10:1 vs superficie obsidiana)
-    muted: '#94a3b8'      // Gris plata (6:1 vs superficie obsidiana)
+    primary: '#ffffff',   // Color 1: Blanco absoluto (18:1 vs superficie obsidiana)
+    secondary: '#fde047', // Color 2: Oro sagrado cálido (14:1 vs superficie obsidiana)
+    solar: '#fde047',     // Alias Color 2
+    turquoise: '#ffffff', // Mapeado a Color 1
+    hikuri: '#fde047',    // Mapeado a Color 2
+    muted: '#fde047'      // Mapeado a Color 2
   }
+};
+
+// ============================================================================
+// PALETA TIPOGRÁFICA ESTRICTA DE 2 COLORES PARA VR
+// ============================================================================
+export const VR_TYPOGRAPHY_PALETTE = {
+  primary: '#ffffff',   // Color 1: Blanco Puro (Títulos, términos clave, botones principales)
+  secondary: '#fde047'  // Color 2: Oro Sagrado (Subtítulos, viñetas, metadatos y cotas)
 };
 
 // ============================================================================

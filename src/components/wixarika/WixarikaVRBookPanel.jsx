@@ -99,7 +99,7 @@ function BookCoverMesh({ url, width = 0.58, height = 0.82, position = [0, 0, 0] 
           <meshBasicMaterial color="#f3ebd6" />
         </mesh>
         <Text
-          fontSize={0.024}
+          fontSize={0.028}
           color="#78350f"
           anchorX="center"
           anchorY="middle"
@@ -203,22 +203,7 @@ export const DEFAULT_WIXARIKA_BOOKS = [
  * WixarikaVRBookPanel - Panel 3D de Libros y Fomento Lector en VR
  * Diseñado exclusivamente con la información requerida:
  * Título, Autor y Código de libro, filtrado por el tema que se esté viendo.
- * 
- * @param {Object} props
- * @param {Array} [props.books] - Catálogo de libros (usa DEFAULT_WIXARIKA_BOOKS por defecto)
- * @param {string} [props.stationId] - ID de la estación cultural (deidades, gastronomia, fiestas)
- * @param {string} [props.stationName] - Nombre amigable del tema visualizado
- * @param {string} [props.initialBookId] - ID del libro inicialmente seleccionado
- * @param {Function} [props.onSelectBook] - Callback al cambiar de libro
- * @param {Function} [props.onClose] - Callback para cerrar el panel y volver a la sala
- * @param {Array<number>} [props.position] - Posición en espacio 3D
- * @param {Array<number>} [props.rotation] - Rotación 3D
- * @param {Function} [props.onRegister] - Registro en raycaster Gaze Fuse
- * @param {Function} [props.onUnregister] - Desregistro
- * @param {Function} [props.registerMesh] - Registro de malla interactiva
- * @param {Function} [props.unregisterMesh] - Desregistro de malla
- * @param {string} [props.hoveredId] - ID del elemento enfocado con la mirada
- * @param {number} [props.fuseProgress=0] - Progreso del temporizador Gaze Fuse
+ * Aplica paleta estricta de 2 colores y tipografías ampliadas para VR.
  */
 export function WixarikaVRBookPanel({
   books: initialBooksProp,
@@ -325,12 +310,16 @@ export function WixarikaVRBookPanel({
   // Verificación condicional: ¿Tiene portada asignada?
   const hasCover = Boolean(currentBook?.portadaUrl && currentBook.portadaUrl.trim() !== '');
 
+  // Paleta estricta de 2 colores (Cantera: primario carbón #1c1917, secundario ámbar #78350f)
+  const color1 = '#1c1917';
+  const color2 = '#78350f';
+
   return (
     <WixarikaVRFloatingPanel
       title="LIBROS DE LA BIBLIOTECA"
       subtitle={themeSubtitle}
-      width={hasCover ? 2.85 : 2.45}
-      height={1.48}
+      width={hasCover ? 2.95 : 2.55}
+      height={1.54}
       position={position}
       rotation={rotation}
       variant="cantera"
@@ -344,15 +333,15 @@ export function WixarikaVRBookPanel({
     >
       {/* 1. Barra de Navegación (Solo si hay más de 1 libro para el tema activo) */}
       {hasMultipleBooks && (
-        <group position={[0, 0.32, 0.01]}>
+        <group position={[0, 0.34, 0.01]}>
           <WixarikaVRButton
             id="btn-book-prev"
             label="Anterior"
             iconName="chevron-left"
             variant="cantera"
-            width={0.54}
-            height={0.13}
-            position={[-0.78, 0, 0]}
+            width={0.56}
+            height={0.14}
+            position={[-0.82, 0, 0]}
             onClick={handlePrev}
             onRegister={onRegister}
             onUnregister={onUnregister}
@@ -366,13 +355,13 @@ export function WixarikaVRBookPanel({
           {/* Indicador de posición del libro */}
           <group position={[0, 0, 0]}>
             <mesh position={[0, 0, -0.001]}>
-              <planeGeometry args={[0.78, 0.11]} />
+              <planeGeometry args={[0.84, 0.12]} />
               <meshBasicMaterial color="#f3ebd6" transparent opacity={0.95} />
             </mesh>
             <Text
               position={[0, 0, 0.002]}
-              fontSize={0.038}
-              color="#1c1917"
+              fontSize={0.046}
+              color={color1}
               anchorX="center"
               anchorY="middle"
             >
@@ -385,9 +374,9 @@ export function WixarikaVRBookPanel({
             label="Siguiente"
             iconName="chevron-right"
             variant="cantera"
-            width={0.54}
-            height={0.13}
-            position={[0.78, 0, 0]}
+            width={0.56}
+            height={0.14}
+            position={[0.82, 0, 0]}
             onClick={handleNext}
             onRegister={onRegister}
             onUnregister={onUnregister}
@@ -400,59 +389,59 @@ export function WixarikaVRBookPanel({
         </group>
       )}
 
-      {/* 2. Área del Libro: Portada opcional + ÚNICAMENTE Título, Autor y Código */}
+      {/* 2. Área del Libro: Portada opcional + Título, Autor y Código en tipografías ampliadas */}
       {currentBook && (
         <group position={[hasCover ? 0.35 : 0, hasMultipleBooks ? -0.06 : 0.02, 0.01]}>
           {hasCover && (
             <BookCoverMesh
               url={currentBook.portadaUrl}
-              width={0.52}
-              height={0.76}
-              position={[-0.95, 0, 0]}
+              width={0.54}
+              height={0.78}
+              position={[-0.98, 0, 0]}
             />
           )}
 
-          {/* TÍTULO DEL LIBRO (Grande, claro, alto contraste) */}
+          {/* TÍTULO DEL LIBRO (Grande, nítido, alto contraste - Color 1) */}
           <Text
-            position={[0, 0.18, 0.005]}
-            fontSize={0.054}
-            color="#1c1917"
+            position={[0, 0.19, 0.005]}
+            fontSize={0.066}
+            color={color1}
             anchorX="center"
             anchorY="top"
-            maxWidth={hasCover ? 1.6 : 2.15}
+            maxWidth={hasCover ? 1.65 : 2.25}
             textAlign="center"
-            lineHeight={1.18}
+            lineHeight={1.20}
           >
             {bookTitle}
           </Text>
 
-          {/* AUTOR DEL LIBRO */}
+          {/* AUTOR DEL LIBRO (Color 2) */}
           <Text
-            position={[0, 0.02, 0.005]}
-            fontSize={0.038}
-            color="#78350f"
+            position={[0, 0.01, 0.005]}
+            fontSize={0.048}
+            color={color2}
             anchorX="center"
             anchorY="top"
-            maxWidth={hasCover ? 1.6 : 2.15}
+            maxWidth={hasCover ? 1.65 : 2.25}
             textAlign="center"
           >
             {`Autor: ${bookAuthor}`}
           </Text>
 
-          {/* CÓDIGO DE LIBRO (Cota de biblioteca / Estantería física) */}
-          <group position={[0, -0.15, 0.005]}>
+          {/* CÓDIGO DE LIBRO (Cota de biblioteca física - Color 1) */}
+          <group position={[0, -0.16, 0.005]}>
             <mesh position={[0, 0, -0.001]}>
-              <planeGeometry args={[1.25, 0.13]} />
+              <planeGeometry args={[1.36, 0.14]} />
               <meshBasicMaterial color="#f3ebd6" transparent opacity={0.95} />
             </mesh>
             <mesh position={[0, 0, -0.002]}>
-              <planeGeometry args={[1.28, 0.16]} />
+              <planeGeometry args={[1.40, 0.17]} />
               <meshBasicMaterial color="#d97706" transparent opacity={0.8} />
             </mesh>
             <Text
               position={[0, 0, 0.002]}
-              fontSize={0.040}
-              color="#1c1917"
+              fontSize={0.048}
+              color={color1}
               anchorX="center"
               anchorY="middle"
               letterSpacing={0.04}
@@ -464,13 +453,13 @@ export function WixarikaVRBookPanel({
       )}
 
       {/* 3. Botón para Cerrar y Volver a la Sala */}
-      <group position={[0, -0.52, 0.01]}>
+      <group position={[0, -0.54, 0.01]}>
         <WixarikaVRButton
           id="btn-book-close-bottom"
           label="Volver a la Sala"
           iconName="arrow-left"
           variant="cantera"
-          width={1.05}
+          width={1.12}
           height={0.16}
           position={[0, 0, 0]}
           onClick={handleClose}
