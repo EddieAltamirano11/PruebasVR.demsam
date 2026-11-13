@@ -124,8 +124,8 @@ export function WixarikaVRVideoPanel({
   return (
     <WixarikaVRFloatingPanel
       title="SALA AUDIOVISUAL · BIBLIOTECA SOLÓN ARGÜELLO"
-      width={3.45}
-      height={2.15}
+      width={3.65}
+      height={2.35}
       position={position}
       rotation={rotation}
       variant="cantera"
@@ -138,15 +138,15 @@ export function WixarikaVRVideoPanel({
       fuseProgress={fuseProgress}
     >
       {/* 1. Barra de Navegación de Documentales */}
-      <group position={[0, 0.71, 0.01]}>
+      <group position={[0, 0.78, 0.01]}>
         <WixarikaVRButton
           id="btn-video-prev"
           label="Anterior"
           iconName="chevron-left"
           variant="cantera"
-          width={0.78}
-          height={0.155}
-          position={[-1.19, 0, 0]}
+          width={0.88}
+          height={0.18}
+          position={[-1.32, 0, 0]}
           onClick={handlePrev}
           onRegister={onRegister}
           onUnregister={onUnregister}
@@ -160,12 +160,12 @@ export function WixarikaVRVideoPanel({
         {/* Indicador de Documental Actual */}
         <group position={[0, 0, 0]}>
           <mesh position={[0, 0, -0.001]}>
-            <planeGeometry args={[1.48, 0.15]} />
+            <planeGeometry args={[1.65, 0.18]} />
             <meshBasicMaterial color="#f4ebd8" transparent opacity={0.95} />
           </mesh>
           <Text
-            position={[0, 0.028, 0.002]}
-            fontSize={0.060}
+            position={[0, 0.035, 0.002]}
+            fontSize={0.082}
             color="#1c1917"
             anchorX="center"
             anchorY="middle"
@@ -173,12 +173,12 @@ export function WixarikaVRVideoPanel({
             {`Documental ${currentIndex + 1} de ${totalVideos}`}
           </Text>
           <Text
-            position={[0, -0.032, 0.002]}
-            fontSize={0.042}
+            position={[0, -0.040, 0.002]}
+            fontSize={0.070}
             color="#78350f"
             anchorX="center"
             anchorY="middle"
-            maxWidth={1.40}
+            maxWidth={1.55}
           >
             {`${currentVideo?.category || 'Acervo Cultural'} · ${currentVideo?.duration || '03:22'}`}
           </Text>
@@ -189,9 +189,9 @@ export function WixarikaVRVideoPanel({
           label="Siguiente"
           iconName="chevron-right"
           variant="cantera"
-          width={0.78}
-          height={0.155}
-          position={[1.19, 0, 0]}
+          width={0.88}
+          height={0.18}
+          position={[1.32, 0, 0]}
           onClick={handleNext}
           onRegister={onRegister}
           onUnregister={onUnregister}

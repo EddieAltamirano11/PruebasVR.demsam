@@ -121,8 +121,8 @@ function LowerToggleButton({
         label={showButtons ? 'Ocultar Menús' : 'Mostrar Menús'}
         iconName={showButtons ? 'eye-off' : 'eye'}
         variant="cantera"
-        width={1.45}
-        height={0.24}
+        width={1.60}
+        height={0.28}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
         onClick={() => setShowButtons(!showButtons)}
@@ -294,7 +294,7 @@ export function MuseumScene({
       {/* Dashboard Central de Bienvenida en el cuadrante Sur (+Z) */}
       {!activeStation && !showBookCatalog && !showVideoCatalog && showButtons && (
         <WixarikaWelcomeDashboard
-          position={[0, 1.48, 2.10]}
+          position={[0, 1.48, 1.95]}
           rotation={[0, Math.PI, 0]}
           onSelectStation={handleSelectStation}
           onOpenBooks={handleOpenBooks}
@@ -331,8 +331,8 @@ export function MuseumScene({
                 label={station.name}
                 iconName={station.iconName}
                 variant={station.variant || 'cantera'}
-                width={1.65}
-                height={0.34}
+                width={1.85}
+                height={0.38}
                 registerMesh={registerMesh}
                 unregisterMesh={unregisterMesh}
                 onClick={() => handleSelectStation(station)}
@@ -370,8 +370,8 @@ export function MuseumScene({
                       onClick: () => handleSelectStation(null)
                     }
                   ]}
-                  width={2.40}
-                  height={1.48}
+                  width={3.20}
+                  height={2.05}
                   variant={station.variant || 'cantera'}
                   registerMesh={registerMesh}
                   unregisterMesh={unregisterMesh}

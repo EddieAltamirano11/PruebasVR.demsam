@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import { Text } from '@react-three/drei';
-import * as THREE from 'three';
 import { SoundFX } from '../../services/audioService.js';
 import { WIXARIKA_VARIANTS, calculateAngularSize } from './wixarikaTheme.js';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
@@ -9,29 +8,7 @@ import { LucideVRIcon } from './LucideVRIcon.jsx';
 /**
  * WixarikaVRButton - Botón 3D Reutilizable para Realidad Virtual
  * Diseñado con estética ceremonial Wixárika (Huichol), compatibilidad con Gaze Fuse
- * y validación ergonómica de tamaño angular y contraste WCAG AAA.
- * 
- * @param {Object} props
- * @param {string} props.id - Identificador único para el raycaster y Gaze Fuse
- * @param {string} props.label - Texto principal del botón
- * @param {string} [props.sublabel] - Texto secundario opcional
- * @param {string} [props.iconName] - Nombre del icono vectorial Lucide (ej. 'sun', 'utensils', 'book-open', 'eye', 'x')
- * @param {string} [props.icon] - Glifo de texto opcional de compatibilidad
- * @param {Array<number>} [props.position] - Posición 3D [x, y, z]
- * @param {Array<number>} [props.rotation] - Rotación 3D [rx, ry, rz]
- * @param {number} [props.width=1.3] - Ancho del botón en metros
- * @param {number} [props.height=0.22] - Alto del botón en metros
- * @param {number} [props.depth=0.015] - Profundidad visual
- * @param {boolean} [props.active=false] - Estado activo/seleccionado
- * @param {'solar'|'water'|'hikuri'|'kauyumari'|'obsidian'|'danger'} [props.variant='solar'] - Variante cromática
- * @param {Function} [props.onClick] - Callback al activar (clic, gatillo o gaze fuse)
- * @param {Function} [props.onRegister] - Callback de registro en el raycaster de escena
- * @param {Function} [props.onUnregister] - Callback de desregistro
- * @param {string} [props.hoveredId] - ID del botón actualmente bajo la mirada
- * @param {number} [props.fuseProgress=0] - Progreso del Gaze Fuse (0 a 1)
- * @param {boolean} [props.showDiamonds=true] - Si muestra rombos Tsikuri en las 4 esquinas
- * @param {boolean} [props.disabled=false] - Estado deshabilitado
- * @param {number} [props.distance=2.0] - Distancia esperada al usuario en metros para cálculo angular
+ * y tipografía maximizada para total legibilidad en VR.
  */
 export function WixarikaVRButton({
   id,
@@ -131,9 +108,9 @@ export function WixarikaVRButton({
   const cornerX = width / 2 - diamondSize * 0.45;
   const cornerY = height / 2 - diamondSize * 0.45;
 
-  // Tamaño de texto adaptado para cumplir tamaño angular (mínimo 0.6° en VR)
-  const mainFontSize = Math.max(0.045, height * (sublabel ? 0.34 : 0.42));
-  const subFontSize = Math.max(0.03, height * 0.22);
+  // Tamaño de texto maximizado para garantizar legibilidad inmediata en visores VR
+  const mainFontSize = Math.max(0.080, height * (sublabel ? 0.38 : 0.48));
+  const subFontSize = Math.max(0.056, height * 0.28);
   const _angularHeight = calculateAngularSize(height, distance);
 
   return (
@@ -198,62 +175,79 @@ export function WixarikaVRButton({
       {/* 5. Barra de progreso Gaze Fuse Wixárika en el borde inferior */}
       {isHovered && fuseProgress > 0 && (
         <group position={[0, -height / 2 + 0.012, 0.006]}>
-          {/* Fondo de la barra */}
           <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[width * 0.88, 0.016]} />
-            <meshBasicMaterial color="#040711" transparent opacity={0.8} />
+            <planeGeometry args={[width * 0.92, 0.012]} />
+            <meshBasicMaterial color="#0f172a" />
           </mesh>
-          {/* Relleno animado según dwell time */}
           <mesh
-            position={[-((width * 0.88) * (1 - fuseProgress)) / 2, 0, 0.001]}
+            position={[-((width * 0.92) * (1 - fuseProgress)) / 2, 0, 0.001]}
             scale={[fuseProgress, 1, 1]}
           >
-            <planeGeometry args={[width * 0.88, 0.014]} />
+            <planeGeometry args={[width * 0.92, 0.010]} />
             <meshBasicMaterial color={theme.fuseColor} />
           </mesh>
         </group>
       )}
 
-      {/* 6. Contenido: Ícono Vectorial Lucide, Etiqueta y Subetiqueta */}
-      <group position={[0, sublabel ? 0.018 : 0, 0.01]}>
-        {iconName && (
-          <LucideVRIcon
-            name={iconName}
-            size={Math.min(height * 0.52, 0.085)}
-            color={isCantera ? (isHovered ? '#b45309' : '#78350f') : currentTextColor}
-            position={[label ? -width * 0.36 : 0, 0, 0.002]}
-            strokeWidth={2.4}
-          />
-        )}
-
+      {/* 6. Icono Lucide o glifo decorativo */}
+      {iconName ? (
+        <LucideVRIcon
+          name={iconName}
+          size={Math.min(height * 0.54, 0.11)}
+          color={currentTextColor}
+          position={[-width / 2 + Math.max(0.12, width * 0.12), sublabel ? 0.015 : 0, 0.004]}
+          strokeWidth={2.4}
+        />
+      ) : icon ? (
         <Text
-          position={[iconName && label ? height * 0.22 : 0, 0, 0]}
-          fontSize={mainFontSize}
+          position={[-width / 2 + Math.max(0.12, width * 0.12), sublabel ? 0.015 : 0, 0.004]}
+          fontSize={Math.min(height * 0.54, 0.11)}
           color={currentTextColor}
           anchorX="center"
           anchorY="middle"
-          maxWidth={iconName ? width * 0.68 : width * 0.82}
-          textAlign="center"
-          outlineWidth={isCantera ? 0 : 0.002}
-          outlineColor="#040711"
         >
-          {icon ? `${icon}  ${label}` : label}
+          {icon}
         </Text>
+      ) : null}
 
-        {sublabel && (
-          <Text
-            position={[iconName && label ? height * 0.22 : 0, -mainFontSize * 1.05, 0]}
-            fontSize={subFontSize}
-            color={isCantera ? '#78350f' : theme.borderGlow}
-            anchorX="center"
-            anchorY="middle"
-            maxWidth={width * 0.85}
-            textAlign="center"
-          >
-            {sublabel}
-          </Text>
-        )}
-      </group>
+      {/* 7. Texto Principal del Botón (Grande, claro, alto contraste) */}
+      <Text
+        position={[
+          iconName || icon ? width * 0.05 : 0,
+          sublabel ? height * 0.14 : 0,
+          0.004
+        ]}
+        fontSize={mainFontSize}
+        color={currentTextColor}
+        anchorX="center"
+        anchorY="middle"
+        maxWidth={width * 0.82}
+        textAlign="center"
+        outlineWidth={isCantera ? 0 : 0.002}
+        outlineColor="#040711"
+        letterSpacing={0.02}
+      >
+        {label}
+      </Text>
+
+      {/* 8. Subtexto descriptivo */}
+      {sublabel && (
+        <Text
+          position={[
+            iconName || icon ? width * 0.05 : 0,
+            -height * 0.20,
+            0.004
+          ]}
+          fontSize={subFontSize}
+          color={isCantera ? '#78350f' : theme.borderGlow}
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={width * 0.82}
+          textAlign="center"
+        >
+          {sublabel}
+        </Text>
+      )}
     </group>
   );
 }

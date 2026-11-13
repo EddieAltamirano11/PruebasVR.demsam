@@ -13,6 +13,7 @@ function VRButton3D({
   label,
   sublabel,
   icon,
+  iconName,
   active = false,
   variant = 'solar',
   activeColor,
@@ -46,6 +47,7 @@ function VRButton3D({
       label={label}
       sublabel={sublabel}
       icon={icon}
+      iconName={iconName}
       active={active}
       variant={resolvedVariant}
       onClick={onClick}
@@ -399,7 +401,7 @@ export function VRMenu3D({
               width={1.20}
               height={0.22}
               label="Mostrar Botones / Menú"
-              icon="☀️"
+              iconName="sun"
               variant="solar"
               onClick={() => setMinimized(false)}
               onRegister={registerButton}
@@ -471,7 +473,7 @@ export function VRMenu3D({
 
             {/* SECCION LIBROS: BIBLIOTECA SOLÓN ARGÜELLO (Módulo Reutilizable) */}
             <Text position={[-0.78, 0.72, 0.01]} fontSize={0.038} color="#fde047" anchorX="left">
-              ✦ FONDO BIBLIOTECA SOLÓN ARGÜELLO
+              FONDO BIBLIOTECA SOLÓN ARGÜELLO
             </Text>
             <VRButton3D
               id="btn-open-books"
@@ -479,7 +481,7 @@ export function VRMenu3D({
               width={1.60}
               height={0.16}
               label="Catálogo de Libros Wixárika"
-              icon="📚"
+              iconName="book-open"
               variant="solar"
               onClick={() => setShowBookPanel(true)}
               onRegister={registerButton}
@@ -716,7 +718,7 @@ export function VRMenu3D({
               width={0.49}
               height={0.12}
               label="Día"
-              icon="☀️"
+              iconName="sun"
               active={lightMode === 'day'}
               variant={lightMode === 'day' ? 'solar' : 'obsidian'}
               onClick={() => setLightMode('day')}
@@ -732,7 +734,7 @@ export function VRMenu3D({
               width={0.49}
               height={0.12}
               label="Tarde"
-              icon="🌅"
+              iconName="sun"
               active={lightMode === 'sunset'}
               variant={lightMode === 'sunset' ? 'danger' : 'obsidian'}
               onClick={() => setLightMode('sunset')}
@@ -748,7 +750,7 @@ export function VRMenu3D({
               width={0.49}
               height={0.12}
               label="Noche"
-              icon="🌙"
+              iconName="sparkles"
               active={lightMode === 'night'}
               variant={lightMode === 'night' ? 'kauyumari' : 'obsidian'}
               onClick={() => setLightMode('night')}
@@ -766,7 +768,7 @@ export function VRMenu3D({
               width={1.60}
               height={0.14}
               label="Ocultar Botones / Menú (Modo Libre)"
-              icon="👁️‍🗨️"
+              iconName="eye-off"
               variant="danger"
               onClick={() => setMinimized(true)}
               onRegister={registerButton}

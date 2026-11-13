@@ -512,7 +512,7 @@ export function WixarikaVRVideoPlayer({
 
               <Text
                 position={[!errorMsg && !isBuffering && !statusNote ? 0.06 : 0, 0, 0.002]}
-                fontSize={0.064}
+                fontSize={0.070}
                 color={errorMsg ? '#991b1b' : '#1c1917'}
                 anchorX="center"
                 anchorY="middle"
@@ -563,7 +563,7 @@ export function WixarikaVRVideoPlayer({
         {/* Tiempo actual / Duración */}
         <Text
           position={[0, timeY, 0.012]}
-          fontSize={0.056}
+          fontSize={0.066}
           color="#1c1917"
           anchorX="center"
           anchorY="middle"
@@ -828,30 +828,30 @@ export function WixarikaVRVideoPlayer({
 
       {/* 2. COLUMNA DERECHA: FICHA CULTURAL AMPLIA Y LEGIBLE */}
       {!cinemaMode && video && (
-        <group position={[0.92, -0.18, 0.01]}>
+        <group position={[0.96, -0.16, 0.01]}>
           <mesh position={[0, 0, -0.004]}>
-            <planeGeometry args={[1.35, 1.57]} />
+            <planeGeometry args={[1.44, 1.68]} />
             <meshBasicMaterial color="#c69214" transparent opacity={0.9} />
           </mesh>
 
           <mesh position={[0, 0, -0.002]}>
-            <planeGeometry args={[1.32, 1.54]} />
+            <planeGeometry args={[1.40, 1.64]} />
             <meshBasicMaterial color="#faf6eb" />
           </mesh>
 
-          <mesh position={[0, 0.735, 0.001]}>
-            <planeGeometry args={[1.22, 0.024]} />
+          <mesh position={[0, 0.78, 0.001]}>
+            <planeGeometry args={[1.30, 0.024]} />
             <meshBasicMaterial color="#b45309" />
           </mesh>
 
           {/* Categoría */}
           <Text
-            position={[0, 0.64, 0.003]}
-            fontSize={0.046}
+            position={[0, 0.68, 0.003]}
+            fontSize={0.072}
             color="#b45309"
             anchorX="center"
             anchorY="middle"
-            maxWidth={1.18}
+            maxWidth={1.28}
             textAlign="center"
           >
             {(video.category || 'DOCUMENTAL').toUpperCase()}
@@ -859,12 +859,12 @@ export function WixarikaVRVideoPlayer({
 
           {/* Título principal grande */}
           <Text
-            position={[0, 0.54, 0.003]}
-            fontSize={0.068}
+            position={[0, 0.56, 0.003]}
+            fontSize={0.102}
             color="#1c1917"
             anchorX="center"
             anchorY="top"
-            maxWidth={1.18}
+            maxWidth={1.28}
             textAlign="center"
             lineHeight={1.16}
           >
@@ -873,12 +873,12 @@ export function WixarikaVRVideoPlayer({
 
           {/* Producción y año */}
           <Text
-            position={[0, 0.26, 0.003]}
-            fontSize={0.044}
+            position={[0, 0.24, 0.003]}
+            fontSize={0.078}
             color="#78350f"
             anchorX="center"
             anchorY="top"
-            maxWidth={1.18}
+            maxWidth={1.28}
             textAlign="center"
             lineHeight={1.2}
           >
@@ -886,19 +886,19 @@ export function WixarikaVRVideoPlayer({
           </Text>
 
           {/* Divisor */}
-          <mesh position={[0, 0.09, 0.002]}>
-            <planeGeometry args={[1.04, 0.005]} />
+          <mesh position={[0, 0.06, 0.002]}>
+            <planeGeometry args={[1.20, 0.005]} />
             <meshBasicMaterial color="#d4af37" transparent opacity={0.7} />
           </mesh>
 
           {/* Sinopsis con tipografía amplia */}
           <Text
-            position={[0, 0.02, 0.003]}
-            fontSize={0.050}
+            position={[0, -0.02, 0.003]}
+            fontSize={0.082}
             color="#292524"
             anchorX="center"
             anchorY="top"
-            maxWidth={1.18}
+            maxWidth={1.28}
             textAlign="center"
             lineHeight={1.32}
           >
@@ -906,18 +906,18 @@ export function WixarikaVRVideoPlayer({
           </Text>
 
           {/* Sello cultural inferior limpio */}
-          <group position={[0, -0.62, 0.003]}>
+          <group position={[0, -0.66, 0.003]}>
             <mesh position={[0, 0, -0.001]}>
-              <planeGeometry args={[1.12, 0.09]} />
+              <planeGeometry args={[1.24, 0.12]} />
               <meshBasicMaterial color="#f3ebd6" />
             </mesh>
             <Text
               position={[0, 0, 0.001]}
-              fontSize={0.040}
+              fontSize={0.070}
               color="#78350f"
               anchorX="center"
               anchorY="middle"
-              maxWidth={1.06}
+              maxWidth={1.18}
             >
               {video.badge || 'ACERVO CULTURAL'}
             </Text>

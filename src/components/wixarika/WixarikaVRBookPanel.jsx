@@ -93,13 +93,13 @@ function BookCoverMesh({ url, width = 0.58, height = 0.82, position = [0, 0, 0] 
       </group>
 
       {/* 5. Etiqueta inferior de Portada */}
-      <group position={[0, -height / 2 - 0.04, 0.002]}>
+      <group position={[0, -height / 2 - 0.05, 0.002]}>
         <mesh position={[0, 0, -0.001]}>
-          <planeGeometry args={[width, 0.05]} />
+          <planeGeometry args={[width, 0.08]} />
           <meshBasicMaterial color="#f3ebd6" />
         </mesh>
         <Text
-          fontSize={0.028}
+          fontSize={0.054}
           color="#78350f"
           anchorX="center"
           anchorY="middle"
@@ -318,8 +318,8 @@ export function WixarikaVRBookPanel({
     <WixarikaVRFloatingPanel
       title="LIBROS DE LA BIBLIOTECA"
       subtitle={themeSubtitle}
-      width={hasCover ? 2.95 : 2.55}
-      height={1.54}
+      width={hasCover ? 3.30 : 2.85}
+      height={1.90}
       position={position}
       rotation={rotation}
       variant="cantera"
@@ -333,15 +333,15 @@ export function WixarikaVRBookPanel({
     >
       {/* 1. Barra de Navegación (Solo si hay más de 1 libro para el tema activo) */}
       {hasMultipleBooks && (
-        <group position={[0, 0.34, 0.01]}>
+        <group position={[0, 0.44, 0.01]}>
           <WixarikaVRButton
             id="btn-book-prev"
             label="Anterior"
             iconName="chevron-left"
             variant="cantera"
-            width={0.56}
-            height={0.14}
-            position={[-0.82, 0, 0]}
+            width={0.68}
+            height={0.17}
+            position={[-0.95, 0, 0]}
             onClick={handlePrev}
             onRegister={onRegister}
             onUnregister={onUnregister}
@@ -355,12 +355,12 @@ export function WixarikaVRBookPanel({
           {/* Indicador de posición del libro */}
           <group position={[0, 0, 0]}>
             <mesh position={[0, 0, -0.001]}>
-              <planeGeometry args={[0.84, 0.12]} />
+              <planeGeometry args={[1.05, 0.15]} />
               <meshBasicMaterial color="#f3ebd6" transparent opacity={0.95} />
             </mesh>
             <Text
               position={[0, 0, 0.002]}
-              fontSize={0.046}
+              fontSize={0.076}
               color={color1}
               anchorX="center"
               anchorY="middle"
@@ -374,9 +374,9 @@ export function WixarikaVRBookPanel({
             label="Siguiente"
             iconName="chevron-right"
             variant="cantera"
-            width={0.56}
-            height={0.14}
-            position={[0.82, 0, 0]}
+            width={0.68}
+            height={0.17}
+            position={[0.95, 0, 0]}
             onClick={handleNext}
             onRegister={onRegister}
             onUnregister={onUnregister}
@@ -391,24 +391,24 @@ export function WixarikaVRBookPanel({
 
       {/* 2. Área del Libro: Portada opcional + Título, Autor y Código en tipografías ampliadas */}
       {currentBook && (
-        <group position={[hasCover ? 0.35 : 0, hasMultipleBooks ? -0.06 : 0.02, 0.01]}>
+        <group position={[hasCover ? 0.38 : 0, hasMultipleBooks ? -0.05 : 0.05, 0.01]}>
           {hasCover && (
             <BookCoverMesh
               url={currentBook.portadaUrl}
-              width={0.54}
-              height={0.78}
-              position={[-0.98, 0, 0]}
+              width={0.62}
+              height={0.88}
+              position={[-1.10, 0, 0]}
             />
           )}
 
           {/* TÍTULO DEL LIBRO (Grande, nítido, alto contraste - Color 1) */}
           <Text
-            position={[0, 0.19, 0.005]}
-            fontSize={0.066}
+            position={[0, 0.22, 0.005]}
+            fontSize={0.096}
             color={color1}
             anchorX="center"
             anchorY="top"
-            maxWidth={hasCover ? 1.65 : 2.25}
+            maxWidth={hasCover ? 1.75 : 2.45}
             textAlign="center"
             lineHeight={1.20}
           >
@@ -417,30 +417,30 @@ export function WixarikaVRBookPanel({
 
           {/* AUTOR DEL LIBRO (Color 2) */}
           <Text
-            position={[0, 0.01, 0.005]}
-            fontSize={0.048}
+            position={[0, 0.02, 0.005]}
+            fontSize={0.082}
             color={color2}
             anchorX="center"
             anchorY="top"
-            maxWidth={hasCover ? 1.65 : 2.25}
+            maxWidth={hasCover ? 1.75 : 2.45}
             textAlign="center"
           >
             {`Autor: ${bookAuthor}`}
           </Text>
 
           {/* CÓDIGO DE LIBRO (Cota de biblioteca física - Color 1) */}
-          <group position={[0, -0.16, 0.005]}>
+          <group position={[0, -0.19, 0.005]}>
             <mesh position={[0, 0, -0.001]}>
-              <planeGeometry args={[1.36, 0.14]} />
+              <planeGeometry args={[1.65, 0.17]} />
               <meshBasicMaterial color="#f3ebd6" transparent opacity={0.95} />
             </mesh>
             <mesh position={[0, 0, -0.002]}>
-              <planeGeometry args={[1.40, 0.17]} />
+              <planeGeometry args={[1.70, 0.20]} />
               <meshBasicMaterial color="#d97706" transparent opacity={0.8} />
             </mesh>
             <Text
               position={[0, 0, 0.002]}
-              fontSize={0.048}
+              fontSize={0.080}
               color={color1}
               anchorX="center"
               anchorY="middle"
@@ -453,14 +453,14 @@ export function WixarikaVRBookPanel({
       )}
 
       {/* 3. Botón para Cerrar y Volver a la Sala */}
-      <group position={[0, -0.54, 0.01]}>
+      <group position={[0, -0.68, 0.01]}>
         <WixarikaVRButton
           id="btn-book-close-bottom"
           label="Volver a la Sala"
           iconName="arrow-left"
           variant="cantera"
-          width={1.12}
-          height={0.16}
+          width={1.65}
+          height={0.22}
           position={[0, 0, 0]}
           onClick={handleClose}
           onRegister={onRegister}
@@ -469,7 +469,6 @@ export function WixarikaVRBookPanel({
           unregisterMesh={unregisterMesh}
           hoveredId={hoveredId}
           fuseProgress={fuseProgress}
-          showDiamonds={false}
         />
       </group>
     </WixarikaVRFloatingPanel>

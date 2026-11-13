@@ -214,7 +214,15 @@ function AppContent() {
             }}
             title="Abrir Panel de Gestión BiblioVR (Dashboard, Libros, Wireframes)"
           >
-            <span style={{ fontSize: '15px' }}>🏛️</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e5a00d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 21h18"/>
+              <path d="M5 21V10"/>
+              <path d="M19 21V10"/>
+              <path d="M9 21V10"/>
+              <path d="M15 21V10"/>
+              <path d="M2 10h20"/>
+              <path d="m12 3 10 7H2z"/>
+            </svg>
             <span>Panel BiblioVR</span>
           </button>
 

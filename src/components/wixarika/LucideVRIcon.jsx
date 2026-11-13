@@ -50,16 +50,17 @@ export function getLucideIconTexture(name, color = '#1c1917', strokeWidth = 2.4)
   }
 
   const canvas = document.createElement('canvas');
-  canvas.width = 128;
-  canvas.height = 128;
+  canvas.width = 256;
+  canvas.height = 256;
   const ctx = canvas.getContext('2d');
 
   const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
 
   const svgInner = LUCIDE_SVG_PATHS[safeName];
-  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${svgInner}</svg>`;
+  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${svgInner}</svg>`;
 
   try {
     const img = new Image();
@@ -67,8 +68,8 @@ export function getLucideIconTexture(name, color = '#1c1917', strokeWidth = 2.4)
     const url = URL.createObjectURL(blob);
 
     img.onload = () => {
-      ctx.clearRect(0, 0, 128, 128);
-      ctx.drawImage(img, 0, 0, 128, 128);
+      ctx.clearRect(0, 0, 256, 256);
+      ctx.drawImage(img, 0, 0, 256, 256);
       texture.needsUpdate = true;
       URL.revokeObjectURL(url);
     };
