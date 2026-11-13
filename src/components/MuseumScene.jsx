@@ -9,12 +9,7 @@ import { StereoVRManager } from './StereoVRManager.jsx';
 import { GazeReticle } from './GazeReticle.jsx';
 import {
   WixarikaVRButton,
-  WixarikaVRCard,
-  WixarikaVRFloatingPanel,
-  WixarikaVRBookPanel,
-  WixarikaVRVideoPanel,
-  WixarikaWelcomeDashboard,
-  TsikuriDiamond
+  WixarikaWelcomeDashboard
 } from './wixarika/index.js';
 import { SoundFX } from '../services/audioService.js';
 
@@ -59,33 +54,12 @@ export const CULTURAL_STATIONS = [
   }
 ];
 
-// Botón / Hotspot interactivo compatible con Gaze Fuse (1.2s) y gatillo dual
-function InteractiveTriggerMesh({ onSelect, registerMesh, unregisterMesh, children }) {
-  const meshRef = useRef();
-
-  useEffect(() => {
-    const mesh = meshRef.current;
-    if (mesh && registerMesh) {
-      mesh.userData = { onSelect };
-      registerMesh(mesh);
-    }
-    return () => {
-      if (mesh && unregisterMesh) {
-        unregisterMesh(mesh);
-      }
-    };
-  }, [onSelect, registerMesh, unregisterMesh]);
-
-  return children(meshRef);
-}
-
-// Botón 3D inferior flotante para ocultar/mostrar botones en VR (Abajo)
+// Botón 3D inferior flotante para ocultar/mostrar el menú principal en VR (Abajo)
 function LowerToggleButton({
   showButtons,
   setShowButtons,
   registerMesh,
-  unregisterMesh,
-  activeStation
+  unregisterMesh
 }) {
   const groupRef = useRef();
   const { camera } = useThree();
@@ -111,14 +85,11 @@ function LowerToggleButton({
     groupRef.current.lookAt(tempPos.current.x, 1.45, tempPos.current.z);
   });
 
-  // Si hay un panel de estación o libro abierto, ocultar el botón inferior para no distraer
-  if (activeStation) return null;
-
   return (
     <group ref={groupRef}>
       <WixarikaVRButton
         id="btn-toggle-station-buttons"
-        label={showButtons ? 'Ocultar Menús' : 'Mostrar Menús'}
+        label={showButtons ? 'Ocultar Menú' : 'Mostrar Menú'}
         iconName={showButtons ? 'eye-off' : 'eye'}
         variant="cantera"
         width={1.60}
@@ -138,28 +109,11 @@ export function MuseumScene({
   onWebXRTriggerRef,
   onRecenterRef,
   showButtons: externalShowButtons,
-  setShowButtons: externalSetShowButtons,
-  activeStation: externalActiveStation,
-  onActiveStationChange,
-  onOpenBooksPanel,
-  isBooksOpen: externalIsBooksOpen,
-  onToggleBooksOpen
+  setShowButtons: externalSetShowButtons
 }) {
   const orbitRef = useRef();
   const cameraRigRef = useRef();
-  const [internalActiveStation, setInternalActiveStation] = useState(null);
-  const [internalStationBooksOpen, setInternalStationBooksOpen] = useState(false);
-  const [showBookCatalog, setShowBookCatalog] = useState(false);
-  const [showVideoCatalog, setShowVideoCatalog] = useState(false);
   const [internalShowButtons, setInternalShowButtons] = useState(true);
-
-  // Soporta tanto estado controlado por props como estado interno
-  const activeStation =
-    externalActiveStation !== undefined ? externalActiveStation : internalActiveStation;
-
-  const stationBooksOpen =
-    externalIsBooksOpen !== undefined ? externalIsBooksOpen : internalStationBooksOpen;
-  const setStationBooksOpen = onToggleBooksOpen || setInternalStationBooksOpen;
 
   const showButtons =
     externalShowButtons !== undefined ? externalShowButtons : internalShowButtons;
@@ -180,83 +134,28 @@ export function MuseumScene({
     return Array.from(interactiveRegistry.current);
   }, []);
 
-  // Navegación guiada hacia salas desde el Dashboard de Bienvenida o botones 3D
-  const handleSelectStation = useCallback(
-    (stationOrId) => {
-      const station =
-        !stationOrId
-          ? null
-          : typeof stationOrId === 'string'
-          ? CULTURAL_STATIONS.find((s) => s.id === stationOrId) || null
-          : stationOrId;
-
-      if (externalActiveStation === undefined) {
-        setInternalActiveStation(station);
-      }
-      setStationBooksOpen(false);
-      if (onActiveStationChange) {
-        onActiveStationChange(station);
-      }
-
-      if (station) {
-        setShowBookCatalog(false);
-        setShowVideoCatalog(false);
-
-        if (orbitRef.current) {
-          if (station.id === 'deidades') {
-            // Pabellón de Deidades ubicado en el cuadrante Norte (-Z)
-            orbitRef.current.setAzimuthalAngle?.(0);
-          } else if (station.id === 'gastronomia') {
-            // Pabellón Gastronómico ubicado en el cuadrante Este (+X)
-            orbitRef.current.setAzimuthalAngle?.(-Math.PI / 2);
-          } else if (station.id === 'fiestas') {
-            // Pabellón de Fiestas ubicado en el cuadrante Oeste (-X)
-            orbitRef.current.setAzimuthalAngle?.(Math.PI / 2);
-          }
-          orbitRef.current.update?.();
-        }
-      }
-    },
-    [externalActiveStation, onActiveStationChange]
-  );
-
-  // Abrir catálogo de libros de la Biblioteca Solón Argüello en el cuadrante Sur (+Z)
-  const handleOpenBooks = useCallback(() => {
-    handleSelectStation(null);
-    setShowVideoCatalog(false);
-    setShowBookCatalog(true);
-    if (orbitRef.current) {
-      // Panel de libros orientado en el cuadrante Sur (+Z)
-      orbitRef.current.setAzimuthalAngle?.(Math.PI);
-      orbitRef.current.update?.();
-    }
-  }, [handleSelectStation]);
-
-  // Abrir catálogo de videos culturales en el cuadrante Sur (+Z)
-  const handleOpenVideos = useCallback(() => {
-    handleSelectStation(null);
-    setShowBookCatalog(false);
-    setShowVideoCatalog(true);
-    if (orbitRef.current) {
-      // Panel de videos orientado en el cuadrante Sur (+Z)
-      orbitRef.current.setAzimuthalAngle?.(Math.PI);
-      orbitRef.current.update?.();
-    }
-  }, [handleSelectStation]);
-
   // Alternar audio cultural tradicional
   const handleToggleAudio = useCallback(() => {
     SoundFX.toggleAmbient();
   }, []);
 
-  // Recentrar visor o controles
+  // Recentrar visor o controles directamente hacia el Menú Principal (+Z)
   const handleRecenter = useCallback(() => {
     if (onRecenterRef?.current) {
       onRecenterRef.current();
     } else if (orbitRef.current) {
-      orbitRef.current.reset?.();
+      orbitRef.current.target.set(0, 2.10, 2.85);
+      orbitRef.current.update?.();
     }
   }, [onRecenterRef]);
+
+  // Al montar la escena, orientar inmediatamente la cámara hacia el Menú Principal
+  useEffect(() => {
+    if (orbitRef.current) {
+      orbitRef.current.target.set(0, 2.10, 2.85);
+      orbitRef.current.update?.();
+    }
+  }, []);
 
   return (
     <Canvas
@@ -264,11 +163,11 @@ export function MuseumScene({
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       dpr={[1, typeof window !== 'undefined' ? Math.min(2.5, window.devicePixelRatio || 2) : 2]}
     >
-      {/* Rig de camara para modo normal y modo VR */}
-      <group ref={cameraRigRef} position={[0, 0, 0]}>
+      {/* Rig de camara para modo normal y modo VR (orientado frontalmente hacia el Menú Principal en +Z) */}
+      <group ref={cameraRigRef} position={[0, 0, 0]} rotation={[0, Math.PI, 0]}>
         <PerspectiveCamera
           makeDefault
-          position={vrMode ? [0, 1.6, 0] : [0, 1.6, 2.5]}
+          position={vrMode ? [0, 1.6, 0] : [0, 1.6, 0.4]}
           fov={75}
           near={0.05}
           far={1000}
@@ -291,117 +190,25 @@ export function MuseumScene({
         <MuseumModel />
       </Suspense>
 
-      {/* Dashboard Central de Bienvenida en el cuadrante Sur (+Z) */}
-      {!activeStation && !showBookCatalog && !showVideoCatalog && showButtons && (
+      {/* Menú Principal Flotante ÚNICO del Museo (Elevado, agrandado y alejado del centro) */}
+      {showButtons && (
         <WixarikaWelcomeDashboard
-          position={[0, 1.48, 1.95]}
+          position={[0, 2.15, 2.85]}
           rotation={[0, Math.PI, 0]}
-          onSelectStation={handleSelectStation}
-          onOpenBooks={handleOpenBooks}
+          stations={CULTURAL_STATIONS}
           onToggleAudio={handleToggleAudio}
-          onOpenVideos={handleOpenVideos}
           onRecenter={handleRecenter}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
         />
       )}
 
-
-      {/* Catálogo de Videos Culturales (Biblioteca Solón Argüello) */}
-      {showVideoCatalog && (
-        <group position={[0, 1.45, 2.05]} rotation={[0, Math.PI, 0]}>
-          <WixarikaVRVideoPanel
-            onClose={() => setShowVideoCatalog(false)}
-            registerMesh={registerMesh}
-            unregisterMesh={unregisterMesh}
-          />
-        </group>
-      )}
-
-      {/* Estaciones Culturales (Deidades, Gastronomía, Fiestas) con Gaze Fuse */}
-      {CULTURAL_STATIONS.map((station) => {
-        const isCurrentActive = activeStation?.id === station.id;
-
-        return (
-          <group key={station.id} position={station.position} rotation={station.rotation}>
-            {/* Si NO esta activa la estación Y los botones están visibles, mostrar botón interactivo */}
-            {!activeStation && !showBookCatalog && !showVideoCatalog && showButtons && (
-              <WixarikaVRButton
-                id={`btn-station-${station.id}`}
-                label={station.name}
-                iconName={station.iconName}
-                variant={station.variant || 'cantera'}
-                width={1.85}
-                height={0.38}
-                registerMesh={registerMesh}
-                unregisterMesh={unregisterMesh}
-                onClick={() => handleSelectStation(station)}
-              />
-            )}
-
-            {/* Tarjeta Cultural Wixárika al seleccionar la sala */}
-            {isCurrentActive && !stationBooksOpen && (
-              <group position={[0, 0, 0.3]}>
-                <WixarikaVRCard
-                  title={station.name}
-                  subtitle={station.subtitle}
-                  category="Pabellón Ceremonial Wixárika"
-                  badge="RECORRIDO GUIADO"
-                  description={station.description}
-                  metadata={[
-                    { label: 'Sede Cultural', value: 'Biblioteca Solón Argüello (Tepic, Nayarit)' }
-                  ]}
-                  actions={[
-                    {
-                      id: `btn-card-books-${station.id}`,
-                      label: 'Libros Recomendados',
-                      iconName: 'book-open',
-                      variant: 'ambar',
-                      onClick: () => {
-                        setStationBooksOpen(true);
-                        if (onOpenBooksPanel) onOpenBooksPanel(station);
-                      }
-                    },
-                    {
-                      id: `btn-card-close-${station.id}`,
-                      label: 'Cerrar',
-                      iconName: 'x',
-                      variant: 'cantera',
-                      onClick: () => handleSelectStation(null)
-                    }
-                  ]}
-                  width={3.20}
-                  height={2.05}
-                  variant={station.variant || 'cantera'}
-                  registerMesh={registerMesh}
-                  unregisterMesh={unregisterMesh}
-                />
-              </group>
-            )}
-
-            {/* Panel 3D de Libros Recomendados en Realidad Virtual (filtrado por el tema visualizado) */}
-            {isCurrentActive && stationBooksOpen && (
-              <group position={[0, 0, 0.32]}>
-                <WixarikaVRBookPanel
-                  stationId={station.id}
-                  stationName={station.name}
-                  onClose={() => setStationBooksOpen(false)}
-                  registerMesh={registerMesh}
-                  unregisterMesh={unregisterMesh}
-                />
-              </group>
-            )}
-          </group>
-        );
-      })}
-
-      {/* Botón flotante inferior para Ocultar/Mostrar botones en el campo visual bajo (Abajo) */}
+      {/* Botón flotante inferior para Ocultar/Mostrar el Menú Principal en el campo visual bajo */}
       <LowerToggleButton
         showButtons={showButtons}
         setShowButtons={setShowButtons}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
-        activeStation={activeStation || stationBooksOpen}
       />
 
       {/* Reticula Central con Gaze Fuse interactivo a 1.2 segundos */}
@@ -411,11 +218,11 @@ export function MuseumScene({
         enabled={true}
       />
 
-      {/* Controles de orbita activos en modo pantalla normal */}
+      {/* Controles de orbita orientados frontalmente hacia el Menú Principal */}
       <OrbitControls
         ref={orbitRef}
         enabled={!vrMode}
-        target={[0, 1.4, 0]}
+        target={[0, 2.10, 2.85]}
         enableDamping
         dampingFactor={0.05}
         minDistance={0.2}
@@ -435,4 +242,5 @@ export function MuseumScene({
     </Canvas>
   );
 }
+
 export default MuseumScene;

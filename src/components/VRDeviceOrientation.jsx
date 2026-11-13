@@ -19,12 +19,9 @@ export function VRDeviceOrientation({ onRecenterRef, carObj, followActive }) {
     if (!orientationData.current) return;
     const curAlpha = THREE.MathUtils.degToRad(orientationData.current.alpha || 0);
 
-    let targetYaw = 0;
+    let targetYaw = Math.PI; // Hacia el menú principal (+Z)
     if (followActive && carObj) {
       targetYaw = -Math.PI / 2; // Hacia el frente de marcha (+X)
-    } else {
-      _euler.setFromQuaternion(camera.quaternion, 'YXZ');
-      targetYaw = _euler.y;
     }
 
     alphaOffset.current = targetYaw - curAlpha;

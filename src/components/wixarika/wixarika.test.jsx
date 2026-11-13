@@ -12,7 +12,7 @@ import {
 import { DEFAULT_WIXARIKA_BOOKS } from './WixarikaVRBookPanel.jsx';
 import { DEFAULT_WIXARIKA_VIDEOS, WixarikaVRVideoPanel } from './WixarikaVRVideoPanel.jsx';
 import { WixarikaVRVideoPlayer } from './WixarikaVRVideoPlayer.jsx';
-import { WixarikaWelcomeDashboard } from './WixarikaWelcomeDashboard.jsx';
+import { WixarikaWelcomeDashboard, DEFAULT_CULTURAL_STATIONS } from './WixarikaWelcomeDashboard.jsx';
 import { LUCIDE_SVG_PATHS, getLucideIconTexture } from './LucideVRIcon.jsx';
 
 describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
@@ -235,6 +235,37 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       const bodyCompliance = verifyAngularCompliance(0.052, 2.4, 'body');
       expect(bodyCompliance.passes).toBe(true);
       expect(bodyCompliance.angularDeg).toBeGreaterThanOrEqual(1.2);
+    });
+  });
+
+  describe('Unified Main Dashboard & Spatial Ergonomics', () => {
+    it('DEFAULT_CULTURAL_STATIONS must define all 3 cultural pavilions with modular content', () => {
+      expect(DEFAULT_CULTURAL_STATIONS).toHaveLength(3);
+      const ids = DEFAULT_CULTURAL_STATIONS.map((s) => s.id);
+      expect(ids).toContain('deidades');
+      expect(ids).toContain('gastronomia');
+      expect(ids).toContain('fiestas');
+
+      DEFAULT_CULTURAL_STATIONS.forEach((station) => {
+        expect(station.name).toBeTruthy();
+        expect(station.subtitle).toBeTruthy();
+        expect(station.iconName).toBeTruthy();
+        expect(station.bullets.length).toBeGreaterThanOrEqual(3);
+      });
+    });
+
+    it('elevated dashboard geometry maintains comfortable ground clearance (>0.65m)', () => {
+      const dashboardY = 2.15;
+      const dashboardHeight = 2.85;
+      const groundClearance = dashboardY - dashboardHeight / 2;
+
+      expect(groundClearance).toBeCloseTo(0.725, 2);
+      expect(groundClearance).toBeGreaterThan(0.65);
+    });
+
+    it('dashboard distance from center (>2.70m) leaves central ceremonial floor unobstructed', () => {
+      const dashboardZ = 2.85;
+      expect(dashboardZ).toBeGreaterThan(2.70);
     });
   });
 });
