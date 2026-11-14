@@ -1,10 +1,10 @@
 /**
  * Gaze Fuse Interaction Service
- * Calibrado a exactamente 1.2 segundos (1200ms) segun especificacion ISO 9241-210
+ * Calibrado a 3.0 segundos (3000ms) para una interaccion deliberada, precisa y sin activaciones involuntarias
  * para interaccion manos libres sin fatiga cervical y soporte de gatillo dual (Homido Grab)
  */
 
-export const GAZE_FUSE_DEFAULT_DURATION = 1.2;
+export const GAZE_FUSE_DEFAULT_DURATION = 3.0;
 
 export class GazeFuseController {
   constructor({

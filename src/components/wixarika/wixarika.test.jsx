@@ -14,6 +14,7 @@ import { DEFAULT_WIXARIKA_VIDEOS, WixarikaVRVideoPanel } from './WixarikaVRVideo
 import { WixarikaVRVideoPlayer } from './WixarikaVRVideoPlayer.jsx';
 import { WixarikaWelcomeDashboard, DEFAULT_CULTURAL_STATIONS } from './WixarikaWelcomeDashboard.jsx';
 import { LUCIDE_SVG_PATHS, getLucideIconTexture } from './LucideVRIcon.jsx';
+import { WIXARIKA_ARTWORKS, findArtworkByNodeName } from './wixarikaArtworksData.js';
 
 describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
   describe('Angular Size Calculations (ISO 9241-210 & WebXR)', () => {
@@ -266,6 +267,38 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
     it('dashboard distance from center (>3.50m) moves panel back for relaxed panoramic field of view', () => {
       const dashboardZ = 3.75;
       expect(dashboardZ).toBeGreaterThan(3.50);
+    });
+  });
+
+  describe('Wixárika Sacred Artworks & Interactive Modal', () => {
+    it('defines exactly 9 curated artworks (6 deities and 3 traditional feasts)', () => {
+      expect(WIXARIKA_ARTWORKS).toHaveLength(9);
+      const deities = WIXARIKA_ARTWORKS.filter((a) => a.category === 'Deidad Sagrada');
+      const feasts = WIXARIKA_ARTWORKS.filter((a) => a.category === 'Fiesta Ceremonial');
+
+      expect(deities).toHaveLength(6);
+      expect(feasts).toHaveLength(3);
+    });
+
+    it('each artwork must contain title, subtitle, image, keywords and anthropological description', () => {
+      WIXARIKA_ARTWORKS.forEach((art) => {
+        expect(art.id).toBeTruthy();
+        expect(art.title).toBeTruthy();
+        expect(art.subtitle).toBeTruthy();
+        expect(art.image).toBeTruthy();
+        expect(art.keywords.length).toBeGreaterThanOrEqual(3);
+        expect(art.description.length).toBeGreaterThan(50);
+      });
+    });
+
+    it('findArtworkByNodeName accurately identifies 3D model node meshes', () => {
+      expect(findArtworkByNodeName('lienzo_tatewari_nierika')?.id).toBe('deidad_tatewari');
+      expect(findArtworkByNodeName('cuadro_deidad_2_tayau')?.id).toBe('deidad_tayau');
+      expect(findArtworkByNodeName('lienzo_kauyumari_nierika')?.id).toBe('deidad_kauyumari');
+      expect(findArtworkByNodeName('cuadro_fiesta_namawita_neixa')?.id).toBe('fiesta_namawita');
+      expect(findArtworkByNodeName('lienzo_fiesta_tatei_neixa')?.id).toBe('fiesta_tatei');
+      expect(findArtworkByNodeName('cuadro_fiesta_hikuri_neixa')?.id).toBe('fiesta_hikuri');
+      expect(findArtworkByNodeName('unknown_mesh')).toBeNull();
     });
   });
 });

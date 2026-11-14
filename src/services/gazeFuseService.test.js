@@ -23,9 +23,9 @@ describe('GazeFuseController - ISO 9241-210 Usability & Interaction Verification
     });
   });
 
-  it('should use exactly 1.2 seconds as default fuse duration', () => {
-    expect(GAZE_FUSE_DEFAULT_DURATION).toBe(1.2);
-    expect(controller.fuseDuration).toBe(1.2);
+  it('should use exactly 3.0 seconds as default fuse duration', () => {
+    expect(GAZE_FUSE_DEFAULT_DURATION).toBe(3.0);
+    expect(controller.fuseDuration).toBe(3.0);
   });
 
   it('should remain idle with 0 progress when no target is in gaze', () => {
@@ -45,26 +45,26 @@ describe('GazeFuseController - ISO 9241-210 Usability & Interaction Verification
     expect(onHoverStart).toHaveBeenCalledWith(dummyTarget);
     expect(result.isHovered).toBe(true);
     expect(result.triggered).toBe(false);
-    expect(result.progress).toBeCloseTo(0.1 / 1.2, 4);
+    expect(result.progress).toBeCloseTo(0.1 / 3.0, 4);
   });
 
-  it('should accumulate gaze time and trigger at exactly 1.2 seconds', () => {
+  it('should accumulate gaze time and trigger at exactly 3.0 seconds', () => {
     const dummyTarget = { id: 'modulo-gastronomia' };
 
-    // Primer frame: 0.5s -> progreso ~ 0.5/1.2 = 0.4166
-    let res = controller.update(dummyTarget, 0.5);
+    // Primer frame: 1.0s -> progreso ~ 1.0/3.0 = 0.3333
+    let res = controller.update(dummyTarget, 1.0);
     expect(res.triggered).toBe(false);
-    expect(res.progress).toBeCloseTo(0.4167, 3);
+    expect(res.progress).toBeCloseTo(1.0 / 3.0, 3);
     expect(onTrigger).not.toHaveBeenCalled();
 
-    // Segundo frame: +0.4s -> 0.9s / 1.2 = 0.75
-    res = controller.update(dummyTarget, 0.4);
+    // Segundo frame: +1.0s -> 2.0s / 3.0 = 0.6666
+    res = controller.update(dummyTarget, 1.0);
     expect(res.triggered).toBe(false);
-    expect(res.progress).toBeCloseTo(0.75, 4);
+    expect(res.progress).toBeCloseTo(2.0 / 3.0, 3);
     expect(onTrigger).not.toHaveBeenCalled();
 
-    // Tercer frame: +0.3s -> 1.2s completados -> DISPARO
-    res = controller.update(dummyTarget, 0.3);
+    // Tercer frame: +1.0s -> 3.0s completados -> DISPARO
+    res = controller.update(dummyTarget, 1.0);
     expect(res.triggered).toBe(true);
     expect(res.progress).toBe(1.0);
     expect(onTrigger).toHaveBeenCalledTimes(1);
@@ -74,8 +74,8 @@ describe('GazeFuseController - ISO 9241-210 Usability & Interaction Verification
   it('should not flood triggers on subsequent frames while continuing to gaze', () => {
     const dummyTarget = { id: 'modulo-fiestas' };
 
-    // Completar los 1.2s
-    controller.update(dummyTarget, 1.2);
+    // Completar los 3.0s
+    controller.update(dummyTarget, 3.0);
     expect(onTrigger).toHaveBeenCalledTimes(1);
 
     // Siguientes frames continuando mirando el mismo objeto
@@ -85,12 +85,12 @@ describe('GazeFuseController - ISO 9241-210 Usability & Interaction Verification
     expect(onTrigger).toHaveBeenCalledTimes(1); // No vuelve a disparar hasta reset
   });
 
-  it('should reset timer and trigger onHoverEnd if gaze leaves target before 1.2s', () => {
+  it('should reset timer and trigger onHoverEnd if gaze leaves target before 3.0s', () => {
     const dummyTarget = { id: 'modulo-biblioteca' };
 
-    // Mirar durante 0.8s (incompleto)
-    controller.update(dummyTarget, 0.8);
-    expect(controller.getProgress()).toBeCloseTo(0.8 / 1.2, 4);
+    // Mirar durante 1.5s (incompleto)
+    controller.update(dummyTarget, 1.5);
+    expect(controller.getProgress()).toBeCloseTo(1.5 / 3.0, 4);
 
     // Salir del objeto (target = null)
     const resExit = controller.update(null, 0.016);
@@ -106,15 +106,15 @@ describe('GazeFuseController - ISO 9241-210 Usability & Interaction Verification
     const targetA = { id: 'targetA' };
     const targetB = { id: 'targetB' };
 
-    // Mirar targetA por 0.6s
-    controller.update(targetA, 0.6);
+    // Mirar targetA por 1.0s
+    controller.update(targetA, 1.0);
     expect(onHoverStart).toHaveBeenCalledWith(targetA);
 
-    // Mover inmediatamente a targetB por 0.2s
-    const resB = controller.update(targetB, 0.2);
+    // Mover inmediatamente a targetB por 0.5s
+    const resB = controller.update(targetB, 0.5);
     expect(onHoverEnd).toHaveBeenCalledWith(targetA);
     expect(onHoverStart).toHaveBeenCalledWith(targetB);
-    expect(resB.progress).toBeCloseTo(0.2 / 1.2, 4);
+    expect(resB.progress).toBeCloseTo(0.5 / 3.0, 4);
   });
 
   it('should support immediate triggering with dual interaction (Homido Grab button press)', () => {

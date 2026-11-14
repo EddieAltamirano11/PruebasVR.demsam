@@ -535,7 +535,7 @@ export function WixarikaWelcomeDashboard({
               maxWidth={panelWidth * 0.88}
               textAlign="center"
             >
-              Fija tu mirada durante 1.2 segundos o pulsa para explorar cada sección
+              Fija tu mirada durante 3 segundos o pulsa para explorar cada sección
             </Text>
           </group>
         </group>

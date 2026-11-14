@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, Suspense } from 'react';
+import React, { useRef, useState, useCallback, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
@@ -9,7 +9,8 @@ import { StereoVRManager } from './StereoVRManager.jsx';
 import { GazeReticle } from './GazeReticle.jsx';
 import {
   WixarikaVRButton,
-  WixarikaWelcomeDashboard
+  WixarikaWelcomeDashboard,
+  WixarikaArtworkModal
 } from './wixarika/index.js';
 import { SoundFX } from '../services/audioService.js';
 
@@ -54,10 +55,12 @@ export const CULTURAL_STATIONS = [
   }
 ];
 
-// Botón 3D inferior flotante para ocultar/mostrar el menú principal en VR (Abajo)
+// Botón 3D inferior flotante para ocultar/mostrar el menú principal o el cuadro activo
 function LowerToggleButton({
   showButtons,
   setShowButtons,
+  activeArtwork,
+  setActiveArtwork,
   registerMesh,
   unregisterMesh
 }) {
@@ -85,21 +88,93 @@ function LowerToggleButton({
     groupRef.current.lookAt(tempPos.current.x, 1.45, tempPos.current.z);
   });
 
+  const isAnyMenuOpen = !!activeArtwork || showButtons;
+
+  const handleToggle = () => {
+    if (activeArtwork) {
+      // Ocultar la ventana del cuadro seleccionado
+      setActiveArtwork(null);
+      setShowButtons(false);
+    } else {
+      // Alternar menú principal
+      setShowButtons(!showButtons);
+    }
+  };
+
   return (
     <group ref={groupRef}>
       <WixarikaVRButton
         id="btn-toggle-station-buttons"
-        label={showButtons ? 'Ocultar Menú' : 'Mostrar Menú'}
-        iconName={showButtons ? 'eye-off' : 'eye'}
+        label={isAnyMenuOpen ? 'Ocultar Menú' : 'Mostrar Menú'}
+        iconName={isAnyMenuOpen ? 'eye-off' : 'eye'}
         variant="cantera"
         width={1.60}
         height={0.28}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
-        onClick={() => setShowButtons(!showButtons)}
+        onClick={handleToggle}
         showDiamonds={true}
       />
     </group>
+  );
+}
+
+// Modal dinámico monumental posicionado a 3.50m en la dirección de la mirada del observador (Opción C)
+function DynamicArtworkModal({
+  artwork,
+  onClose,
+  registerMesh,
+  unregisterMesh
+}) {
+  const { camera } = useThree();
+  const [transform, setTransform] = useState(() => ({
+    position: [0, 2.30, 3.75],
+    rotation: [0, Math.PI, 0]
+  }));
+
+  useEffect(() => {
+    if (!artwork || !camera) return;
+
+    const cameraPos = new THREE.Vector3();
+    const cameraDir = new THREE.Vector3();
+    camera.getWorldPosition(cameraPos);
+    camera.getWorldDirection(cameraDir);
+
+    // Ignorar elevación Y para mantener el panel erguido verticalmente a Y = 2.30m
+    cameraDir.y = 0;
+    if (cameraDir.lengthSq() < 0.001) {
+      cameraDir.set(0, 0, 1);
+    } else {
+      cameraDir.normalize();
+    }
+
+    // Proyectar a 3.50m al frente del observador
+    const targetPos = new THREE.Vector3().copy(cameraPos).addScaledVector(cameraDir, 3.50);
+    targetPos.y = 2.30;
+
+    // Calcular matriz de orientación para que el modal mire perpendicularmente a los ojos del observador
+    const matrix = new THREE.Matrix4();
+    const eyeTarget = new THREE.Vector3(cameraPos.x, targetPos.y, cameraPos.z);
+    matrix.lookAt(targetPos, eyeTarget, new THREE.Vector3(0, 1, 0));
+    const euler = new THREE.Euler().setFromRotationMatrix(matrix);
+
+    setTransform({
+      position: [targetPos.x, targetPos.y, targetPos.z],
+      rotation: [euler.x, euler.y, euler.z]
+    });
+  }, [artwork, camera]);
+
+  if (!artwork) return null;
+
+  return (
+    <WixarikaArtworkModal
+      artwork={artwork}
+      position={transform.position}
+      rotation={transform.rotation}
+      onClose={onClose}
+      registerMesh={registerMesh}
+      unregisterMesh={unregisterMesh}
+    />
   );
 }
 
@@ -119,6 +194,7 @@ export function MuseumScene({
   const orbitRef = useRef();
   const cameraRigRef = useRef();
   const [internalShowButtons, setInternalShowButtons] = useState(true);
+  const [activeArtwork, setActiveArtwork] = useState(null);
 
   const showButtons =
     externalShowButtons !== undefined ? externalShowButtons : internalShowButtons;
@@ -153,6 +229,18 @@ export function MuseumScene({
     }
   }, [onRecenterRef]);
 
+  // Manejador al seleccionar una deidad o fiesta
+  const handleSelectArtwork = useCallback((artwork) => {
+    setActiveArtwork(artwork);
+    setShowButtons(false);
+  }, [setShowButtons]);
+
+  // Manejador al cerrar el modal de la obra
+  const handleCloseArtwork = useCallback(() => {
+    setActiveArtwork(null);
+    setShowButtons(true);
+  }, [setShowButtons]);
+
   return (
     <Canvas
       style={{ width: '100%', height: '100%', background: '#0a0f1d' }}
@@ -183,13 +271,17 @@ export function MuseumScene({
       <pointLight position={[0, 4.5, 0]} intensity={1.0} distance={16} color="#ffe8cc" />
       <hemisphereLight skyColor="#ffffff" groundColor="#332a26" intensity={0.7} />
 
-      {/* Modelo 3D del Museo Wixarika v14 */}
+      {/* Modelo 3D del Museo Wixarika v14 con detección e interactividad en los 9 cuadros */}
       <Suspense fallback={null}>
-        <MuseumModel />
+        <MuseumModel
+          onSelectArtwork={handleSelectArtwork}
+          registerMesh={registerMesh}
+          unregisterMesh={unregisterMesh}
+        />
       </Suspense>
 
-      {/* Menú Principal Flotante ÚNICO del Museo (Elevado, monumental y retranqueado) */}
-      {showButtons && (
+      {/* Menú Principal Flotante ÚNICO del Museo (solo si no hay un cuadro abierto) */}
+      {showButtons && !activeArtwork && (
         <WixarikaWelcomeDashboard
           position={[0, 2.30, 3.75]}
           rotation={[0, Math.PI, 0]}
@@ -201,15 +293,27 @@ export function MuseumScene({
         />
       )}
 
-      {/* Botón flotante inferior para Ocultar/Mostrar el Menú Principal en el campo visual bajo */}
+      {/* Ventana Modal Monumental del Cuadro Seleccionado (Opción C: frente a la mirada del usuario) */}
+      {activeArtwork && (
+        <DynamicArtworkModal
+          artwork={activeArtwork}
+          onClose={handleCloseArtwork}
+          registerMesh={registerMesh}
+          unregisterMesh={unregisterMesh}
+        />
+      )}
+
+      {/* Botón flotante inferior para Ocultar/Mostrar el Menú Principal o el Cuadro activo */}
       <LowerToggleButton
         showButtons={showButtons}
         setShowButtons={setShowButtons}
+        activeArtwork={activeArtwork}
+        setActiveArtwork={setActiveArtwork}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
       />
 
-      {/* Reticula Central con Gaze Fuse interactivo a 1.2 segundos */}
+      {/* Reticula Central con Gaze Fuse calibrado a 3.0 segundos */}
       <GazeReticle
         interactiveObjects={getInteractiveObjects}
         distance={1.2}
