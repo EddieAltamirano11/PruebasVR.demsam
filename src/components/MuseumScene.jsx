@@ -120,6 +120,47 @@ function LowerToggleButton({
   );
 }
 
+// Quiosco ceremonial del museo con rotación suave amortiguada (Opción 1: Smooth Carousel)
+function RotatingKiosk({
+  targetRotationY = 0,
+  onSelectArtwork,
+  registerMesh,
+  unregisterMesh
+}) {
+  const kioskRef = useRef();
+
+  useFrame((_, delta) => {
+    if (kioskRef.current) {
+      // Interpolar suavemente hacia targetRotationY con amortiguación ceremonial ágil (~0.7s)
+      kioskRef.current.rotation.y = THREE.MathUtils.damp(
+        kioskRef.current.rotation.y,
+        targetRotationY,
+        4.5,
+        delta
+      );
+    }
+  });
+
+  return (
+    <group ref={kioskRef}>
+      {/* Luces de relleno para los 4 cuadrantes cardinales (rotan solidarias con el quiosco) */}
+      <directionalLight position={[0, 3.5, -4.5]} intensity={0.6} color="#ffffff" /> {/* Deidades (-Z) */}
+      <directionalLight position={[4.5, 3.5, 0]} intensity={0.6} color="#ffffff" />  {/* Gastronomía (+X) */}
+      <directionalLight position={[0, 3.5, 4.5]} intensity={0.6} color="#ffffff" />  {/* Bienvenida (+Z) */}
+      <directionalLight position={[-4.5, 3.5, 0]} intensity={0.6} color="#ffffff" /> {/* Fiestas (-X) */}
+
+      {/* Modelo 3D del Museo Wixarika v14 con detección e interactividad en los 9 cuadros */}
+      <Suspense fallback={null}>
+        <MuseumModel
+          onSelectArtwork={onSelectArtwork}
+          registerMesh={registerMesh}
+          unregisterMesh={unregisterMesh}
+        />
+      </Suspense>
+    </group>
+  );
+}
+
 // Modal dinámico monumental posicionado frente al cuadro seleccionado (Opción C mejorada)
 function DynamicArtworkModal({
   artwork,
@@ -165,6 +206,24 @@ export function MuseumScene({
   const cameraRigRef = useRef();
   const [internalShowButtons, setInternalShowButtons] = useState(true);
   const [activeArtwork, setActiveArtwork] = useState(null);
+  const [kioskRotationTarget, setKioskRotationTarget] = useState(0);
+
+  // Manejador al seleccionar una sala cultural (Deidades, Gastronomía o Fiestas)
+  const handleSelectStation = useCallback((stationId) => {
+    if (stationId === 'deidades') {
+      setKioskRotationTarget(Math.PI); // Gira 180°: Muro de Deidades viene al frente (+Z)
+    } else if (stationId === 'gastronomia') {
+      setKioskRotationTarget(-Math.PI / 2); // Gira -90°: Muro de Gastronomía viene al frente (+Z)
+    } else if (stationId === 'fiestas') {
+      setKioskRotationTarget(Math.PI / 2); // Gira +90°: Muro de Fiestas viene al frente (+Z)
+    } else {
+      setKioskRotationTarget(0); // Menú / Entrada (+Z)
+    }
+
+    // Al seleccionar una sala, ocultar el menú para que el quiosco gire al centro de su vista
+    // y el usuario pueda contemplar directamente el muro y sus cuadros sagrados
+    setShowButtons(false);
+  }, [setShowButtons]);
 
   const showButtons =
     externalShowButtons !== undefined ? externalShowButtons : internalShowButtons;
@@ -205,6 +264,7 @@ export function MuseumScene({
 
   // Recentrar visor en VR o controles de órbita en computadora
   const handleRecenter = useCallback(() => {
+    setKioskRotationTarget(0);
     if (onRecenterRef?.current) {
       onRecenterRef.current();
     } else if (orbitRef.current) {
@@ -246,22 +306,16 @@ export function MuseumScene({
       {/* Iluminacion Museografica Integral */}
       <ambientLight color="#ffffff" intensity={1.3} />
       <directionalLight position={[0, 8.5, 0]} intensity={1.2} color="#fffcf5" castShadow={false} />
-      {/* Luces de relleno para los 4 cuadrantes cardinales */}
-      <directionalLight position={[0, 3.5, -4.5]} intensity={0.6} color="#ffffff" /> {/* Deidades (-Z) */}
-      <directionalLight position={[4.5, 3.5, 0]} intensity={0.6} color="#ffffff" />  {/* Gastronomía (+X) */}
-      <directionalLight position={[0, 3.5, 4.5]} intensity={0.6} color="#ffffff" />  {/* Bienvenida (+Z) */}
-      <directionalLight position={[-4.5, 3.5, 0]} intensity={0.6} color="#ffffff" /> {/* Fiestas (-X) */}
       <pointLight position={[0, 4.5, 0]} intensity={1.0} distance={16} color="#ffe8cc" />
       <hemisphereLight skyColor="#ffffff" groundColor="#332a26" intensity={0.7} />
 
-      {/* Modelo 3D del Museo Wixarika v14 con detección e interactividad en los 9 cuadros */}
-      <Suspense fallback={null}>
-        <MuseumModel
-          onSelectArtwork={handleSelectArtwork}
-          registerMesh={registerMesh}
-          unregisterMesh={unregisterMesh}
-        />
-      </Suspense>
+      {/* Quiosco Ceremonial Giratorio (Opción 1: Rotación Suave Amortiguada en eje Y) */}
+      <RotatingKiosk
+        targetRotationY={kioskRotationTarget}
+        onSelectArtwork={handleSelectArtwork}
+        registerMesh={registerMesh}
+        unregisterMesh={unregisterMesh}
+      />
 
       {/* Menú Principal Flotante ÚNICO del Museo (solo si no hay un cuadro abierto) */}
       {showButtons && !activeArtwork && (
@@ -271,6 +325,7 @@ export function MuseumScene({
           stations={CULTURAL_STATIONS}
           onToggleAudio={handleToggleAudio}
           onRecenter={handleRecenter}
+          onSelectStation={handleSelectStation}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
         />

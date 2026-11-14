@@ -217,6 +217,7 @@ export function WixarikaWelcomeDashboard({
   books = DEFAULT_WIXARIKA_BOOKS,
   onToggleAudio,
   onRecenter,
+  onSelectStation,
   registerMesh,
   unregisterMesh,
   hoveredId,
@@ -289,7 +290,8 @@ export function WixarikaWelcomeDashboard({
   const handleReturnHome = useCallback(() => {
     SoundFX.playClick();
     setCurrentView('home');
-  }, []);
+    onSelectStation?.('home');
+  }, [onSelectStation]);
 
   return (
     <group position={position} rotation={rotation}>
@@ -465,6 +467,7 @@ export function WixarikaWelcomeDashboard({
               onClick={() => {
                 setActiveStationId('deidades');
                 setCurrentView('deidades');
+                onSelectStation?.('deidades');
               }}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -486,6 +489,7 @@ export function WixarikaWelcomeDashboard({
               onClick={() => {
                 setActiveStationId('gastronomia');
                 setCurrentView('gastronomia');
+                onSelectStation?.('gastronomia');
               }}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -507,6 +511,7 @@ export function WixarikaWelcomeDashboard({
               onClick={() => {
                 setActiveStationId('fiestas');
                 setCurrentView('fiestas');
+                onSelectStation?.('fiestas');
               }}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -887,16 +892,15 @@ export function WixarikaWelcomeDashboard({
       {/* ===================================================================== */}
       {currentView === 'videos' && (
         <group position={[0, 0, 0.005]}>
-          {/* Barra Superior con botón Volver al Menú */}
+          {/* Barra Superior con botón Volver al Menú (solo flecha <-) */}
           <group position={[0, 1.45, 0]}>
             <WixarikaVRButton
               id="btn-videos-back-top"
-              label="Volver al Menú"
               iconName="arrow-left"
               variant="cantera"
-              width={1.60}
+              width={0.42}
               height={0.26}
-              position={[-2.20, 0, 0]}
+              position={[-2.75, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -906,7 +910,7 @@ export function WixarikaWelcomeDashboard({
             />
 
             <Text
-              position={[0.20, 0.02, 0]}
+              position={[0, 0.02, 0]}
               fontSize={0.145}
               color="#1c1917"
               anchorX="center"
@@ -921,7 +925,7 @@ export function WixarikaWelcomeDashboard({
             </mesh>
           </group>
 
-          {/* Selector de Documentales */}
+          {/* Selector de Videos: Anterior, Video X de Y, Siguiente */}
           <group position={[0, 1.08, 0]}>
             <WixarikaVRButton
               id="btn-dash-video-prev"
@@ -941,27 +945,17 @@ export function WixarikaWelcomeDashboard({
 
             <group position={[0, 0, 0]}>
               <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[2.70, 0.24]} />
+                <planeGeometry args={[2.50, 0.24]} />
                 <meshBasicMaterial color="#f4ebd8" />
               </mesh>
               <Text
-                position={[0, 0.045, 0.001]}
-                fontSize={0.110}
+                position={[0, 0, 0.001]}
+                fontSize={0.115}
                 color="#1c1917"
                 anchorX="center"
                 anchorY="middle"
               >
-                {`Documental ${videoIndex + 1} de ${totalVideos}`}
-              </Text>
-              <Text
-                position={[0, -0.050, 0.001]}
-                fontSize={0.090}
-                color="#78350f"
-                anchorX="center"
-                anchorY="middle"
-                maxWidth={2.50}
-              >
-                {`${currentVideo?.category || 'Acervo Cultural'} · ${currentVideo?.duration || '03:22'}`}
+                {`Video ${videoIndex + 1} de ${totalVideos}`}
               </Text>
             </group>
 
@@ -998,24 +992,6 @@ export function WixarikaWelcomeDashboard({
               />
             </group>
           )}
-
-          {/* Botón Inferior para Volver al Menú Principal */}
-          <group position={[0, -1.48, 0]}>
-            <WixarikaVRButton
-              id="btn-videos-return-home"
-              label="Volver al Menú Principal"
-              iconName="arrow-left"
-              variant="cantera"
-              width={2.60}
-              height={0.30}
-              position={[0, 0, 0]}
-              onClick={handleReturnHome}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-            />
-          </group>
         </group>
       )}
     </group>

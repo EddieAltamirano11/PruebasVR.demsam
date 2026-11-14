@@ -192,15 +192,15 @@ export function WixarikaVRButton({
       {iconName ? (
         <LucideVRIcon
           name={iconName}
-          size={Math.min(height * 0.54, 0.11)}
+          size={label ? Math.min(height * 0.54, 0.14) : Math.min(height * 0.65, width * 0.65)}
           color={currentTextColor}
-          position={[-width / 2 + Math.max(0.12, width * 0.12), sublabel ? 0.015 : 0, 0.004]}
+          position={[label ? -width / 2 + Math.max(0.12, width * 0.12) : 0, sublabel ? 0.015 : 0, 0.004]}
           strokeWidth={2.4}
         />
       ) : icon ? (
         <Text
-          position={[-width / 2 + Math.max(0.12, width * 0.12), sublabel ? 0.015 : 0, 0.004]}
-          fontSize={Math.min(height * 0.54, 0.11)}
+          position={[label ? -width / 2 + Math.max(0.12, width * 0.12) : 0, sublabel ? 0.015 : 0, 0.004]}
+          fontSize={label ? Math.min(height * 0.54, 0.11) : Math.min(height * 0.65, width * 0.65)}
           color={currentTextColor}
           anchorX="center"
           anchorY="middle"
@@ -210,24 +210,26 @@ export function WixarikaVRButton({
       ) : null}
 
       {/* 7. Texto Principal del Botón (Grande, claro, alto contraste) */}
-      <Text
-        position={[
-          iconName || icon ? width * 0.05 : 0,
-          sublabel ? height * 0.14 : 0,
-          0.004
-        ]}
-        fontSize={mainFontSize}
-        color={currentTextColor}
-        anchorX="center"
-        anchorY="middle"
-        maxWidth={width * 0.82}
-        textAlign="center"
-        outlineWidth={isCantera ? 0 : 0.002}
-        outlineColor="#040711"
-        letterSpacing={0.02}
-      >
-        {label}
-      </Text>
+      {label && (
+        <Text
+          position={[
+            iconName || icon ? width * 0.05 : 0,
+            sublabel ? height * 0.14 : 0,
+            0.004
+          ]}
+          fontSize={mainFontSize}
+          color={currentTextColor}
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={width * 0.82}
+          textAlign="center"
+          outlineWidth={isCantera ? 0 : 0.002}
+          outlineColor="#040711"
+          letterSpacing={0.02}
+        >
+          {label}
+        </Text>
+      )}
 
       {/* 8. Subtexto descriptivo */}
       {sublabel && (

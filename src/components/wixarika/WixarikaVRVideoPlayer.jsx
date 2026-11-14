@@ -18,7 +18,7 @@ import {
 export function WixarikaVRVideoPlayer({
   video,
   quality = '720p',
-  onQualityChange,
+  onQualityChange: _onQualityChange,
   cinemaMode = false,
   onToggleCinemaMode,
   onPlaybackChange,
@@ -363,24 +363,6 @@ export function WixarikaVRVideoPlayer({
     }
   }, [startSafePlayback]);
 
-  const handleSeekBy = useCallback(
-    (deltaSeconds) => {
-      const el = videoElRef.current;
-      if (!el) return;
-      SoundFX.playClick();
-
-      const maxDur = Number.isFinite(el.duration) && el.duration > 0 ? el.duration : duration;
-      const baseTime = Number.isFinite(el.currentTime) ? el.currentTime : 0;
-      const nextTime = Math.max(
-        0,
-        Math.min(maxDur || baseTime + deltaSeconds, baseTime + deltaSeconds)
-      );
-      el.currentTime = nextTime;
-      setCurrentTime(nextTime);
-    },
-    [duration]
-  );
-
   const handleToggleMute = useCallback(() => {
     const el = videoElRef.current;
     if (!el) return;
@@ -393,20 +375,6 @@ export function WixarikaVRVideoPlayer({
       SoundFX.toggleAmbient();
     }
   }, []);
-
-  const handleSelect720p = useCallback(() => {
-    SoundFX.playClick();
-    if (quality !== '720p') {
-      onQualityChange?.('720p');
-    }
-  }, [quality, onQualityChange]);
-
-  const handleSelect480p = useCallback(() => {
-    SoundFX.playClick();
-    if (quality !== '480p') {
-      onQualityChange?.('480p');
-    }
-  }, [quality, onQualityChange]);
 
   const screenWidth = cinemaMode ? 3.80 : 2.80;
   const screenHeight = cinemaMode ? 2.1375 : 1.575; // Relación exacta 16:9
@@ -571,51 +539,19 @@ export function WixarikaVRVideoPlayer({
           {timeLabel}
         </Text>
 
-        {/* Controles */}
+        {/* Controles: Solo Iniciar/Pausar, Audio y Ampliar Pantalla */}
         {cinemaMode ? (
-          <group position={[0, -1.24, 0.014]}>
-            <WixarikaVRButton
-              id="btn-video-back10"
-              label="-10s"
-              variant="cantera"
-              width={0.38}
-              height={0.18}
-              position={[-1.68, 0, 0]}
-              onClick={() => handleSeekBy(-10)}
-              onRegister={onRegister}
-              onUnregister={onUnregister}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-              showDiamonds={false}
-            />
+          <group position={[0, -1.18, 0.014]}>
             <WixarikaVRButton
               id="btn-video-play"
               label={isPlaying ? 'Pausar' : 'Iniciar'}
               iconName={isPlaying ? 'pause' : 'play'}
               variant="cantera"
               active={isPlaying}
-              width={0.68}
-              height={0.18}
-              position={[-1.11, 0, 0]}
+              width={1.05}
+              height={0.20}
+              position={[-1.15, 0, 0]}
               onClick={handleTogglePlay}
-              onRegister={onRegister}
-              onUnregister={onUnregister}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-              showDiamonds={false}
-            />
-            <WixarikaVRButton
-              id="btn-video-fwd10"
-              label="+10s"
-              variant="cantera"
-              width={0.38}
-              height={0.18}
-              position={[-0.54, 0, 0]}
-              onClick={() => handleSeekBy(10)}
               onRegister={onRegister}
               onUnregister={onUnregister}
               registerMesh={registerMesh}
@@ -630,44 +566,10 @@ export function WixarikaVRVideoPlayer({
               iconName={isMuted ? 'volume-x' : 'volume-2'}
               variant="cantera"
               active={isMuted}
-              width={0.68}
-              height={0.18}
-              position={[0.03, 0, 0]}
+              width={1.05}
+              height={0.20}
+              position={[0, 0, 0]}
               onClick={handleToggleMute}
-              onRegister={onRegister}
-              onUnregister={onUnregister}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-              showDiamonds={false}
-            />
-            <WixarikaVRButton
-              id="btn-video-q720"
-              label="720p"
-              variant="cantera"
-              active={quality === '720p'}
-              width={0.44}
-              height={0.18}
-              position={[0.63, 0, 0]}
-              onClick={handleSelect720p}
-              onRegister={onRegister}
-              onUnregister={onUnregister}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-              showDiamonds={false}
-            />
-            <WixarikaVRButton
-              id="btn-video-q480"
-              label="480p"
-              variant="cantera"
-              active={quality === '480p'}
-              width={0.44}
-              height={0.18}
-              position={[1.11, 0, 0]}
-              onClick={handleSelect480p}
               onRegister={onRegister}
               onUnregister={onUnregister}
               registerMesh={registerMesh}
@@ -681,9 +583,9 @@ export function WixarikaVRVideoPlayer({
               label="Ver Ficha"
               iconName="minimize-2"
               variant="cantera"
-              width={0.74}
-              height={0.18}
-              position={[1.74, 0, 0]}
+              width={1.05}
+              height={0.20}
+              position={[1.15, 0, 0]}
               onClick={onToggleCinemaMode}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -695,138 +597,65 @@ export function WixarikaVRVideoPlayer({
             />
           </group>
         ) : (
-          <group>
-            {/* Fila 1: Transporte de reproducción */}
-            <group position={[0, -0.92, 0.014]}>
-              <WixarikaVRButton
-                id="btn-video-back10"
-                label="-10s"
-                variant="cantera"
-                width={0.46}
-                height={0.20}
-                position={[-1.13, 0, 0]}
-                onClick={() => handleSeekBy(-10)}
-                onRegister={onRegister}
-                onUnregister={onUnregister}
-                registerMesh={registerMesh}
-                unregisterMesh={unregisterMesh}
-                hoveredId={hoveredId}
-                fuseProgress={fuseProgress}
-                showDiamonds={false}
-              />
-              <WixarikaVRButton
-                id="btn-video-play"
-                label={isPlaying ? 'Pausar' : 'Iniciar'}
-                iconName={isPlaying ? 'pause' : 'play'}
-                variant="cantera"
-                active={isPlaying}
-                width={0.84}
-                height={0.20}
-                position={[-0.44, 0, 0]}
-                onClick={handleTogglePlay}
-                onRegister={onRegister}
-                onUnregister={onUnregister}
-                registerMesh={registerMesh}
-                unregisterMesh={unregisterMesh}
-                hoveredId={hoveredId}
-                fuseProgress={fuseProgress}
-                showDiamonds={false}
-              />
-              <WixarikaVRButton
-                id="btn-video-fwd10"
-                label="+10s"
-                variant="cantera"
-                width={0.46}
-                height={0.20}
-                position={[0.25, 0, 0]}
-                onClick={() => handleSeekBy(10)}
-                onRegister={onRegister}
-                onUnregister={onUnregister}
-                registerMesh={registerMesh}
-                unregisterMesh={unregisterMesh}
-                hoveredId={hoveredId}
-                fuseProgress={fuseProgress}
-                showDiamonds={false}
-              />
-              <WixarikaVRButton
-                id="btn-video-mute"
-                label={isMuted ? 'Silencio' : 'Audio'}
-                iconName={isMuted ? 'volume-x' : 'volume-2'}
-                variant="cantera"
-                active={isMuted}
-                width={0.84}
-                height={0.20}
-                position={[0.94, 0, 0]}
-                onClick={handleToggleMute}
-                onRegister={onRegister}
-                onUnregister={onUnregister}
-                registerMesh={registerMesh}
-                unregisterMesh={unregisterMesh}
-                hoveredId={hoveredId}
-                fuseProgress={fuseProgress}
-                showDiamonds={false}
-              />
-            </group>
-
-            {/* Fila 2: Resolución y Pantalla Completa */}
-            <group position={[0, -1.16, 0.014]}>
-              <WixarikaVRButton
-                id="btn-video-q720"
-                label="720p"
-                variant="cantera"
-                active={quality === '720p'}
-                width={0.64}
-                height={0.20}
-                position={[-0.98, 0, 0]}
-                onClick={handleSelect720p}
-                onRegister={onRegister}
-                onUnregister={onUnregister}
-                registerMesh={registerMesh}
-                unregisterMesh={unregisterMesh}
-                hoveredId={hoveredId}
-                fuseProgress={fuseProgress}
-                showDiamonds={false}
-              />
-              <WixarikaVRButton
-                id="btn-video-q480"
-                label="480p"
-                variant="cantera"
-                active={quality === '480p'}
-                width={0.64}
-                height={0.20}
-                position={[-0.30, 0, 0]}
-                onClick={handleSelect480p}
-                onRegister={onRegister}
-                onUnregister={onUnregister}
-                registerMesh={registerMesh}
-                unregisterMesh={unregisterMesh}
-                hoveredId={hoveredId}
-                fuseProgress={fuseProgress}
-                showDiamonds={false}
-              />
-              <WixarikaVRButton
-                id="btn-video-cinema"
-                label="Ampliar Pantalla"
-                iconName="maximize-2"
-                variant="cantera"
-                width={1.28}
-                height={0.20}
-                position={[0.70, 0, 0]}
-                onClick={onToggleCinemaMode}
-                onRegister={onRegister}
-                onUnregister={onUnregister}
-                registerMesh={registerMesh}
-                unregisterMesh={unregisterMesh}
-                hoveredId={hoveredId}
-                fuseProgress={fuseProgress}
-                showDiamonds={false}
-              />
-            </group>
+          <group position={[0, -0.92, 0.014]}>
+            <WixarikaVRButton
+              id="btn-video-play"
+              label={isPlaying ? 'Pausar' : 'Iniciar'}
+              iconName={isPlaying ? 'pause' : 'play'}
+              variant="cantera"
+              active={isPlaying}
+              width={0.86}
+              height={0.22}
+              position={[-0.94, 0, 0]}
+              onClick={handleTogglePlay}
+              onRegister={onRegister}
+              onUnregister={onUnregister}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
+            />
+            <WixarikaVRButton
+              id="btn-video-mute"
+              label={isMuted ? 'Silencio' : 'Audio'}
+              iconName={isMuted ? 'volume-x' : 'volume-2'}
+              variant="cantera"
+              active={isMuted}
+              width={0.86}
+              height={0.22}
+              position={[0, 0, 0]}
+              onClick={handleToggleMute}
+              onRegister={onRegister}
+              onUnregister={onUnregister}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
+            />
+            <WixarikaVRButton
+              id="btn-video-cinema"
+              label="Ampliar Pantalla"
+              iconName="maximize-2"
+              variant="cantera"
+              width={0.86}
+              height={0.22}
+              position={[0.94, 0, 0]}
+              onClick={onToggleCinemaMode}
+              onRegister={onRegister}
+              onUnregister={onUnregister}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
+            />
           </group>
         )}
       </group>
 
-      {/* 2. COLUMNA DERECHA: FICHA CULTURAL AMPLIA Y LEGIBLE */}
+      {/* 2. COLUMNA DERECHA: FICHA CULTURAL AMPLIA Y LEGIBLE (Solo Título, Sinopsis y Sello) */}
       {!cinemaMode && video && (
         <group position={[1.45, -0.09, 0.01]}>
           <mesh position={[0, 0, -0.004]}>
@@ -839,74 +668,47 @@ export function WixarikaVRVideoPlayer({
             <meshBasicMaterial color="#faf6eb" />
           </mesh>
 
-          <mesh position={[0, 0.96, 0.001]}>
+          <mesh position={[0, 0.94, 0.001]}>
             <planeGeometry args={[2.24, 0.028]} />
             <meshBasicMaterial color="#b45309" />
           </mesh>
 
-          {/* Categoría */}
+          {/* Título principal monumental (sin categoría ni archivo audiovisual) */}
           <Text
-            position={[0, 0.84, 0.003]}
-            fontSize={0.100}
-            color="#b45309"
-            anchorX="center"
-            anchorY="middle"
-            maxWidth={2.20}
-            textAlign="center"
-          >
-            {(video.category || 'DOCUMENTAL').toUpperCase()}
-          </Text>
-
-          {/* Título principal grande */}
-          <Text
-            position={[0, 0.70, 0.003]}
-            fontSize={0.145}
+            position={[0, 0.72, 0.003]}
+            fontSize={0.160}
             color="#1c1917"
             anchorX="center"
             anchorY="top"
             maxWidth={2.20}
             textAlign="center"
-            lineHeight={1.18}
+            lineHeight={1.22}
           >
             {video.title}
           </Text>
 
-          {/* Producción y año */}
-          <Text
-            position={[0, 0.36, 0.003]}
-            fontSize={0.105}
-            color="#78350f"
-            anchorX="center"
-            anchorY="top"
-            maxWidth={2.20}
-            textAlign="center"
-            lineHeight={1.2}
-          >
-            {`${video.director} (${video.year || '2024'})`}
-          </Text>
-
           {/* Divisor */}
-          <mesh position={[0, 0.16, 0.002]}>
+          <mesh position={[0, 0.40, 0.002]}>
             <planeGeometry args={[2.10, 0.006]} />
             <meshBasicMaterial color="#d4af37" transparent opacity={0.7} />
           </mesh>
 
           {/* Sinopsis con tipografía amplia */}
           <Text
-            position={[0, 0.06, 0.003]}
-            fontSize={0.115}
+            position={[0, 0.28, 0.003]}
+            fontSize={0.130}
             color="#292524"
             anchorX="center"
             anchorY="top"
             maxWidth={2.15}
             textAlign="center"
-            lineHeight={1.40}
+            lineHeight={1.45}
           >
             {video.synopsis}
           </Text>
 
           {/* Sello cultural inferior limpio */}
-          <group position={[0, -0.84, 0.003]}>
+          <group position={[0, -0.82, 0.003]}>
             <mesh position={[0, 0, -0.001]}>
               <planeGeometry args={[2.10, 0.18]} />
               <meshBasicMaterial color="#f3ebd6" />

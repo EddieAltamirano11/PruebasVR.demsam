@@ -66,7 +66,19 @@ export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
 
       const handleSelect = () => {
         SoundFX.playClick();
-        onSelectArtwork?.(artworkData);
+        // Obtener posición en el espacio mundial en el momento exacto del clic (considera la rotación dinámica del quiosco)
+        const currentWorldPos = new THREE.Vector3();
+        if (canvasObj) {
+          canvasObj.getWorldPosition(currentWorldPos);
+        } else if (stationObj) {
+          stationObj.getWorldPosition(currentWorldPos);
+        } else {
+          currentWorldPos.set(...art.stationPosition);
+        }
+        onSelectArtwork?.({
+          ...artworkData,
+          worldPosition: currentWorldPos
+        });
       };
 
       // Si existe el objeto estación, vincular todos sus hijos para que cualquier clic en el cuadro sea interactivo
