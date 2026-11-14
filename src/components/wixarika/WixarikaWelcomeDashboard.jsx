@@ -214,9 +214,9 @@ export function WixarikaWelcomeDashboard({
   initialView = 'home',
   stations = DEFAULT_CULTURAL_STATIONS,
   videos = DEFAULT_WIXARIKA_VIDEOS,
-  books = DEFAULT_WIXARIKA_BOOKS,
+  books: _books = DEFAULT_WIXARIKA_BOOKS,
   onToggleAudio,
-  onRecenter,
+  onRecenter: _onRecenter,
   onSelectStation,
   registerMesh,
   unregisterMesh,
@@ -232,25 +232,10 @@ export function WixarikaWelcomeDashboard({
   const [activeStationId, setActiveStationId] = useState(null);
   const [isAudioActive, setIsAudioActive] = useState(false);
 
-  // Estados para sub-vista de libros
-  const [bookIndex, setBookIndex] = useState(0);
-
   // Estados para sub-vista de videos
   const [videoIndex, setVideoIndex] = useState(0);
   const [videoQuality, setVideoQuality] = useState('720p');
   const [videoCinemaMode, setVideoCinemaMode] = useState(false);
-
-  // Libros filtrados por sala activa o catálogo completo
-  const filteredBooks = useMemo(() => {
-    if (!activeStationId) return books;
-    const matches = books.filter(
-      (b) => b.stationId === activeStationId || b.themeId === activeStationId
-    );
-    return matches.length > 0 ? matches : books;
-  }, [books, activeStationId]);
-
-  const currentBook = filteredBooks[bookIndex] || filteredBooks[0] || books[0];
-  const totalBooks = filteredBooks.length;
 
   const currentVideo = videos[videoIndex] || videos[0];
   const totalVideos = videos.length;
@@ -266,16 +251,6 @@ export function WixarikaWelcomeDashboard({
     setIsAudioActive((prev) => !prev);
     if (onToggleAudio) onToggleAudio();
   }, [onToggleAudio]);
-
-  const handlePrevBook = useCallback(() => {
-    SoundFX.playClick();
-    setBookIndex((prev) => (prev - 1 + totalBooks) % totalBooks);
-  }, [totalBooks]);
-
-  const handleNextBook = useCallback(() => {
-    SoundFX.playClick();
-    setBookIndex((prev) => (prev + 1) % totalBooks);
-  }, [totalBooks]);
 
   const handlePrevVideo = useCallback(() => {
     SoundFX.playClick();
@@ -343,7 +318,7 @@ export function WixarikaWelcomeDashboard({
       {currentView === 'home' && (
         <group position={[0, 0, 0.005]}>
           {/* Cabecera Monumental del Dashboard */}
-          <group position={[0, 1.22, 0]}>
+          <group position={[0, 1.25, 0]}>
             <LucideVRIcon
               name="compass"
               size={0.26}
@@ -353,8 +328,8 @@ export function WixarikaWelcomeDashboard({
             />
 
             <Text
-              position={[0, 0.02, 0]}
-              fontSize={0.200}
+              position={[0, 0.00, 0]}
+              fontSize={0.210}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
@@ -365,49 +340,32 @@ export function WixarikaWelcomeDashboard({
             </Text>
 
             <Text
-              position={[0, -0.13, 0]}
-              fontSize={0.104}
+              position={[0, -0.16, 0]}
+              fontSize={0.125}
               color="#78350f"
               anchorX="center"
               anchorY="middle"
               maxWidth={panelWidth * 0.94}
               textAlign="center"
             >
-              PORTAL CEREMONIAL Y GUÍA DEL VISITANTE · BIBLIOTECA SOLÓN ARGÜELLO
+              BIBLIOTECA SOLÓN ARGÜELLO
             </Text>
-
-            <Text
-              position={[0, -0.23, 0]}
-              fontSize={0.090}
-              color="#78350f"
-              anchorX="center"
-              anchorY="middle"
-              maxWidth={panelWidth * 0.94}
-              textAlign="center"
-            >
-              «Taikiyari xanepu» · Bienvenidos al Kalihuey Sagrado
-            </Text>
-
-            <mesh position={[0, -0.30, 0]}>
-              <planeGeometry args={[panelWidth * 0.94, 0.007]} />
-              <meshBasicMaterial color="#d4af37" />
-            </mesh>
           </group>
 
           {/* Fila 1: Servicios y Catálogos Culturales */}
           <group position={[0, 0.22, 0]}>
             <DashboardTile
-              key="btn-dash-recenter"
-              id="btn-dash-recenter"
-              title="Recentrar Visor"
-              iconName="rotate-ccw"
+              key="btn-dash-books"
+              id="btn-dash-books"
+              title="Libros Recomendados"
+              iconName="book-open"
               accentColor={UNIFIED_ICON_COLOR}
               width={1.80}
               height={0.88}
               iconSize={0.26}
               titleSize={0.125}
               position={[-1.95, 0, 0]}
-              onClick={onRecenter}
+              onClick={() => setCurrentView('books')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
               hoveredId={hoveredId}
@@ -456,7 +414,7 @@ export function WixarikaWelcomeDashboard({
             <DashboardTile
               key="btn-dash-deidades"
               id="btn-dash-deidades"
-              title="Panteón de Deidades"
+              title="Deidades"
               iconName="sun"
               accentColor={UNIFIED_ICON_COLOR}
               width={1.80}
@@ -705,7 +663,7 @@ export function WixarikaWelcomeDashboard({
       )}
 
       {/* ===================================================================== */}
-      {/* VISTA C: CATÁLOGO DE LIBROS DE LA BIBLIOTECA SOLÓN ARGÜELLO          */}
+      {/* VISTA C: LIBROS RECOMENDADOS (ACTUALMENTE VACÍA)                     */}
       {/* ===================================================================== */}
       {currentView === 'books' && (
         <group position={[0, 0, 0.005]}>
@@ -734,7 +692,7 @@ export function WixarikaWelcomeDashboard({
               anchorX="center"
               anchorY="middle"
             >
-              LIBROS DE LA BIBLIOTECA SOLÓN ARGÜELLO
+              LIBROS RECOMENDADOS · BIBLIOTECA SOLÓN ARGÜELLO
             </Text>
 
             <mesh position={[0, -0.16, 0]}>
@@ -743,126 +701,7 @@ export function WixarikaWelcomeDashboard({
             </mesh>
           </group>
 
-          {/* Navegación Anterior / Siguiente entre libros */}
-          <group position={[0, 0.92, 0]}>
-            <WixarikaVRButton
-              id="btn-dash-book-prev"
-              label="Anterior"
-              iconName="chevron-left"
-              variant="cantera"
-              width={1.10}
-              height={0.24}
-              position={[-1.90, 0, 0]}
-              onClick={handlePrevBook}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-              showDiamonds={false}
-            />
-
-            <group position={[0, 0, 0]}>
-              <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[2.20, 0.22]} />
-                <meshBasicMaterial color="#f4ebd8" />
-              </mesh>
-              <Text
-                position={[0, 0, 0.001]}
-                fontSize={0.100}
-                color="#1c1917"
-                anchorX="center"
-                anchorY="middle"
-              >
-                {`Libro ${bookIndex + 1} de ${totalBooks}`}
-              </Text>
-            </group>
-
-            <WixarikaVRButton
-              id="btn-dash-book-next"
-              label="Siguiente"
-              iconName="chevron-right"
-              variant="cantera"
-              width={1.10}
-              height={0.24}
-              position={[1.90, 0, 0]}
-              onClick={handleNextBook}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-              showDiamonds={false}
-            />
-          </group>
-
-          {/* Ficha Principal del Libro en Tipografía Amplia */}
-          {currentBook && (
-            <group position={[0, -0.05, 0]}>
-              {/* Título de la obra */}
-              <Text
-                position={[0, 0.35, 0]}
-                fontSize={0.130}
-                color="#1c1917"
-                anchorX="center"
-                anchorY="top"
-                maxWidth={panelWidth * 0.88}
-                textAlign="center"
-                lineHeight={1.20}
-              >
-                {currentBook.title}
-              </Text>
-
-              {/* Autor de la obra */}
-              <Text
-                position={[0, 0.10, 0]}
-                fontSize={0.110}
-                color="#78350f"
-                anchorX="center"
-                anchorY="top"
-                maxWidth={panelWidth * 0.88}
-                textAlign="center"
-              >
-                {`Autor: ${currentBook.author}`}
-              </Text>
-
-              {/* Cota y Signatura Topográfica de la Biblioteca */}
-              <group position={[0, -0.20, 0]}>
-                <mesh position={[0, 0, -0.001]}>
-                  <planeGeometry args={[3.20, 0.24]} />
-                  <meshBasicMaterial color="#f4ebd8" />
-                </mesh>
-                <mesh position={[0, 0, -0.002]}>
-                  <planeGeometry args={[3.24, 0.28]} />
-                  <meshBasicMaterial color="#d97706" transparent opacity={0.85} />
-                </mesh>
-                <Text
-                  position={[0, 0, 0.001]}
-                  fontSize={0.100}
-                  color="#1c1917"
-                  anchorX="center"
-                  anchorY="middle"
-                  letterSpacing={0.03}
-                >
-                  {`Cota física: ${currentBook.code || currentBook.callNumber}`}
-                </Text>
-              </group>
-
-              {/* Sinopsis del Libro */}
-              {currentBook.synopsis && (
-                <Text
-                  position={[0, -0.52, 0]}
-                  fontSize={0.095}
-                  color="#1c1917"
-                  anchorX="center"
-                  anchorY="top"
-                  maxWidth={panelWidth * 0.85}
-                  textAlign="center"
-                  lineHeight={1.38}
-                >
-                  {currentBook.synopsis}
-                </Text>
-              )}
-            </group>
-          )}
+          {/* Sub-vista de libros recomendados (vacía según especificación) */}
 
           {/* Botón Inferior para Volver al Menú Principal */}
           <group position={[0, -1.35, 0]}>

@@ -62,6 +62,7 @@ function LowerToggleButton({
   setShowButtons,
   activeArtwork,
   setActiveArtwork,
+  onShowMenu,
   registerMesh,
   unregisterMesh
 }) {
@@ -98,7 +99,11 @@ function LowerToggleButton({
       setShowButtons(false);
     } else {
       // Alternar menú principal
-      setShowButtons(!showButtons);
+      const nextShow = !showButtons;
+      setShowButtons(nextShow);
+      if (nextShow && onShowMenu) {
+        onShowMenu();
+      }
     }
   };
 
@@ -120,30 +125,15 @@ function LowerToggleButton({
   );
 }
 
-// Quiosco ceremonial del museo con rotación suave amortiguada (Opción 1: Smooth Carousel)
-function RotatingKiosk({
-  targetRotationY = 0,
+// Pabellón ceremonial del museo con arquitectura e iluminación estática (no gira el museo)
+function StaticMuseum({
   onSelectArtwork,
   registerMesh,
   unregisterMesh
 }) {
-  const kioskRef = useRef();
-
-  useFrame((_, delta) => {
-    if (kioskRef.current) {
-      // Interpolar suavemente hacia targetRotationY con amortiguación ceremonial ágil (~0.7s)
-      kioskRef.current.rotation.y = THREE.MathUtils.damp(
-        kioskRef.current.rotation.y,
-        targetRotationY,
-        4.5,
-        delta
-      );
-    }
-  });
-
   return (
-    <group ref={kioskRef}>
-      {/* Luces de relleno para los 4 cuadrantes cardinales (rotan solidarias con el quiosco) */}
+    <group position={[0, 0, 0]} rotation={[0, 0, 0]}>
+      {/* Luces de relleno para los 4 cuadrantes cardinales */}
       <directionalLight position={[0, 3.5, -4.5]} intensity={0.6} color="#ffffff" /> {/* Deidades (-Z) */}
       <directionalLight position={[4.5, 3.5, 0]} intensity={0.6} color="#ffffff" />  {/* Gastronomía (+X) */}
       <directionalLight position={[0, 3.5, 4.5]} intensity={0.6} color="#ffffff" />  {/* Bienvenida (+Z) */}
@@ -159,6 +149,58 @@ function RotatingKiosk({
       </Suspense>
     </group>
   );
+}
+
+// Controlador de cámara para navegación suave hacia las salas en modo computadora (PC)
+function StationCameraController({ targetStation, setTargetStation, orbitRef, vrMode }) {
+  const { camera } = useThree();
+  const targetCamPos = useRef(null);
+  const isNavigating = useRef(false);
+
+  useEffect(() => {
+    if (vrMode || !targetStation) return;
+
+    let pos = null;
+    if (targetStation === 'deidades') {
+      // Muro Norte (-Z): la cámara se posiciona al Sur (+Z) mirando al Norte
+      pos = new THREE.Vector3(0, 1.6, 2.5);
+    } else if (targetStation === 'gastronomia') {
+      // Muro Este (+X): la cámara se posiciona al Oeste (-X) mirando al Este
+      pos = new THREE.Vector3(-2.5, 1.6, 0);
+    } else if (targetStation === 'fiestas') {
+      // Muro Oeste (-X): la cámara se posiciona al Este (+X) mirando al Oeste
+      pos = new THREE.Vector3(2.5, 1.6, 0);
+    } else if (targetStation === 'home' || targetStation === 'bienvenida') {
+      // Bienvenida / Menú Principal (+Z): la cámara se posiciona al Norte (-Z) mirando al Sur
+      pos = new THREE.Vector3(0, 1.6, -2.5);
+    }
+
+    if (pos) {
+      targetCamPos.current = pos;
+      isNavigating.current = true;
+    }
+  }, [targetStation, vrMode]);
+
+  useFrame((_, delta) => {
+    if (vrMode || !isNavigating.current || !targetCamPos.current) return;
+
+    // Interpolación suave y ágil hacia la posición de la estación
+    camera.position.lerp(targetCamPos.current, Math.min(1, delta * 4.5));
+    if (orbitRef.current) {
+      orbitRef.current.target.set(0, 1.4, 0);
+      orbitRef.current.update();
+    }
+
+    if (camera.position.distanceTo(targetCamPos.current) < 0.04) {
+      camera.position.copy(targetCamPos.current);
+      if (orbitRef.current) orbitRef.current.update();
+      isNavigating.current = false;
+      targetCamPos.current = null;
+      setTargetStation(null);
+    }
+  });
+
+  return null;
 }
 
 // Modal dinámico monumental posicionado frente al cuadro seleccionado (Opción C mejorada)
@@ -210,25 +252,24 @@ export function MuseumScene({
   const setShowButtons = externalSetShowButtons || setInternalShowButtons;
 
   const [activeArtwork, setActiveArtwork] = useState(null);
-  const [kioskRotationTarget, setKioskRotationTarget] = useState(0);
+  const [navTargetStation, setNavTargetStation] = useState(null);
 
   // Manejador al seleccionar una sala cultural (Deidades, Gastronomía o Fiestas)
-  // Gira el quiosco suavemente para que la sala quede de frente al usuario
-  // y oculta el menú flotante para que el usuario contemple directamente las obras en 3D
+  // En lugar de rotar el museo, orienta la cámara suavemente hacia el muro seleccionado.
+  // El Menú Principal y el Museo permanecen siempre fijos en sus coordenadas originales.
   const handleSelectStation = useCallback((stationId) => {
-    if (stationId === 'deidades') {
-      setKioskRotationTarget(Math.PI); // Gira 180°: Muro de Deidades viene al frente (+Z)
-      setShowButtons(false);
-    } else if (stationId === 'gastronomia') {
-      setKioskRotationTarget(-Math.PI / 2); // Gira -90°: Muro de Gastronomía viene al frente (+Z)
-      setShowButtons(false);
-    } else if (stationId === 'fiestas') {
-      setKioskRotationTarget(Math.PI / 2); // Gira +90°: Muro de Fiestas viene al frente (+Z)
-      setShowButtons(false);
-    } else {
-      setKioskRotationTarget(0); // Menú / Entrada (+Z)
+    setNavTargetStation(stationId);
+    if (stationId === 'home' || stationId === 'bienvenida') {
       setShowButtons(true);
+    } else {
+      setShowButtons(false);
     }
+  }, [setShowButtons]);
+
+  // Manejador para mostrar el menú y regresar la vista al pabellón de bienvenida (+Z)
+  const handleShowMenu = useCallback(() => {
+    setNavTargetStation('home');
+    setShowButtons(true);
   }, [setShowButtons]);
 
   // Registro de objetos interactivos para el raycaster de Gaze Fuse
@@ -266,11 +307,13 @@ export function MuseumScene({
 
   // Recentrar visor en VR o controles de órbita en computadora
   const handleRecenter = useCallback(() => {
-    setKioskRotationTarget(0);
+    setNavTargetStation('home');
     if (onRecenterRef?.current) {
       onRecenterRef.current();
     } else if (orbitRef.current) {
-      orbitRef.current.reset?.();
+      orbitRef.current.target.set(0, 1.4, 0);
+      orbitRef.current.object.position.set(0, 1.6, -2.5);
+      orbitRef.current.update();
     }
   }, [onRecenterRef]);
 
@@ -294,16 +337,24 @@ export function MuseumScene({
     >
       {/* Rig de camara para modo normal y modo VR:
           En modo VR se orienta Math.PI para que el visor mire de frente al Menú Principal (+Z).
-          En computadora (escritorio) se conserva la orientación libre original de la escena sin fijación. */}
+          En computadora (escritorio) inicia en [0, 1.6, -2.5] mirando de frente al Menú Principal (+Z). */}
       <group ref={cameraRigRef} position={[0, 0, 0]} rotation={vrMode ? [0, Math.PI, 0] : [0, 0, 0]}>
         <PerspectiveCamera
           makeDefault
-          position={vrMode ? [0, 1.6, 0] : [0, 1.6, 2.5]}
+          position={vrMode ? [0, 1.6, 0] : [0, 1.6, -2.5]}
           fov={75}
           near={0.05}
           far={1000}
         />
       </group>
+
+      {/* Navegador suave de cámara para PC */}
+      <StationCameraController
+        targetStation={navTargetStation}
+        setTargetStation={setNavTargetStation}
+        orbitRef={orbitRef}
+        vrMode={vrMode}
+      />
 
       {/* Iluminacion Museografica Integral */}
       <ambientLight color="#ffffff" intensity={1.3} />
@@ -311,15 +362,14 @@ export function MuseumScene({
       <pointLight position={[0, 4.5, 0]} intensity={1.0} distance={16} color="#ffe8cc" />
       <hemisphereLight skyColor="#ffffff" groundColor="#332a26" intensity={0.7} />
 
-      {/* Quiosco Ceremonial Giratorio (Opción 1: Rotación Suave Amortiguada en eje Y) */}
-      <RotatingKiosk
-        targetRotationY={kioskRotationTarget}
+      {/* Pabellón Ceremonial Estático (el museo nunca gira) */}
+      <StaticMuseum
         onSelectArtwork={handleSelectArtwork}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
       />
 
-      {/* Menú Principal Flotante ÚNICO del Museo (solo si no hay un cuadro abierto) */}
+      {/* Menú Principal Flotante ÚNICO del Museo (anclado permanentemente en Bienvenida +Z) */}
       {showButtons && !activeArtwork && (
         <WixarikaWelcomeDashboard
           position={[0, 2.30, 3.75]}
@@ -349,6 +399,7 @@ export function MuseumScene({
         setShowButtons={setShowButtons}
         activeArtwork={activeArtwork}
         setActiveArtwork={setActiveArtwork}
+        onShowMenu={handleShowMenu}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
       />
@@ -360,7 +411,7 @@ export function MuseumScene({
         enabled={true}
       />
 
-      {/* Controles de orbita activos en modo pantalla normal (giro 360° libre alrededor del centro del museo como estaba antes) */}
+      {/* Controles de orbita activos en modo pantalla normal (giro 360° libre alrededor del centro del museo) */}
       <OrbitControls
         ref={orbitRef}
         enabled={!vrMode}
@@ -371,6 +422,9 @@ export function MuseumScene({
         maxDistance={7.5}
         maxPolarAngle={Math.PI - 0.05}
         minPolarAngle={0.05}
+        onStart={() => {
+          setNavTargetStation(null);
+        }}
       />
 
       {/* Gestor Nativo WebXR */}
