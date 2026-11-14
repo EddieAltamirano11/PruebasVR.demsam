@@ -353,7 +353,7 @@ export function WixarikaWelcomeDashboard({
           </group>
 
           {/* Fila 1: Servicios y Catálogos Culturales */}
-          <group position={[0, 0.22, 0]}>
+          <group position={[0, 0.25, 0]}>
             <DashboardTile
               key="btn-dash-books"
               id="btn-dash-books"
@@ -361,8 +361,8 @@ export function WixarikaWelcomeDashboard({
               iconName="book-open"
               accentColor={UNIFIED_ICON_COLOR}
               width={1.80}
-              height={0.88}
-              iconSize={0.26}
+              height={0.84}
+              iconSize={0.25}
               titleSize={0.125}
               position={[-1.95, 0, 0]}
               onClick={() => setCurrentView('books')}
@@ -379,8 +379,8 @@ export function WixarikaWelcomeDashboard({
               iconName={isAudioActive ? 'volume-2' : 'volume-x'}
               accentColor={UNIFIED_ICON_COLOR}
               width={1.80}
-              height={0.88}
-              iconSize={0.26}
+              height={0.84}
+              iconSize={0.25}
               titleSize={0.125}
               position={[0, 0, 0]}
               onClick={handleToggleAudio}
@@ -397,8 +397,8 @@ export function WixarikaWelcomeDashboard({
               iconName="video"
               accentColor={UNIFIED_ICON_COLOR}
               width={1.80}
-              height={0.88}
-              iconSize={0.26}
+              height={0.84}
+              iconSize={0.25}
               titleSize={0.125}
               position={[1.95, 0, 0]}
               onClick={() => setCurrentView('videos')}
@@ -410,7 +410,7 @@ export function WixarikaWelcomeDashboard({
           </group>
 
           {/* Fila 2: Salas Cardinales (Apertura directa dentro del menú) */}
-          <group position={[0, -0.78, 0]}>
+          <group position={[0, -0.79, 0]}>
             <DashboardTile
               key="btn-dash-deidades"
               id="btn-dash-deidades"
@@ -418,8 +418,8 @@ export function WixarikaWelcomeDashboard({
               iconName="sun"
               accentColor={UNIFIED_ICON_COLOR}
               width={1.80}
-              height={0.88}
-              iconSize={0.26}
+              height={0.84}
+              iconSize={0.25}
               titleSize={0.125}
               position={[-1.95, 0, 0]}
               onClick={() => {
@@ -439,8 +439,8 @@ export function WixarikaWelcomeDashboard({
               iconName="utensils"
               accentColor={UNIFIED_ICON_COLOR}
               width={1.80}
-              height={0.88}
-              iconSize={0.26}
+              height={0.84}
+              iconSize={0.25}
               titleSize={0.125}
               position={[0, 0, 0]}
               onClick={() => {
@@ -460,8 +460,8 @@ export function WixarikaWelcomeDashboard({
               iconName="sparkles"
               accentColor={UNIFIED_ICON_COLOR}
               width={1.80}
-              height={0.88}
-              iconSize={0.26}
+              height={0.84}
+              iconSize={0.25}
               titleSize={0.125}
               position={[1.95, 0, 0]}
               onClick={() => {

@@ -155,47 +155,64 @@ function StaticMuseum({
 function StationCameraController({ targetStation, setTargetStation, orbitRef, vrMode }) {
   const { camera } = useThree();
   const targetCamPos = useRef(null);
+  const targetOrbitTarget = useRef(null);
   const isNavigating = useRef(false);
 
   useEffect(() => {
     if (vrMode || !targetStation) return;
 
     let pos = null;
+    let lookTarget = null;
     if (targetStation === 'deidades') {
       // Muro Norte (-Z): la cámara se posiciona al Sur (+Z) mirando al Norte
-      pos = new THREE.Vector3(0, 1.6, 2.5);
+      pos = new THREE.Vector3(0, 1.65, 2.5);
+      lookTarget = new THREE.Vector3(0, 1.85, 0);
     } else if (targetStation === 'gastronomia') {
       // Muro Este (+X): la cámara se posiciona al Oeste (-X) mirando al Este
-      pos = new THREE.Vector3(-2.5, 1.6, 0);
+      pos = new THREE.Vector3(-2.5, 1.60, 0);
+      lookTarget = new THREE.Vector3(0, 1.50, 0);
     } else if (targetStation === 'fiestas') {
       // Muro Oeste (-X): la cámara se posiciona al Este (+X) mirando al Oeste
-      pos = new THREE.Vector3(2.5, 1.6, 0);
+      pos = new THREE.Vector3(2.5, 1.65, 0);
+      lookTarget = new THREE.Vector3(0, 1.85, 0);
     } else if (targetStation === 'home' || targetStation === 'bienvenida') {
-      // Bienvenida / Menú Principal (+Z): la cámara se posiciona al Norte (-Z) mirando al Sur
-      pos = new THREE.Vector3(0, 1.6, -2.5);
+      // Bienvenida / Menú Principal (+Z):
+      // Se posiciona en [0, 1.65, -2.5] con target [0, 1.80, 0] para que la mira
+      // quede EXACTAMENTE en el espacio neutro entre las dos filas de cards (Y=2.03 en mundo, local Y=-0.275),
+      // sin activar el Gaze Fuse en Gastronomía ni en ningún botón.
+      pos = new THREE.Vector3(0, 1.65, -2.5);
+      lookTarget = new THREE.Vector3(0, 1.80, 0);
     }
 
-    if (pos) {
+    if (pos && lookTarget) {
       targetCamPos.current = pos;
+      targetOrbitTarget.current = lookTarget;
       isNavigating.current = true;
     }
   }, [targetStation, vrMode]);
 
   useFrame((_, delta) => {
-    if (vrMode || !isNavigating.current || !targetCamPos.current) return;
+    if (vrMode || !isNavigating.current || !targetCamPos.current || !targetOrbitTarget.current) return;
 
-    // Interpolación suave y ágil hacia la posición de la estación
+    // Interpolación suave y ágil hacia la posición y target de la estación
     camera.position.lerp(targetCamPos.current, Math.min(1, delta * 4.5));
     if (orbitRef.current) {
-      orbitRef.current.target.set(0, 1.4, 0);
+      orbitRef.current.target.lerp(targetOrbitTarget.current, Math.min(1, delta * 4.5));
       orbitRef.current.update();
     }
 
-    if (camera.position.distanceTo(targetCamPos.current) < 0.04) {
+    if (
+      camera.position.distanceTo(targetCamPos.current) < 0.04 &&
+      (!orbitRef.current || orbitRef.current.target.distanceTo(targetOrbitTarget.current) < 0.04)
+    ) {
       camera.position.copy(targetCamPos.current);
-      if (orbitRef.current) orbitRef.current.update();
+      if (orbitRef.current) {
+        orbitRef.current.target.copy(targetOrbitTarget.current);
+        orbitRef.current.update();
+      }
       isNavigating.current = false;
       targetCamPos.current = null;
+      targetOrbitTarget.current = null;
       setTargetStation(null);
     }
   });
@@ -311,8 +328,8 @@ export function MuseumScene({
     if (onRecenterRef?.current) {
       onRecenterRef.current();
     } else if (orbitRef.current) {
-      orbitRef.current.target.set(0, 1.4, 0);
-      orbitRef.current.object.position.set(0, 1.6, -2.5);
+      orbitRef.current.target.set(0, 1.80, 0);
+      orbitRef.current.object.position.set(0, 1.65, -2.5);
       orbitRef.current.update();
     }
   }, [onRecenterRef]);
@@ -337,11 +354,11 @@ export function MuseumScene({
     >
       {/* Rig de camara para modo normal y modo VR:
           En modo VR se orienta Math.PI para que el visor mire de frente al Menú Principal (+Z).
-          En computadora (escritorio) inicia en [0, 1.6, -2.5] mirando de frente al Menú Principal (+Z). */}
+          En computadora (escritorio) inicia en [0, 1.65, -2.5] mirando de frente al Menú Principal (+Z). */}
       <group ref={cameraRigRef} position={[0, 0, 0]} rotation={vrMode ? [0, Math.PI, 0] : [0, 0, 0]}>
         <PerspectiveCamera
           makeDefault
-          position={vrMode ? [0, 1.6, 0] : [0, 1.6, -2.5]}
+          position={vrMode ? [0, 1.6, 0] : [0, 1.65, -2.5]}
           fov={75}
           near={0.05}
           far={1000}
@@ -415,7 +432,7 @@ export function MuseumScene({
       <OrbitControls
         ref={orbitRef}
         enabled={!vrMode}
-        target={[0, 1.4, 0]}
+        target={[0, 1.80, 0]}
         enableDamping
         dampingFactor={0.05}
         minDistance={0.2}
