@@ -5,22 +5,31 @@ import { SoundFX } from '../../services/audioService.js';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
 import { LucideVRIcon } from './LucideVRIcon.jsx';
 
-// Color unificado ceremonial para elementos del museo
+// Color ceremonial unificado para elementos del museo
 const UNIFIED_ICON_COLOR = '#b45309';
 
 /**
- * Subcomponente para renderizar la fotografía de la obra con filtrado anisótropo y sRGB.
+ * Subcomponente para renderizar la fotografía de la obra.
+ * Prioriza la textura directa ya cargada en la escena 3D (artwork.texture);
+ * si no está disponible, la carga desde la URL pública oficial.
  */
-function ArtworkPhoto({ url, width = 1.88, height = 2.60 }) {
-  const [texture, setTexture] = useState(null);
+function ArtworkPhoto({ texture: directTexture, url, width = 1.88, height = 2.60 }) {
+  const [loadedTexture, setLoadedTexture] = useState(null);
 
   useEffect(() => {
+    if (directTexture) {
+      setLoadedTexture(null);
+      return;
+    }
     if (!url) return;
+
+    // Normalizar ruta para evitar problemas con rutas relativas
+    const cleanUrl = url.startsWith('.') ? url.replace(/^\./, '') : url;
     const loader = new THREE.TextureLoader();
     let isMounted = true;
 
     loader.load(
-      url,
+      cleanUrl,
       (tex) => {
         if (!isMounted) return;
         tex.colorSpace = THREE.SRGBColorSpace;
@@ -28,7 +37,7 @@ function ArtworkPhoto({ url, width = 1.88, height = 2.60 }) {
         tex.magFilter = THREE.LinearFilter;
         tex.generateMipmaps = true;
         tex.anisotropy = 8;
-        setTexture(tex);
+        setLoadedTexture(tex);
       },
       undefined,
       (err) => console.warn('Error cargando fotografía de cuadro:', err)
@@ -37,15 +46,21 @@ function ArtworkPhoto({ url, width = 1.88, height = 2.60 }) {
     return () => {
       isMounted = false;
     };
-  }, [url]);
+  }, [directTexture, url]);
+
+  const activeTex = directTexture || loadedTexture;
 
   return (
     <mesh position={[0, 0, 0.004]}>
       <planeGeometry args={[width, height]} />
-      {texture ? (
-        <meshBasicMaterial map={texture} toneMapped={false} />
+      {activeTex ? (
+        <meshBasicMaterial
+          map={activeTex}
+          toneMapped={false}
+          side={THREE.DoubleSide}
+        />
       ) : (
-        <meshBasicMaterial color="#e7dec8" />
+        <meshBasicMaterial color="#e7dec8" side={THREE.DoubleSide} />
       )}
     </mesh>
   );
@@ -94,7 +109,10 @@ function BadgeCloseButton({
       {/* Marco exterior dorado */}
       <mesh position={[0, 0, -0.001]}>
         <planeGeometry args={[size + 0.024, size + 0.024]} />
-        <meshBasicMaterial color={isHovered ? '#b45309' : '#c69214'} />
+        <meshBasicMaterial
+          color={isHovered ? '#b45309' : '#c69214'}
+          side={THREE.DoubleSide}
+        />
       </mesh>
 
       {/* Bisel cantera interactivo */}
@@ -105,7 +123,10 @@ function BadgeCloseButton({
         position={[0, 0, 0]}
       >
         <planeGeometry args={[size, size]} />
-        <meshBasicMaterial color={isHovered ? '#f4ebd8' : '#fbf7ee'} />
+        <meshBasicMaterial
+          color={isHovered ? '#f4ebd8' : '#fbf7ee'}
+          side={THREE.DoubleSide}
+        />
       </mesh>
 
       {/* Rombos protectores Tsikuri diminutos en esquinas */}
@@ -127,19 +148,19 @@ function BadgeCloseButton({
         <group position={[0, 0, 0.003]}>
           <mesh position={[0, -size / 2 + 0.014, 0]}>
             <planeGeometry args={[size * 0.85, 0.014]} />
-            <meshBasicMaterial color="#e7dec8" />
+            <meshBasicMaterial color="#e7dec8" side={THREE.DoubleSide} />
           </mesh>
           <mesh
             position={[-((size * 0.85) * (1 - fuseProgress)) / 2, -size / 2 + 0.014, 0.001]}
             scale={[fuseProgress, 1, 1]}
           >
             <planeGeometry args={[size * 0.85, 0.012]} />
-            <meshBasicMaterial color={UNIFIED_ICON_COLOR} />
+            <meshBasicMaterial color={UNIFIED_ICON_COLOR} side={THREE.DoubleSide} />
           </mesh>
         </group>
       )}
 
-      {/* Icono Lucide 'x' nítido */}
+      {/* Icono Lucide 'x' ceremonial nítido */}
       <LucideVRIcon
         name="x"
         size={size * 0.58}
@@ -153,15 +174,17 @@ function BadgeCloseButton({
 
 /**
  * WixarikaArtworkModal - Ventana Monumental para Cuadros de Deidades y Fiestas
- * Dimensiones idénticas al menú principal: 6.40m × 3.50m.
- * Distribución:
- * - 1/3 Izquierda (~2.13m): Fotografía de la deidad o fiesta seleccionada en gran escala.
+ * Dimensiones exactas al menú principal: 6.40m × 3.50m.
+ *
+ * Estricta distribución en dos columnas:
+ * - 1/3 Izquierda (~2.13m): Fotografía de la obra seleccionada a gran escala con marco ceremonial.
  * - 2/3 Derecha (~4.27m): Título, subtítulo ceremonial, palabras clave y síntesis en tipografía maximizada.
- * - Badge con cruz 'x' de cierre en la esquina superior derecha.
+ * - Fondo sólido e impermeable de cantera clara con marco de nogal y bisel de oro (side: DoubleSide).
+ * - Paleta estricta de dos colores tipográficos: #1c1917 (Stone-900) y #78350f (Ámbar sagrado).
  */
 export function WixarikaArtworkModal({
   artwork,
-  position = [0, 2.30, 0],
+  position = [0, 2.25, 0],
   rotation = [0, 0, 0],
   onClose,
   registerMesh,
@@ -174,32 +197,32 @@ export function WixarikaArtworkModal({
 
   if (!artwork) return null;
 
-  // Centro horizontal de cada columna
+  // Centros de cada una de las columnas (1/3 y 2/3)
   const leftColX = -panelWidth / 2 + (panelWidth / 3) / 2; // -3.20 + 1.066 = -2.134m
-  const rightColX = -panelWidth / 2 + (panelWidth / 3) + (panelWidth * 2 / 3) / 2; // +1.066m
+  const rightColX = -panelWidth / 2 + (panelWidth / 3) + (panelWidth * 2 / 3) / 2; // +1.067m
   const rightColWidth = (panelWidth * 2 / 3) * 0.92; // ~3.92m
 
   return (
     <group position={position} rotation={rotation}>
       {/* 1. Marco exterior ceremonial de madera de nogal */}
-      <mesh position={[0, 0, -0.003]}>
+      <mesh position={[0, 0, -0.004]}>
         <planeGeometry args={[panelWidth + 0.08, panelHeight + 0.08]} />
-        <meshBasicMaterial color="#5c381e" />
+        <meshBasicMaterial color="#5c381e" side={THREE.DoubleSide} />
       </mesh>
 
       {/* 2. Bisel perimetral de oro bruñido */}
       <mesh position={[0, 0, -0.002]}>
         <planeGeometry args={[panelWidth + 0.03, panelHeight + 0.03]} />
-        <meshBasicMaterial color="#c69214" />
+        <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
       </mesh>
 
-      {/* 3. Superficie principal de Cantera Clara */}
+      {/* 3. Superficie principal sólida e impermeable de Cantera Clara */}
       <mesh position={[0, 0, 0]}>
         <planeGeometry args={[panelWidth, panelHeight]} />
-        <meshBasicMaterial color="#faf6eb" transparent opacity={0.98} />
+        <meshBasicMaterial color="#faf6eb" side={THREE.DoubleSide} />
       </mesh>
 
-      {/* 4. Rombos protectores Tsikuri en las 4 esquinas */}
+      {/* 4. Rombos protectores Tsikuri en las 4 esquinas del panel */}
       <group position={[0, 0, 0.004]}>
         <TsikuriDiamond
           size={0.110}
@@ -223,10 +246,10 @@ export function WixarikaArtworkModal({
         />
       </group>
 
-      {/* Línea divisoria vertical sutil entre columna izquierda y derecha */}
+      {/* Línea divisoria vertical ceremonial de oro entre columnas */}
       <mesh position={[-panelWidth / 2 + panelWidth / 3, 0, 0.002]}>
-        <planeGeometry args={[0.006, panelHeight * 0.90]} />
-        <meshBasicMaterial color="#d4af37" transparent opacity={0.7} />
+        <planeGeometry args={[0.008, panelHeight * 0.90]} />
+        <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
       </mesh>
 
       {/* ===================================================================== */}
@@ -236,28 +259,33 @@ export function WixarikaArtworkModal({
         {/* Marco de nogal para la foto */}
         <mesh position={[0, 0.12, 0.001]}>
           <planeGeometry args={[1.96, 2.68]} />
-          <meshBasicMaterial color="#5c381e" />
+          <meshBasicMaterial color="#5c381e" side={THREE.DoubleSide} />
         </mesh>
         {/* Marco dorado para la foto */}
         <mesh position={[0, 0.12, 0.002]}>
           <planeGeometry args={[1.92, 2.64]} />
-          <meshBasicMaterial color="#c69214" />
+          <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
         </mesh>
 
-        {/* Fotografía de la obra con textura oficial */}
+        {/* Fotografía de la obra con textura oficial del cuadro */}
         <group position={[0, 0.12, 0]}>
-          <ArtworkPhoto url={artwork.image} width={1.88} height={2.60} />
+          <ArtworkPhoto
+            texture={artwork.texture}
+            url={artwork.image}
+            width={1.88}
+            height={2.60}
+          />
         </group>
 
         {/* Placa identificadora de la categoría */}
         <group position={[0, -1.35, 0]}>
           <mesh position={[0, 0, 0.001]}>
             <planeGeometry args={[1.88, 0.22]} />
-            <meshBasicMaterial color="#f4ebd8" />
+            <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
           </mesh>
           <mesh position={[0, 0, 0]}>
             <planeGeometry args={[1.92, 0.26]} />
-            <meshBasicMaterial color="#c69214" />
+            <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
           </mesh>
           <Text
             position={[0, 0, 0.003]}
@@ -276,7 +304,7 @@ export function WixarikaArtworkModal({
       {/* COLUMNA DERECHA (2/3 DEL PANEL): INFORMACIÓN Y DESCRIPCIÓN           */}
       {/* ===================================================================== */}
       <group position={[rightColX, 0, 0.005]}>
-        {/* Botón Badge de Cierre con cruz en la esquina superior derecha */}
+        {/* Botón Badge de Cierre con cruz 'x' en la esquina superior derecha */}
         <BadgeCloseButton
           id="btn-close-artwork-modal"
           size={0.34}
@@ -292,7 +320,7 @@ export function WixarikaArtworkModal({
         <group position={[0, 1.15, 0]}>
           <Text
             position={[0, 0.08, 0]}
-            fontSize={0.210}
+            fontSize={0.240}
             color="#1c1917"
             anchorX="center"
             anchorY="middle"
@@ -304,7 +332,7 @@ export function WixarikaArtworkModal({
 
           <Text
             position={[0, -0.11, 0]}
-            fontSize={0.110}
+            fontSize={0.125}
             color="#78350f"
             anchorX="center"
             anchorY="middle"
@@ -316,7 +344,7 @@ export function WixarikaArtworkModal({
 
           <Text
             position={[0, -0.22, 0]}
-            fontSize={0.092}
+            fontSize={0.098}
             color="#78350f"
             anchorX="center"
             anchorY="middle"
@@ -328,8 +356,8 @@ export function WixarikaArtworkModal({
 
           {/* Línea divisoria dorada */}
           <mesh position={[0, -0.30, 0]}>
-            <planeGeometry args={[rightColWidth * 0.96, 0.006]} />
-            <meshBasicMaterial color="#d4af37" />
+            <planeGeometry args={[rightColWidth * 0.96, 0.008]} />
+            <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
           </mesh>
         </group>
 
@@ -339,7 +367,7 @@ export function WixarikaArtworkModal({
             <Text
               key={idx}
               position={[0, 0.12 - idx * 0.22, 0]}
-              fontSize={0.125}
+              fontSize={0.130}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
@@ -356,16 +384,16 @@ export function WixarikaArtworkModal({
         <group position={[0, -0.78, 0]}>
           <mesh position={[0, 0, -0.001]}>
             <planeGeometry args={[rightColWidth * 0.96, 0.85]} />
-            <meshBasicMaterial color="#f4ebd8" />
+            <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
           </mesh>
           <mesh position={[0, 0, -0.002]}>
             <planeGeometry args={[rightColWidth * 0.96 + 0.03, 0.88]} />
-            <meshBasicMaterial color="#c69214" transparent opacity={0.85} />
+            <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
           </mesh>
 
           <Text
             position={[0, 0.02, 0.002]}
-            fontSize={0.102}
+            fontSize={0.112}
             color="#1c1917"
             anchorX="center"
             anchorY="middle"
@@ -377,11 +405,11 @@ export function WixarikaArtworkModal({
           </Text>
         </group>
 
-        {/* Cédula de Fuente Antropológica */}
+        {/* Cédula de Fuente Antropológica Oficial */}
         <group position={[0, -1.40, 0]}>
           <Text
             position={[0, 0, 0]}
-            fontSize={0.080}
+            fontSize={0.082}
             color="#78350f"
             anchorX="center"
             anchorY="middle"

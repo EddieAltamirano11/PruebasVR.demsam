@@ -10,7 +10,8 @@ import { GazeReticle } from './GazeReticle.jsx';
 import {
   WixarikaVRButton,
   WixarikaWelcomeDashboard,
-  WixarikaArtworkModal
+  WixarikaArtworkModal,
+  calculateArtworkModalTransform
 } from './wixarika/index.js';
 import { SoundFX } from '../services/audioService.js';
 
@@ -119,50 +120,19 @@ function LowerToggleButton({
   );
 }
 
-// Modal dinámico monumental posicionado a 3.50m en la dirección de la mirada del observador (Opción C)
+// Modal dinámico monumental posicionado frente al cuadro seleccionado (Opción C mejorada)
 function DynamicArtworkModal({
   artwork,
   onClose,
   registerMesh,
   unregisterMesh
 }) {
-  const { camera } = useThree();
-  const [transform, setTransform] = useState(() => ({
-    position: [0, 2.30, 3.75],
-    rotation: [0, Math.PI, 0]
-  }));
+  const [transform, setTransform] = useState(() => calculateArtworkModalTransform(artwork));
 
   useEffect(() => {
-    if (!artwork || !camera) return;
-
-    const cameraPos = new THREE.Vector3();
-    const cameraDir = new THREE.Vector3();
-    camera.getWorldPosition(cameraPos);
-    camera.getWorldDirection(cameraDir);
-
-    // Ignorar elevación Y para mantener el panel erguido verticalmente a Y = 2.30m
-    cameraDir.y = 0;
-    if (cameraDir.lengthSq() < 0.001) {
-      cameraDir.set(0, 0, 1);
-    } else {
-      cameraDir.normalize();
-    }
-
-    // Proyectar a 3.50m al frente del observador
-    const targetPos = new THREE.Vector3().copy(cameraPos).addScaledVector(cameraDir, 3.50);
-    targetPos.y = 2.30;
-
-    // Calcular matriz de orientación para que el modal mire perpendicularmente a los ojos del observador
-    const matrix = new THREE.Matrix4();
-    const eyeTarget = new THREE.Vector3(cameraPos.x, targetPos.y, cameraPos.z);
-    matrix.lookAt(targetPos, eyeTarget, new THREE.Vector3(0, 1, 0));
-    const euler = new THREE.Euler().setFromRotationMatrix(matrix);
-
-    setTransform({
-      position: [targetPos.x, targetPos.y, targetPos.z],
-      rotation: [euler.x, euler.y, euler.z]
-    });
-  }, [artwork, camera]);
+    if (!artwork) return;
+    setTransform(calculateArtworkModalTransform(artwork));
+  }, [artwork]);
 
   if (!artwork) return null;
 
