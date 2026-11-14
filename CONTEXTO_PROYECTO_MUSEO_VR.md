@@ -1,7 +1,7 @@
 # Manual de Contexto, Arquitectura y Filosofía de Diseño: Museo Virtual Wixárika (WebXR)
 
 > **Documento de Traspaso y Referencia Técnica para Entorno Linux**  
-> **Rama Activa de Trabajo:** `devdemo`  
+> **Rama Activa de Trabajo:** `develop`  
 > **Repositorio:** `https://github.com/EddieAltamirano11/PruebasVR.demsam.git`  
 > **Fecha de Actualización:** Noviembre 2026  
 > **Proyecto:** Museo Virtual Wixárika 3D / WebXR — Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit)
@@ -20,10 +20,9 @@ El proyecto **Museo Virtual Wixárika** es una experiencia museográfica inmersi
   * **Modo Pantalla 3D:** Computadoras de escritorio o laptops mediante navegación libre 360° con ratón/trackpad (`OrbitControls`).
 
 ### Estructura de Ramas en Git
-* **`devdemo` (RAMA ACTIVA EXCLUSIVA):** Es la rama donde reside todo el desarrollo actual, las pruebas de usuario, la simplificación ceremonial y las optimizaciones de UI/UX. **Todo nuevo commit y push debe realizarse sobre `devdemo`**.
+* **`develop` (RAMA ACTIVA PRINCIPAL):** Es la rama donde reside todo el desarrollo actual, las pruebas de usuario, la simplificación ceremonial y las optimizaciones de UI/UX. **Todo nuevo commit y push se realiza sobre `develop`**.
 * **`main`:** Rama de producción original (Bocho VR en Cloudflare Pages).
 * **`demoBocho`:** Respaldo histórico del prototipo del automóvil interactivo.
-* **`develop`:** Rama previa de desarrollo de etapas anteriores.
 
 ---
 
@@ -165,8 +164,8 @@ git --version
 git clone git@github.com:EddieAltamirano11/PruebasVR.demsam.git
 cd PruebasVR.demsam
 
-# IMPORTANTE: Asegúrate de estar trabajando sobre la rama devdemo
-git checkout devdemo
+# IMPORTANTE: Trabajar sobre la rama develop
+git checkout develop
 git status
 ```
 
@@ -200,7 +199,7 @@ npm run build
 ```
 
 ### 6. Políticas de Git y Archivos que NO deben subirse
-* **Regla de Git:** No hacer commits directos en `main` ni en `develop`. Trabajar siempre sobre `devdemo`.
+* **Regla de Git:** Trabajar y desplegar sobre `develop`. `main` queda reservada para producción formal.
 * **Archivos pesados / temporales ignorados:**
   * `public/museo_wixarika_v1.glb` hasta `v11.glb` (solo debe mantenerse `museo_wixarika_v14.glb`).
   * Carpetas `imagenesRef/`, `scratch/`, `actividades-preliminares/`.
