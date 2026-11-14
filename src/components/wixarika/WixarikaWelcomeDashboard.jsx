@@ -477,25 +477,25 @@ export function WixarikaWelcomeDashboard({
 
           {/* Pie de página con guía de interacción por mirada */}
           <group position={[0, -1.48, 0]}>
-            <group position={[-1.95, 0, 0]}>
+            <group position={[-2.20, 0, 0]}>
               <LucideVRIcon
                 name="eye"
-                size={0.110}
+                size={0.135}
                 color={UNIFIED_ICON_COLOR}
                 position={[0, 0, 0.002]}
                 strokeWidth={2.4}
               />
             </group>
             <Text
-              position={[0.10, 0, 0]}
-              fontSize={0.092}
+              position={[0.12, 0, 0]}
+              fontSize={0.122}
               color="#78350f"
               anchorX="center"
               anchorY="middle"
-              maxWidth={panelWidth * 0.88}
+              maxWidth={panelWidth * 0.78}
               textAlign="center"
             >
-              Fija tu mirada durante 3 segundos o pulsa para explorar cada sección
+              Fija tu mirada durante 3 segundos o pulsa el botón para interactuar
             </Text>
           </group>
         </group>
@@ -667,16 +667,15 @@ export function WixarikaWelcomeDashboard({
       {/* ===================================================================== */}
       {currentView === 'books' && (
         <group position={[0, 0, 0.005]}>
-          {/* Barra Superior con botón Volver al Menú */}
+          {/* Barra Superior con botón Volver al Menú (solo icono de flecha) */}
           <group position={[0, 1.40, 0]}>
             <WixarikaVRButton
               id="btn-books-back-top"
-              label="Volver al Menú"
               iconName="arrow-left"
               variant="cantera"
-              width={1.60}
+              width={0.42}
               height={0.26}
-              position={[-2.20, 0, 0]}
+              position={[-2.75, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -686,7 +685,7 @@ export function WixarikaWelcomeDashboard({
             />
 
             <Text
-              position={[0.20, 0.02, 0]}
+              position={[0, 0.02, 0]}
               fontSize={0.145}
               color="#1c1917"
               anchorX="center"
@@ -702,24 +701,6 @@ export function WixarikaWelcomeDashboard({
           </group>
 
           {/* Sub-vista de libros recomendados (vacía según especificación) */}
-
-          {/* Botón Inferior para Volver al Menú Principal */}
-          <group position={[0, -1.35, 0]}>
-            <WixarikaVRButton
-              id="btn-books-return-home"
-              label="Volver al Menú Principal"
-              iconName="arrow-left"
-              variant="cantera"
-              width={2.40}
-              height={0.30}
-              position={[0, 0, 0]}
-              onClick={handleReturnHome}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-            />
-          </group>
         </group>
       )}
 

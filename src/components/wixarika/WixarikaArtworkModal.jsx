@@ -334,7 +334,7 @@ export function WixarikaArtworkModal({
         <BadgeCloseButton
           id="btn-close-artwork-modal"
           size={0.36}
-          position={[rightColWidth / 2 - 0.20, 1.45, 0]}
+          position={[rightColWidth / 2 - 0.20, 1.48, 0]}
           onClick={onClose}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
@@ -342,70 +342,72 @@ export function WixarikaArtworkModal({
           fuseProgress={fuseProgress}
         />
 
-        {/* 1. Encabezado Superior: Título Monumental y Subtítulo Ceremonial (sin duplicar nombre) */}
-        <group position={[0, 1.32, 0]}>
+        {/* 1. Encabezado Superior: Título Monumental y Subtítulo Ceremonial Responsivo */}
+        <group position={[0, 0, 0]}>
           <Text
-            position={[0, 0.08, 0]}
-            fontSize={0.320}
+            position={[0, 1.48, 0]}
+            fontSize={0.260}
             color="#1c1917"
             anchorX="center"
-            anchorY="middle"
-            maxWidth={rightColWidth * 0.88}
+            anchorY="top"
+            maxWidth={rightColWidth * 0.82}
             textAlign="center"
           >
             {artwork.title}
           </Text>
 
+          {/* Subtítulo con anchorY="top" para flujo descendente garantizado sin colisiones */}
           <Text
-            position={[0, -0.18, 0]}
-            fontSize={0.145}
+            position={[0, 1.15, 0]}
+            fontSize={0.120}
             color="#78350f"
             anchorX="center"
-            anchorY="middle"
-            maxWidth={rightColWidth * 0.92}
+            anchorY="top"
+            maxWidth={rightColWidth * 0.90}
             textAlign="center"
+            lineHeight={1.25}
           >
             {artwork.subtitle}
           </Text>
 
-          {/* Línea divisoria dorada ceremonial */}
-          <mesh position={[0, -0.27, 0]}>
+          {/* Línea divisoria dorada ceremonial con margen definido debajo del subtítulo */}
+          <mesh position={[0, 0.79, 0]}>
             <planeGeometry args={[rightColWidth * 0.96, 0.008]} />
             <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
           </mesh>
         </group>
 
-        {/* 2. Recuadro de Descripción Ampliado (Arriba de las viñetas, altura ampliada a 1.56m) */}
-        <group position={[0, 0.20, 0]}>
+        {/* 2. Recuadro de Descripción (Arriba de las viñetas, con margin garantizado de 50cm desde el título) */}
+        <group position={[0, 0.09, 0]}>
           <mesh position={[0, 0, -0.001]}>
-            <planeGeometry args={[rightColWidth * 0.98, 1.56]} />
+            <planeGeometry args={[rightColWidth * 0.98, 1.24]} />
             <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
           </mesh>
           <mesh position={[0, 0, -0.002]}>
-            <planeGeometry args={[rightColWidth * 0.98 + 0.03, 1.59]} />
+            <planeGeometry args={[rightColWidth * 0.98 + 0.03, 1.27]} />
             <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
           </mesh>
 
           <Text
             position={[-rightColWidth * 0.46, 0, 0.002]}
-            fontSize={0.154}
+            fontSize={0.142}
             color="#1c1917"
             anchorX="left"
             anchorY="middle"
             maxWidth={rightColWidth * 0.92}
             textAlign="left"
-            lineHeight={1.38}
+            lineHeight={1.36}
           >
             {artwork.description}
           </Text>
         </group>
 
-        {/* 3. Viñetas de Atributos Sagrados (Debajo del recuadro, con margin top de separación) */}
-        <group position={[0, -0.96, 0]}>
+        {/* 3. Viñetas de Atributos Sagrados (Debajo del recuadro, con margin de separación) */}
+        <group position={[0, -0.68, 0]}>
           {(artwork.keywords || []).map((keyword, idx) => (
             <Text
               key={idx}
-              position={[-rightColWidth * 0.46, 0.16 - idx * 0.22, 0]}
+              position={[-rightColWidth * 0.46, -idx * 0.22, 0]}
               fontSize={0.130}
               color="#1c1917"
               anchorX="left"
