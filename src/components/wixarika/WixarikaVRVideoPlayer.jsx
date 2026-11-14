@@ -408,6 +408,13 @@ export function WixarikaVRVideoPlayer({
     }
   }, [quality, onQualityChange]);
 
+  const screenWidth = cinemaMode ? 3.80 : 2.80;
+  const screenHeight = cinemaMode ? 2.1375 : 1.575; // Relación exacta 16:9
+  const columnX = cinemaMode ? 0 : -1.45;
+  const screenY = cinemaMode ? 0.16 : 0.20;
+  const seekBarY = cinemaMode ? -0.98 : -0.66;
+  const timeY = cinemaMode ? -1.06 : -0.74;
+
   const handleSeekBarClick = useCallback(
     (e) => {
       e.stopPropagation?.();
@@ -418,7 +425,7 @@ export function WixarikaVRVideoPlayer({
       const maxDur = Number.isFinite(el.duration) && el.duration > 0 ? el.duration : duration;
       if (!maxDur || maxDur <= 0) return;
 
-      const barW = cinemaMode ? 2.00 : 1.72;
+      const barW = screenWidth;
       const localPoint = e.point.clone();
       group.worldToLocal(localPoint);
       const ratio = Math.max(0, Math.min(1, (localPoint.x + barW / 2) / barW));
@@ -428,15 +435,8 @@ export function WixarikaVRVideoPlayer({
       el.currentTime = nextTime;
       setCurrentTime(nextTime);
     },
-    [cinemaMode, duration]
+    [screenWidth, duration]
   );
-
-  const screenWidth = cinemaMode ? 2.00 : 1.72;
-  const screenHeight = cinemaMode ? 1.125 : 0.9675; // Relación exacta 16:9
-  const columnX = cinemaMode ? 0 : -0.68;
-  const screenY = cinemaMode ? 0.03 : 0.10;
-  const seekBarY = cinemaMode ? -0.605 : -0.455;
-  const timeY = cinemaMode ? -0.685 : -0.535;
 
   const progressRatio = duration > 0 ? Math.max(0, Math.min(1, currentTime / duration)) : 0;
   const fillWidth = Math.max(0.001, screenWidth * progressRatio);
@@ -475,13 +475,13 @@ export function WixarikaVRVideoPlayer({
           </mesh>
 
           <TsikuriDiamond
-            size={0.038}
-            position={[-screenWidth / 2 + 0.022, screenHeight / 2 - 0.022, 0.006]}
+            size={0.055}
+            position={[-screenWidth / 2 + 0.030, screenHeight / 2 - 0.030, 0.006]}
             colors={['#d4af37', '#b45309', '#ffffff']}
           />
           <TsikuriDiamond
-            size={0.038}
-            position={[screenWidth / 2 - 0.022, screenHeight / 2 - 0.022, 0.006]}
+            size={0.055}
+            position={[screenWidth / 2 - 0.030, screenHeight / 2 - 0.030, 0.006]}
             colors={['#d4af37', '#b45309', '#ffffff']}
           />
 
@@ -493,30 +493,30 @@ export function WixarikaVRVideoPlayer({
               </mesh>
 
               <mesh position={[0, 0, -0.0005]}>
-                <planeGeometry args={[cinemaMode ? 1.12 : 1.04, 0.22]} />
+                <planeGeometry args={[cinemaMode ? 1.84 : 1.54, 0.28]} />
                 <meshBasicMaterial color={errorMsg ? '#dc2626' : '#c69214'} />
               </mesh>
               <mesh position={[0, 0, 0]}>
-                <planeGeometry args={[cinemaMode ? 1.09 : 1.01, 0.195]} />
+                <planeGeometry args={[cinemaMode ? 1.80 : 1.50, 0.25]} />
                 <meshBasicMaterial color="#faf6eb" transparent opacity={0.96} />
               </mesh>
 
               {!errorMsg && !isBuffering && !statusNote && (
                 <LucideVRIcon
                   name="play"
-                  size={0.09}
+                  size={0.12}
                   color="#b45309"
-                  position={[-(cinemaMode ? 0.42 : 0.38), 0, 0.002]}
+                  position={[-(cinemaMode ? 0.64 : 0.52), 0, 0.002]}
                 />
               )}
 
               <Text
-                position={[!errorMsg && !isBuffering && !statusNote ? 0.06 : 0, 0, 0.002]}
-                fontSize={0.070}
+                position={[!errorMsg && !isBuffering && !statusNote ? 0.08 : 0, 0, 0.002]}
+                fontSize={0.098}
                 color={errorMsg ? '#991b1b' : '#1c1917'}
                 anchorX="center"
                 anchorY="middle"
-                maxWidth={0.86}
+                maxWidth={cinemaMode ? 1.40 : 1.15}
                 textAlign="center"
               >
                 {errorMsg ||
@@ -531,31 +531,31 @@ export function WixarikaVRVideoPlayer({
         {/* Barra de Progreso */}
         <group ref={seekBarGroupRef} position={[0, seekBarY, 0.012]}>
           <mesh position={[0, 0, -0.001]}>
-            <planeGeometry args={[screenWidth + 0.012, 0.054]} />
+            <planeGeometry args={[screenWidth + 0.016, 0.060]} />
             <meshBasicMaterial color="#c69214" />
           </mesh>
 
           <mesh position={[0, 0, 0]} onClick={handleSeekBarClick}>
-            <planeGeometry args={[screenWidth, 0.042]} />
+            <planeGeometry args={[screenWidth, 0.048]} />
             <meshBasicMaterial color="#e7dec8" />
           </mesh>
 
           {bufferedRatio > 0 && (
             <mesh position={[-screenWidth / 2 + bufferedWidth / 2, 0, 0.001]}>
-              <planeGeometry args={[bufferedWidth, 0.042]} />
+              <planeGeometry args={[bufferedWidth, 0.048]} />
               <meshBasicMaterial color="#fde68a" />
             </mesh>
           )}
 
           {progressRatio > 0 && (
             <mesh position={[-screenWidth / 2 + fillWidth / 2, 0, 0.002]}>
-              <planeGeometry args={[fillWidth, 0.042]} />
+              <planeGeometry args={[fillWidth, 0.048]} />
               <meshBasicMaterial color="#b45309" />
             </mesh>
           )}
 
           <mesh position={[-screenWidth / 2 + screenWidth * progressRatio, 0, 0.003]}>
-            <planeGeometry args={[0.028, 0.066]} />
+            <planeGeometry args={[0.032, 0.076]} />
             <meshBasicMaterial color="#1c1917" />
           </mesh>
         </group>
@@ -563,7 +563,7 @@ export function WixarikaVRVideoPlayer({
         {/* Tiempo actual / Duración */}
         <Text
           position={[0, timeY, 0.012]}
-          fontSize={0.066}
+          fontSize={0.088}
           color="#1c1917"
           anchorX="center"
           anchorY="middle"
@@ -573,14 +573,14 @@ export function WixarikaVRVideoPlayer({
 
         {/* Controles */}
         {cinemaMode ? (
-          <group position={[0, -0.845, 0.014]}>
+          <group position={[0, -1.24, 0.014]}>
             <WixarikaVRButton
               id="btn-video-back10"
               label="-10s"
               variant="cantera"
-              width={0.30}
-              height={0.165}
-              position={[-1.39, 0, 0]}
+              width={0.38}
+              height={0.18}
+              position={[-1.68, 0, 0]}
               onClick={() => handleSeekBy(-10)}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -596,9 +596,9 @@ export function WixarikaVRVideoPlayer({
               iconName={isPlaying ? 'pause' : 'play'}
               variant="cantera"
               active={isPlaying}
-              width={0.48}
-              height={0.165}
-              position={[-0.96, 0, 0]}
+              width={0.68}
+              height={0.18}
+              position={[-1.11, 0, 0]}
               onClick={handleTogglePlay}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -612,9 +612,9 @@ export function WixarikaVRVideoPlayer({
               id="btn-video-fwd10"
               label="+10s"
               variant="cantera"
-              width={0.30}
-              height={0.165}
-              position={[-0.53, 0, 0]}
+              width={0.38}
+              height={0.18}
+              position={[-0.54, 0, 0]}
               onClick={() => handleSeekBy(10)}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -630,9 +630,9 @@ export function WixarikaVRVideoPlayer({
               iconName={isMuted ? 'volume-x' : 'volume-2'}
               variant="cantera"
               active={isMuted}
-              width={0.48}
-              height={0.165}
-              position={[-0.10, 0, 0]}
+              width={0.68}
+              height={0.18}
+              position={[0.03, 0, 0]}
               onClick={handleToggleMute}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -647,9 +647,9 @@ export function WixarikaVRVideoPlayer({
               label="720p"
               variant="cantera"
               active={quality === '720p'}
-              width={0.36}
-              height={0.165}
-              position={[0.36, 0, 0]}
+              width={0.44}
+              height={0.18}
+              position={[0.63, 0, 0]}
               onClick={handleSelect720p}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -664,9 +664,9 @@ export function WixarikaVRVideoPlayer({
               label="480p"
               variant="cantera"
               active={quality === '480p'}
-              width={0.36}
-              height={0.165}
-              position={[0.76, 0, 0]}
+              width={0.44}
+              height={0.18}
+              position={[1.11, 0, 0]}
               onClick={handleSelect480p}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -681,9 +681,9 @@ export function WixarikaVRVideoPlayer({
               label="Ver Ficha"
               iconName="minimize-2"
               variant="cantera"
-              width={0.56}
-              height={0.165}
-              position={[1.26, 0, 0]}
+              width={0.74}
+              height={0.18}
+              position={[1.74, 0, 0]}
               onClick={onToggleCinemaMode}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -697,14 +697,14 @@ export function WixarikaVRVideoPlayer({
         ) : (
           <group>
             {/* Fila 1: Transporte de reproducción */}
-            <group position={[0, -0.68, 0.014]}>
+            <group position={[0, -0.92, 0.014]}>
               <WixarikaVRButton
                 id="btn-video-back10"
                 label="-10s"
                 variant="cantera"
-                width={0.28}
-                height={0.165}
-                position={[-0.72, 0, 0]}
+                width={0.46}
+                height={0.20}
+                position={[-1.13, 0, 0]}
                 onClick={() => handleSeekBy(-10)}
                 onRegister={onRegister}
                 onUnregister={onUnregister}
@@ -720,9 +720,9 @@ export function WixarikaVRVideoPlayer({
                 iconName={isPlaying ? 'pause' : 'play'}
                 variant="cantera"
                 active={isPlaying}
-                width={0.52}
-                height={0.165}
-                position={[-0.28, 0, 0]}
+                width={0.84}
+                height={0.20}
+                position={[-0.44, 0, 0]}
                 onClick={handleTogglePlay}
                 onRegister={onRegister}
                 onUnregister={onUnregister}
@@ -736,9 +736,9 @@ export function WixarikaVRVideoPlayer({
                 id="btn-video-fwd10"
                 label="+10s"
                 variant="cantera"
-                width={0.28}
-                height={0.165}
-                position={[0.16, 0, 0]}
+                width={0.46}
+                height={0.20}
+                position={[0.25, 0, 0]}
                 onClick={() => handleSeekBy(10)}
                 onRegister={onRegister}
                 onUnregister={onUnregister}
@@ -754,9 +754,9 @@ export function WixarikaVRVideoPlayer({
                 iconName={isMuted ? 'volume-x' : 'volume-2'}
                 variant="cantera"
                 active={isMuted}
-                width={0.52}
-                height={0.165}
-                position={[0.60, 0, 0]}
+                width={0.84}
+                height={0.20}
+                position={[0.94, 0, 0]}
                 onClick={handleToggleMute}
                 onRegister={onRegister}
                 onUnregister={onUnregister}
@@ -769,15 +769,15 @@ export function WixarikaVRVideoPlayer({
             </group>
 
             {/* Fila 2: Resolución y Pantalla Completa */}
-            <group position={[0, -0.88, 0.014]}>
+            <group position={[0, -1.16, 0.014]}>
               <WixarikaVRButton
                 id="btn-video-q720"
                 label="720p"
                 variant="cantera"
                 active={quality === '720p'}
-                width={0.42}
-                height={0.16}
-                position={[-0.65, 0, 0]}
+                width={0.64}
+                height={0.20}
+                position={[-0.98, 0, 0]}
                 onClick={handleSelect720p}
                 onRegister={onRegister}
                 onUnregister={onUnregister}
@@ -792,9 +792,9 @@ export function WixarikaVRVideoPlayer({
                 label="480p"
                 variant="cantera"
                 active={quality === '480p'}
-                width={0.42}
-                height={0.16}
-                position={[-0.19, 0, 0]}
+                width={0.64}
+                height={0.20}
+                position={[-0.30, 0, 0]}
                 onClick={handleSelect480p}
                 onRegister={onRegister}
                 onUnregister={onUnregister}
@@ -806,12 +806,12 @@ export function WixarikaVRVideoPlayer({
               />
               <WixarikaVRButton
                 id="btn-video-cinema"
-                label="Ampliar"
+                label="Ampliar Pantalla"
                 iconName="maximize-2"
                 variant="cantera"
-                width={0.80}
-                height={0.16}
-                position={[0.46, 0, 0]}
+                width={1.28}
+                height={0.20}
+                position={[0.70, 0, 0]}
                 onClick={onToggleCinemaMode}
                 onRegister={onRegister}
                 onUnregister={onUnregister}
@@ -828,30 +828,30 @@ export function WixarikaVRVideoPlayer({
 
       {/* 2. COLUMNA DERECHA: FICHA CULTURAL AMPLIA Y LEGIBLE */}
       {!cinemaMode && video && (
-        <group position={[0.96, -0.16, 0.01]}>
+        <group position={[1.45, -0.09, 0.01]}>
           <mesh position={[0, 0, -0.004]}>
-            <planeGeometry args={[1.44, 1.68]} />
+            <planeGeometry args={[2.44, 2.14]} />
             <meshBasicMaterial color="#c69214" transparent opacity={0.9} />
           </mesh>
 
           <mesh position={[0, 0, -0.002]}>
-            <planeGeometry args={[1.40, 1.64]} />
+            <planeGeometry args={[2.40, 2.10]} />
             <meshBasicMaterial color="#faf6eb" />
           </mesh>
 
-          <mesh position={[0, 0.78, 0.001]}>
-            <planeGeometry args={[1.30, 0.024]} />
+          <mesh position={[0, 0.96, 0.001]}>
+            <planeGeometry args={[2.24, 0.028]} />
             <meshBasicMaterial color="#b45309" />
           </mesh>
 
           {/* Categoría */}
           <Text
-            position={[0, 0.68, 0.003]}
-            fontSize={0.072}
+            position={[0, 0.84, 0.003]}
+            fontSize={0.100}
             color="#b45309"
             anchorX="center"
             anchorY="middle"
-            maxWidth={1.28}
+            maxWidth={2.20}
             textAlign="center"
           >
             {(video.category || 'DOCUMENTAL').toUpperCase()}
@@ -859,26 +859,26 @@ export function WixarikaVRVideoPlayer({
 
           {/* Título principal grande */}
           <Text
-            position={[0, 0.56, 0.003]}
-            fontSize={0.102}
+            position={[0, 0.70, 0.003]}
+            fontSize={0.145}
             color="#1c1917"
             anchorX="center"
             anchorY="top"
-            maxWidth={1.28}
+            maxWidth={2.20}
             textAlign="center"
-            lineHeight={1.16}
+            lineHeight={1.18}
           >
             {video.title}
           </Text>
 
           {/* Producción y año */}
           <Text
-            position={[0, 0.24, 0.003]}
-            fontSize={0.078}
+            position={[0, 0.36, 0.003]}
+            fontSize={0.105}
             color="#78350f"
             anchorX="center"
             anchorY="top"
-            maxWidth={1.28}
+            maxWidth={2.20}
             textAlign="center"
             lineHeight={1.2}
           >
@@ -886,38 +886,38 @@ export function WixarikaVRVideoPlayer({
           </Text>
 
           {/* Divisor */}
-          <mesh position={[0, 0.06, 0.002]}>
-            <planeGeometry args={[1.20, 0.005]} />
+          <mesh position={[0, 0.16, 0.002]}>
+            <planeGeometry args={[2.10, 0.006]} />
             <meshBasicMaterial color="#d4af37" transparent opacity={0.7} />
           </mesh>
 
           {/* Sinopsis con tipografía amplia */}
           <Text
-            position={[0, -0.02, 0.003]}
-            fontSize={0.082}
+            position={[0, 0.06, 0.003]}
+            fontSize={0.115}
             color="#292524"
             anchorX="center"
             anchorY="top"
-            maxWidth={1.28}
+            maxWidth={2.15}
             textAlign="center"
-            lineHeight={1.32}
+            lineHeight={1.40}
           >
             {video.synopsis}
           </Text>
 
           {/* Sello cultural inferior limpio */}
-          <group position={[0, -0.66, 0.003]}>
+          <group position={[0, -0.84, 0.003]}>
             <mesh position={[0, 0, -0.001]}>
-              <planeGeometry args={[1.24, 0.12]} />
+              <planeGeometry args={[2.10, 0.18]} />
               <meshBasicMaterial color="#f3ebd6" />
             </mesh>
             <Text
               position={[0, 0, 0.001]}
-              fontSize={0.070}
+              fontSize={0.095}
               color="#78350f"
               anchorX="center"
               anchorY="middle"
-              maxWidth={1.18}
+              maxWidth={2.00}
             >
               {video.badge || 'ACERVO CULTURAL'}
             </Text>

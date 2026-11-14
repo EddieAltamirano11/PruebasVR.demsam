@@ -922,15 +922,15 @@ export function WixarikaWelcomeDashboard({
           </group>
 
           {/* Selector de Documentales */}
-          <group position={[0, 1.05, 0]}>
+          <group position={[0, 1.08, 0]}>
             <WixarikaVRButton
               id="btn-dash-video-prev"
               label="Anterior"
               iconName="chevron-left"
               variant="cantera"
-              width={1.10}
+              width={1.20}
               height={0.24}
-              position={[-1.90, 0, 0]}
+              position={[-2.05, 0, 0]}
               onClick={handlePrevVideo}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -941,12 +941,12 @@ export function WixarikaWelcomeDashboard({
 
             <group position={[0, 0, 0]}>
               <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[2.40, 0.24]} />
+                <planeGeometry args={[2.70, 0.24]} />
                 <meshBasicMaterial color="#f4ebd8" />
               </mesh>
               <Text
                 position={[0, 0.045, 0.001]}
-                fontSize={0.100}
+                fontSize={0.110}
                 color="#1c1917"
                 anchorX="center"
                 anchorY="middle"
@@ -955,11 +955,11 @@ export function WixarikaWelcomeDashboard({
               </Text>
               <Text
                 position={[0, -0.050, 0.001]}
-                fontSize={0.082}
+                fontSize={0.090}
                 color="#78350f"
                 anchorX="center"
                 anchorY="middle"
-                maxWidth={2.20}
+                maxWidth={2.50}
               >
                 {`${currentVideo?.category || 'Acervo Cultural'} · ${currentVideo?.duration || '03:22'}`}
               </Text>
@@ -970,9 +970,9 @@ export function WixarikaWelcomeDashboard({
               label="Siguiente"
               iconName="chevron-right"
               variant="cantera"
-              width={1.10}
+              width={1.20}
               height={0.24}
-              position={[1.90, 0, 0]}
+              position={[2.05, 0, 0]}
               onClick={handleNextVideo}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -984,7 +984,7 @@ export function WixarikaWelcomeDashboard({
 
           {/* Reproductor de Video 3D Integrado */}
           {currentVideo && (
-            <group position={[0, -0.05, 0]}>
+            <group position={[0, -0.06, 0]}>
               <WixarikaVRVideoPlayer
                 video={currentVideo}
                 quality={videoQuality}
@@ -1000,13 +1000,13 @@ export function WixarikaWelcomeDashboard({
           )}
 
           {/* Botón Inferior para Volver al Menú Principal */}
-          <group position={[0, -1.45, 0]}>
+          <group position={[0, -1.48, 0]}>
             <WixarikaVRButton
               id="btn-videos-return-home"
               label="Volver al Menú Principal"
               iconName="arrow-left"
               variant="cantera"
-              width={2.40}
+              width={2.60}
               height={0.30}
               position={[0, 0, 0]}
               onClick={handleReturnHome}
