@@ -48,12 +48,21 @@ export function WixarikaVRVideoPlayer({
   const [statusNote, setStatusNote] = useState('');
   const [errorMsg, setErrorMsg] = useState(null);
 
-  const sourceUrl = useMemo(
-    () => resolveVideoSource(video, quality),
-    [video, quality]
-  );
+  const sourceUrl = useMemo(() => {
+    const raw = resolveVideoSource(video, quality);
+    if (typeof raw === 'string' && raw.startsWith('./')) {
+      return raw.replace(/^\.\//, '/');
+    }
+    return raw;
+  }, [video, quality]);
 
-  const posterUrl = video?.poster || DEFAULT_VIDEO_POSTER;
+  const posterUrl = useMemo(() => {
+    const raw = video?.poster || DEFAULT_VIDEO_POSTER;
+    if (typeof raw === 'string' && raw.startsWith('./')) {
+      return raw.replace(/^\.\//, '/');
+    }
+    return raw;
+  }, [video?.poster]);
 
   useEffect(() => {
     if (!posterUrl || typeof document === 'undefined') {
@@ -99,6 +108,7 @@ export function WixarikaVRVideoPlayer({
 
     try {
       setErrorMsg(null);
+      setStatusNote('');
       if (
         el.ended ||
         (Number.isFinite(el.duration) && el.duration > 0 && el.currentTime >= el.duration - 0.1)
@@ -110,17 +120,17 @@ export function WixarikaVRVideoPlayer({
       }
       await el.play();
     } catch (err) {
-      if (err?.name === 'NotAllowedError' && !el.muted) {
-        try {
-          el.muted = true;
-          setIsMuted(true);
-          setStatusNote('Pulsa Audio para activar sonido');
-          await el.play();
-        } catch (_retryErr) {
-          setErrorMsg('Pulsa Iniciar para reproducir');
-        }
-      } else if (err?.name !== 'AbortError') {
-        setErrorMsg('No se pudo reproducir el video');
+      console.warn('Playback attempt 1 (normal) failed:', err);
+      // Fallback 1: Políticas de reproducción automática con audio -> reproducir en silencio
+      try {
+        el.muted = true;
+        setIsMuted(true);
+        setStatusNote('Audio en silencio · Pulsa Audio para activar sonido');
+        await el.play();
+      } catch (retryErr) {
+        console.warn('Playback attempt 2 (muted) failed:', retryErr);
+        // Fallback 3: Si aún no se reproduce, solicitar interacción explícita
+        setErrorMsg('Pulsa Iniciar para reproducir');
       }
     }
   }, []);
@@ -133,7 +143,7 @@ export function WixarikaVRVideoPlayer({
       el.crossOrigin = 'anonymous';
     }
     el.playsInline = true;
-    el.preload = 'metadata';
+    el.preload = 'auto';
     el.setAttribute('playsinline', '');
     el.setAttribute('webkit-playsinline', '');
 
@@ -338,9 +348,19 @@ export function WixarikaVRVideoPlayer({
       setErrorMsg(null);
       setStatusNote('');
 
-      el.pause();
-      el.src = sourceUrl;
-      el.load();
+      // Si la URL ya está cargada en el elemento (los videos demo comparten archivo mp4), solo reiniciar posición
+      if (el.src && el.src.includes(sourceUrl)) {
+        try {
+          el.pause();
+          el.currentTime = 0;
+        } catch (_seekErr) {
+          // Ignorar error menor de seek
+        }
+      } else {
+        el.pause();
+        el.src = sourceUrl;
+        el.load();
+      }
     }
   }, [video?.id, sourceUrl, quality, startSafePlayback]);
 
@@ -378,12 +398,12 @@ export function WixarikaVRVideoPlayer({
     }
   }, []);
 
-  const screenWidth = cinemaMode ? 3.80 : 2.80;
-  const screenHeight = cinemaMode ? 2.1375 : 1.575; // Relación exacta 16:9
+  const screenWidth = cinemaMode ? 3.60 : 2.60;
+  const screenHeight = cinemaMode ? 2.025 : 1.4625; // Relación exacta 16:9
   const columnX = cinemaMode ? 0 : -1.45;
-  const screenY = cinemaMode ? 0.16 : 0.20;
-  const seekBarY = cinemaMode ? -0.98 : -0.66;
-  const timeY = cinemaMode ? -1.06 : -0.74;
+  const screenY = cinemaMode ? 0.06 : 0.20;
+  const seekBarY = cinemaMode ? -1.04 : -0.63;
+  const timeY = cinemaMode ? -1.12 : -0.71;
 
   const handleSeekBarClick = useCallback(
     (e) => {
@@ -543,16 +563,16 @@ export function WixarikaVRVideoPlayer({
 
         {/* Controles: Solo Iniciar/Pausar, Audio y Ampliar Pantalla */}
         {cinemaMode ? (
-          <group position={[0, -1.18, 0.014]}>
+          <group position={[0, -1.28, 0.014]}>
             <WixarikaVRButton
               id="btn-video-play"
               label={isPlaying ? 'Pausar' : 'Iniciar'}
               iconName={isPlaying ? 'pause' : 'play'}
               variant="cantera"
               active={isPlaying}
-              width={1.05}
+              width={0.96}
               height={0.20}
-              position={[-1.15, 0, 0]}
+              position={[-1.05, 0, 0]}
               onClick={handleTogglePlay}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -568,7 +588,7 @@ export function WixarikaVRVideoPlayer({
               iconName={isMuted ? 'volume-x' : 'volume-2'}
               variant="cantera"
               active={isMuted}
-              width={1.05}
+              width={0.96}
               height={0.20}
               position={[0, 0, 0]}
               onClick={handleToggleMute}
@@ -585,9 +605,9 @@ export function WixarikaVRVideoPlayer({
               label="Ver Ficha"
               iconName="minimize-2"
               variant="cantera"
-              width={1.05}
+              width={0.96}
               height={0.20}
-              position={[1.15, 0, 0]}
+              position={[1.05, 0, 0]}
               onClick={onToggleCinemaMode}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -599,16 +619,16 @@ export function WixarikaVRVideoPlayer({
             />
           </group>
         ) : (
-          <group position={[0, -0.92, 0.014]}>
+          <group position={[0, -0.88, 0.014]}>
             <WixarikaVRButton
               id="btn-video-play"
               label={isPlaying ? 'Pausar' : 'Iniciar'}
               iconName={isPlaying ? 'pause' : 'play'}
               variant="cantera"
               active={isPlaying}
-              width={0.86}
-              height={0.22}
-              position={[-0.94, 0, 0]}
+              width={0.80}
+              height={0.20}
+              position={[-0.86, 0, 0]}
               onClick={handleTogglePlay}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -624,8 +644,8 @@ export function WixarikaVRVideoPlayer({
               iconName={isMuted ? 'volume-x' : 'volume-2'}
               variant="cantera"
               active={isMuted}
-              width={0.86}
-              height={0.22}
+              width={0.80}
+              height={0.20}
               position={[0, 0, 0]}
               onClick={handleToggleMute}
               onRegister={onRegister}
@@ -641,9 +661,9 @@ export function WixarikaVRVideoPlayer({
               label="Ampliar Pantalla"
               iconName="maximize-2"
               variant="cantera"
-              width={0.86}
-              height={0.22}
-              position={[0.94, 0, 0]}
+              width={0.80}
+              height={0.20}
+              position={[0.86, 0, 0]}
               onClick={onToggleCinemaMode}
               onRegister={onRegister}
               onUnregister={onUnregister}
@@ -659,65 +679,65 @@ export function WixarikaVRVideoPlayer({
 
       {/* 2. COLUMNA DERECHA: FICHA CULTURAL AMPLIA Y LEGIBLE (Solo Título, Sinopsis y Sello) */}
       {!cinemaMode && video && (
-        <group position={[1.45, -0.09, 0.01]}>
+        <group position={[1.45, -0.06, 0.01]}>
           <mesh position={[0, 0, -0.004]}>
-            <planeGeometry args={[2.44, 2.14]} />
+            <planeGeometry args={[2.44, 1.89]} />
             <meshBasicMaterial color="#c69214" transparent opacity={0.9} />
           </mesh>
 
           <mesh position={[0, 0, -0.002]}>
-            <planeGeometry args={[2.40, 2.10]} />
+            <planeGeometry args={[2.40, 1.85]} />
             <meshBasicMaterial color="#faf6eb" />
           </mesh>
 
-          <mesh position={[0, 0.94, 0.001]}>
-            <planeGeometry args={[2.24, 0.028]} />
+          <mesh position={[0, 0.82, 0.001]}>
+            <planeGeometry args={[2.24, 0.024]} />
             <meshBasicMaterial color="#b45309" />
           </mesh>
 
-          {/* Título principal monumental (sin categoría ni archivo audiovisual) */}
+          {/* Título principal monumental */}
           <Text
-            position={[0, 0.72, 0.003]}
-            fontSize={0.160}
+            position={[0, 0.64, 0.003]}
+            fontSize={0.150}
             color="#1c1917"
             anchorX="center"
             anchorY="top"
             maxWidth={2.20}
             textAlign="center"
-            lineHeight={1.22}
+            lineHeight={1.20}
           >
             {video.title}
           </Text>
 
           {/* Divisor */}
-          <mesh position={[0, 0.40, 0.002]}>
-            <planeGeometry args={[2.10, 0.006]} />
+          <mesh position={[0, 0.36, 0.002]}>
+            <planeGeometry args={[2.10, 0.005]} />
             <meshBasicMaterial color="#d4af37" transparent opacity={0.7} />
           </mesh>
 
           {/* Sinopsis con tipografía amplia */}
           <Text
-            position={[0, 0.28, 0.003]}
-            fontSize={0.130}
+            position={[0, 0.24, 0.003]}
+            fontSize={0.122}
             color="#292524"
             anchorX="center"
             anchorY="top"
             maxWidth={2.15}
             textAlign="center"
-            lineHeight={1.45}
+            lineHeight={1.40}
           >
             {video.synopsis}
           </Text>
 
           {/* Sello cultural inferior limpio */}
-          <group position={[0, -0.82, 0.003]}>
+          <group position={[0, -0.70, 0.003]}>
             <mesh position={[0, 0, -0.001]}>
-              <planeGeometry args={[2.10, 0.18]} />
+              <planeGeometry args={[2.10, 0.16]} />
               <meshBasicMaterial color="#f3ebd6" />
             </mesh>
             <Text
               position={[0, 0, 0.001]}
-              fontSize={0.095}
+              fontSize={0.092}
               color="#78350f"
               anchorX="center"
               anchorY="middle"

@@ -466,7 +466,6 @@ export function WixarikaWelcomeDashboard({
               position={[-1.95, 0, 0]}
               onClick={() => {
                 setActiveStationId('deidades');
-                setCurrentView('deidades');
                 onSelectStation?.('deidades');
               }}
               registerMesh={registerMesh}
@@ -488,7 +487,6 @@ export function WixarikaWelcomeDashboard({
               position={[0, 0, 0]}
               onClick={() => {
                 setActiveStationId('gastronomia');
-                setCurrentView('gastronomia');
                 onSelectStation?.('gastronomia');
               }}
               registerMesh={registerMesh}
@@ -510,7 +508,6 @@ export function WixarikaWelcomeDashboard({
               position={[1.95, 0, 0]}
               onClick={() => {
                 setActiveStationId('fiestas');
-                setCurrentView('fiestas');
                 onSelectStation?.('fiestas');
               }}
               registerMesh={registerMesh}
@@ -893,7 +890,7 @@ export function WixarikaWelcomeDashboard({
       {currentView === 'videos' && (
         <group position={[0, 0, 0.005]}>
           {/* Barra Superior con botón Volver al Menú (solo flecha <-) */}
-          <group position={[0, 1.45, 0]}>
+          <group position={[0, 1.50, 0]}>
             <WixarikaVRButton
               id="btn-videos-back-top"
               iconName="arrow-left"
@@ -919,22 +916,22 @@ export function WixarikaWelcomeDashboard({
               SALA AUDIOVISUAL · BIBLIOTECA SOLÓN ARGÜELLO
             </Text>
 
-            <mesh position={[0, -0.16, 0]}>
+            <mesh position={[0, -0.15, 0]}>
               <planeGeometry args={[panelWidth * 0.92, 0.006]} />
               <meshBasicMaterial color="#d4af37" />
             </mesh>
           </group>
 
-          {/* Selector de Videos: Anterior, Video X de Y, Siguiente */}
-          <group position={[0, 1.08, 0]}>
+          {/* Selector de Videos: Anterior, Video X de Y, Siguiente con amplia separación */}
+          <group position={[0, 1.20, 0]}>
             <WixarikaVRButton
               id="btn-dash-video-prev"
               label="Anterior"
               iconName="chevron-left"
               variant="cantera"
-              width={1.20}
-              height={0.24}
-              position={[-2.05, 0, 0]}
+              width={1.05}
+              height={0.22}
+              position={[-1.95, 0, 0]}
               onClick={handlePrevVideo}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -945,7 +942,7 @@ export function WixarikaWelcomeDashboard({
 
             <group position={[0, 0, 0]}>
               <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[2.50, 0.24]} />
+                <planeGeometry args={[2.30, 0.22]} />
                 <meshBasicMaterial color="#f4ebd8" />
               </mesh>
               <Text
@@ -964,9 +961,9 @@ export function WixarikaWelcomeDashboard({
               label="Siguiente"
               iconName="chevron-right"
               variant="cantera"
-              width={1.20}
-              height={0.24}
-              position={[2.05, 0, 0]}
+              width={1.05}
+              height={0.22}
+              position={[1.95, 0, 0]}
               onClick={handleNextVideo}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -976,9 +973,9 @@ export function WixarikaWelcomeDashboard({
             />
           </group>
 
-          {/* Reproductor de Video 3D Integrado */}
+          {/* Reproductor de Video 3D Integrado (descendido a Y=-0.22 para evitar cualquier solapamiento) */}
           {currentVideo && (
-            <group position={[0, -0.06, 0]}>
+            <group position={[0, -0.22, 0]}>
               <WixarikaVRVideoPlayer
                 video={currentVideo}
                 quality={videoQuality}

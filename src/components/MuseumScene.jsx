@@ -214,17 +214,22 @@ export function MuseumScene({
 
   // Manejador al seleccionar una sala cultural (Deidades, Gastronomía o Fiestas)
   // Gira el quiosco suavemente para que la sala quede de frente al usuario
+  // y oculta el menú flotante para que el usuario contemple directamente las obras en 3D
   const handleSelectStation = useCallback((stationId) => {
     if (stationId === 'deidades') {
       setKioskRotationTarget(Math.PI); // Gira 180°: Muro de Deidades viene al frente (+Z)
+      setShowButtons(false);
     } else if (stationId === 'gastronomia') {
       setKioskRotationTarget(-Math.PI / 2); // Gira -90°: Muro de Gastronomía viene al frente (+Z)
+      setShowButtons(false);
     } else if (stationId === 'fiestas') {
       setKioskRotationTarget(Math.PI / 2); // Gira +90°: Muro de Fiestas viene al frente (+Z)
+      setShowButtons(false);
     } else {
       setKioskRotationTarget(0); // Menú / Entrada (+Z)
+      setShowButtons(true);
     }
-  }, []);
+  }, [setShowButtons]);
 
   // Registro de objetos interactivos para el raycaster de Gaze Fuse
   const interactiveRegistry = useRef(new Set());
