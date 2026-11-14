@@ -76,20 +76,20 @@ console.log('✓ Arquitectura de muros y techo: Nichos a 2.90m');
 // --------------------------------------------------------------------------
 const DEIDADES_Y = 2.95;
 const DEIDADES_SCALE = 1.30;
-const DEIDADES_PLACA_Y = 1.40;
+const DEIDADES_PLACA_Y = 1.52; // Reducido en 50% el gap vertical cuadro-letrero (de 24cm a 12cm)
 const PLACA_UNIFICADA_SCALE = 1.82; // 2.18m ancho total, permite que los letreros y textos 3D alcancen la escala de Kauyumari (0.155m alto)
 const R_MURO = 7.30;
 const R_TABLAS_FIESTAS = 5.993;
-const DEIDADES_DTHETA = 19.8 * Math.PI / 180; // 19.80° de separación uniforme parejo entre cada estación (cuerda = 2.510m, gap entre placas = 32.6cm)
+const DEIDADES_DTHETA = 18.5 * Math.PI / 180; // Reducido en 50% el gap entre cuadros adyacentes (cuerda = 2.347m, gap entre placas = 16.3cm parejo)
 
 // 2.1 Reposicionamiento parejo y uniforme de las 6 estaciones de Deidades
 const deidadesEstacionesConfig = [
-  { idx: 56, angle: 2.5 * DEIDADES_DTHETA },  // 1. Tatewari (+49.50°)
-  { idx: 93, angle: 1.5 * DEIDADES_DTHETA },  // 2. Tayau (+29.70°)
-  { idx: 139, angle: 0.5 * DEIDADES_DTHETA }, // 3. Kauyumari (+9.90°)
-  { idx: 178, angle: -0.5 * DEIDADES_DTHETA },// 4. Takutsi Nakawe (-9.90°)
-  { idx: 214, angle: -1.5 * DEIDADES_DTHETA },// 5. Tatei Niwetsika (-29.70°)
-  { idx: 246, angle: -2.5 * DEIDADES_DTHETA } // 6. Tatei Haramara (-49.50°)
+  { idx: 56, angle: 2.5 * DEIDADES_DTHETA },  // 1. Tatewari (+46.25°)
+  { idx: 93, angle: 1.5 * DEIDADES_DTHETA },  // 2. Tayau (+27.75°)
+  { idx: 139, angle: 0.5 * DEIDADES_DTHETA }, // 3. Kauyumari (+9.25°)
+  { idx: 178, angle: -0.5 * DEIDADES_DTHETA },// 4. Takutsi Nakawe (-9.25°)
+  { idx: 214, angle: -1.5 * DEIDADES_DTHETA },// 5. Tatei Niwetsika (-27.75°)
+  { idx: 246, angle: -2.5 * DEIDADES_DTHETA } // 6. Tatei Haramara (-46.25°)
 ];
 
 for (const est of deidadesEstacionesConfig) {
@@ -100,7 +100,7 @@ for (const est of deidadesEstacionesConfig) {
   nodes[est.idx].translation = [x, 0.0, z];
   nodes[est.idx].rotation = [0.0, qy, 0.0, qw];
 }
-console.log('✓ Estaciones de Deidades: Reposicionadas con separación uniforme parejo de 19.8° (cuerda 2.51m).');
+console.log('✓ Estaciones de Deidades: Reposicionadas con separación uniforme parejo de 18.5° (gap 16.3cm, cuerda 2.35m).');
 
 const deidadesCuadros = [46, 83, 129, 168, 204, 237];
 for (const cIdx of deidadesCuadros) {
@@ -143,11 +143,11 @@ console.log('✓ Placas de Deidades: Altura de letra unificada a 0.155m (tamaño
 // --------------------------------------------------------------------------
 // 3. Cuadros y Placas de Fiestas y Ceremonias
 // --------------------------------------------------------------------------
-const FIESTAS_DTHETA = 19.8 * Math.PI / 180; // 19.80° parejo (cuerda = 2.510m, gap = 32.6cm)
+const FIESTAS_DTHETA = 18.5 * Math.PI / 180; // Reducido en 50% el gap entre cuadros adyacentes (cuerda = 2.347m, gap entre placas = 16.3cm parejo)
 const fiestasEstacionesConfig = [
-  { stIdx: 288, tabIdx: 375, angle: -FIESTAS_DTHETA }, // 1. Namawita Neixa (-19.80°)
+  { stIdx: 288, tabIdx: 375, angle: -FIESTAS_DTHETA }, // 1. Namawita Neixa (-18.50°)
   { stIdx: 314, tabIdx: 476, angle: 0.0 },              // 2. Tatei Neixa (0.00°)
-  { stIdx: 341, tabIdx: 425, angle: FIESTAS_DTHETA }   // 3. Hikuri Neixa (+19.80°)
+  { stIdx: 341, tabIdx: 425, angle: FIESTAS_DTHETA }   // 3. Hikuri Neixa (+18.50°)
 ];
 
 for (const fEst of fiestasEstacionesConfig) {
@@ -165,7 +165,7 @@ for (const fEst of fiestasEstacionesConfig) {
   nodes[fEst.tabIdx].translation = [tabX, 0.0, tabZ];
   nodes[fEst.tabIdx].rotation = [0.0, qy, 0.0, qw];
 }
-console.log('✓ Estaciones y mesas de Fiestas: Reposicionadas con separación uniforme parejo de 19.8° (cuerda 2.51m).');
+console.log('✓ Estaciones y mesas de Fiestas: Reposicionadas con separación uniforme parejo de 18.5° (gap 16.3cm, cuerda 2.35m).');
 
 const fiestasCuadros = [282, 308, 334];
 for (const fcIdx of fiestasCuadros) {
@@ -181,7 +181,7 @@ const fiestasPlacasConfig = [
 
 for (const cfg of fiestasPlacasConfig) {
   // Posicionar y escalar la placa completa individualmente
-  // A escala 1.82x la placa mide 2.18m de ancho, dejando 32.6cm de separación limpia entre estaciones adyacentes
+  // A escala 1.82x la placa mide 2.18m de ancho, dejando 16.3cm de separación limpia entre estaciones adyacentes
   nodes[cfg.padre].translation = [0.0, DEIDADES_PLACA_Y, 0.0];
   nodes[cfg.padre].scale = [PLACA_UNIFICADA_SCALE, PLACA_UNIFICADA_SCALE, PLACA_UNIFICADA_SCALE];
 
@@ -330,16 +330,25 @@ for (const fItem of fiestasTextosData) {
 // 5. Letreros de Sección Colgantes
 // --------------------------------------------------------------------------
 const seccionIndices = [
-  { idx: 1001, trans: [0.0688, 4.10, 4.806] },
-  { idx: 1027, trans: [0.0709, 4.10, -4.796] },
-  { idx: 1051, trans: [-4.800, 4.10, -0.130] },
-  { idx: 1077, trans: [4.800, 4.10, 0.130] }
+  { idx: 1001, trans: [0.0688, 4.10, 4.806], goldIdx: 995, blackIdx: 998, goldScale: 1.65 },
+  { idx: 1027, trans: [0.0709, 4.10, -4.796], goldIdx: 1021, blackIdx: 1024, goldScale: 1.57 },
+  { idx: 1051, trans: [-4.800, 4.10, -0.130], goldIdx: 1045, blackIdx: 1048, goldScale: 1.57 },
+  { idx: 1077, trans: [4.800, 4.10, 0.130], goldIdx: 1071, blackIdx: 1074, goldScale: 1.57 }
 ];
+
 for (const s of seccionIndices) {
   nodes[s.idx].translation = s.trans;
   nodes[s.idx].scale = [1.50, 1.50, 1.50];
+
+  // Aumentar tamaño de letra 3D en oro para igualar la altura de 0.155m en el mundo (tamaño Kauyumari)
+  nodes[s.goldIdx].scale = [s.goldScale, s.goldScale, s.goldScale];
+  nodes[s.goldIdx].translation = [0.0, 0.082, 0.038];
+
+  // Aumentar tamaño de letra negra en 75% para máxima legibilidad desde el suelo
+  nodes[s.blackIdx].scale = [1.75, 1.75, 1.75];
+  nodes[s.blackIdx].translation = [0.0, -0.075, 0.038];
 }
-console.log('✓ Letreros de sección: Elevados a Y=4.10m a 1.50x');
+console.log('✓ Letreros de sección: Elevados a Y=4.10m con letra oro a 0.155m y letra negra agrandada a 1.75x.');
 
 // --------------------------------------------------------------------------
 // 6. Letreros y Comidas de Gastronomía
