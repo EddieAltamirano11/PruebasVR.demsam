@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, useEffect, Suspense } from 'react';
+import React, { useRef, useState, useCallback, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
@@ -109,7 +109,12 @@ export function MuseumScene({
   onWebXRTriggerRef,
   onRecenterRef,
   showButtons: externalShowButtons,
-  setShowButtons: externalSetShowButtons
+  setShowButtons: externalSetShowButtons,
+  activeStation: _externalActiveStation,
+  onActiveStationChange: _onActiveStationChange,
+  onOpenBooksPanel: _onOpenBooksPanel,
+  isBooksOpen: _externalIsBooksOpen,
+  onToggleBooksOpen: _onToggleBooksOpen
 }) {
   const orbitRef = useRef();
   const cameraRigRef = useRef();
@@ -139,23 +144,14 @@ export function MuseumScene({
     SoundFX.toggleAmbient();
   }, []);
 
-  // Recentrar visor o controles directamente hacia el Menú Principal (+Z)
+  // Recentrar visor en VR o controles de órbita en computadora
   const handleRecenter = useCallback(() => {
     if (onRecenterRef?.current) {
       onRecenterRef.current();
     } else if (orbitRef.current) {
-      orbitRef.current.target.set(0, 2.10, 2.85);
-      orbitRef.current.update?.();
+      orbitRef.current.reset?.();
     }
   }, [onRecenterRef]);
-
-  // Al montar la escena, orientar inmediatamente la cámara hacia el Menú Principal
-  useEffect(() => {
-    if (orbitRef.current) {
-      orbitRef.current.target.set(0, 2.10, 2.85);
-      orbitRef.current.update?.();
-    }
-  }, []);
 
   return (
     <Canvas
@@ -163,11 +159,13 @@ export function MuseumScene({
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       dpr={[1, typeof window !== 'undefined' ? Math.min(2.5, window.devicePixelRatio || 2) : 2]}
     >
-      {/* Rig de camara para modo normal y modo VR (orientado frontalmente hacia el Menú Principal en +Z) */}
-      <group ref={cameraRigRef} position={[0, 0, 0]} rotation={[0, Math.PI, 0]}>
+      {/* Rig de camara para modo normal y modo VR:
+          En modo VR se orienta Math.PI para que el visor mire de frente al Menú Principal (+Z).
+          En computadora (escritorio) se conserva la orientación libre original de la escena sin fijación. */}
+      <group ref={cameraRigRef} position={[0, 0, 0]} rotation={vrMode ? [0, Math.PI, 0] : [0, 0, 0]}>
         <PerspectiveCamera
           makeDefault
-          position={vrMode ? [0, 1.6, 0] : [0, 1.6, 0.4]}
+          position={vrMode ? [0, 1.6, 0] : [0, 1.6, 2.5]}
           fov={75}
           near={0.05}
           far={1000}
@@ -218,11 +216,11 @@ export function MuseumScene({
         enabled={true}
       />
 
-      {/* Controles de orbita orientados frontalmente hacia el Menú Principal */}
+      {/* Controles de orbita activos en modo pantalla normal (giro 360° libre alrededor del centro del museo como estaba antes) */}
       <OrbitControls
         ref={orbitRef}
         enabled={!vrMode}
-        target={[0, 2.10, 2.85]}
+        target={[0, 1.4, 0]}
         enableDamping
         dampingFactor={0.05}
         minDistance={0.2}
