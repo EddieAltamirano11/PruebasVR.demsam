@@ -124,23 +124,35 @@ for (const fcIdx of fiestasCuadros) {
   nodes[fcIdx].scale = [1.16 * 1.12, 1.16 * 1.12, 1.16 * 1.12];
 }
 
+const FIESTAS_PLACA_SCALE = 1.20;
 const fiestasPlacasConfig = [
-  { padre: 287, hijos: [283, 284, 286], ocultar: [285], sHijo: 1.152711272239685 },
-  { padre: 313, hijos: [309, 310, 312], ocultar: [311], sHijo: 1.147471308708191 },
-  { padre: 340, hijos: [335, 336, 338], ocultar: [337, 339], sHijo: 1.144365906715393 }
+  { padre: 287, madera: 283, cantera: 284, marco: 286, ocultar: [285] },
+  { padre: 313, madera: 309, cantera: 310, marco: 312, ocultar: [311] },
+  { padre: 340, madera: 335, cantera: 336, marco: 338, ocultar: [337, 339] }
 ];
 
 for (const cfg of fiestasPlacasConfig) {
+  // Posicionar y escalar la placa completa individualmente
+  // A escala 1.20x la placa mide 1.44m de ancho, dejando 42.5cm de separación limpia entre estaciones adyacentes
   nodes[cfg.padre].translation = [0.0, DEIDADES_PLACA_Y, 0.0];
-  nodes[cfg.padre].scale = [1.08 * 1.35, 1.08 * 1.35, 1.08 * 1.35];
-  for (const hIdx of cfg.hijos) {
-    nodes[hIdx].scale = [cfg.sHijo, cfg.sHijo, cfg.sHijo];
-  }
+  nodes[cfg.padre].scale = [FIESTAS_PLACA_SCALE, FIESTAS_PLACA_SCALE, FIESTAS_PLACA_SCALE];
+
+  // Centrar concéntricamente los elementos de la placa en Y=0.0 y escala unitaria (idéntico al estilo de Deidades)
+  nodes[cfg.madera].translation = [0.0, 0.0, 0.0];
+  nodes[cfg.madera].scale = [1.0, 1.0, 1.0];
+
+  nodes[cfg.cantera].translation = [0.0, 0.0, 0.012];
+  nodes[cfg.cantera].scale = [1.0, 1.0, 1.0];
+
+  nodes[cfg.marco].translation = [0.0, 0.0, 0.0];
+  nodes[cfg.marco].scale = [1.0, 1.0, 1.0];
+
+  // Ocultar cédulas de texto plano 2D y medallones decorativos residuales
   for (const hIdx of cfg.ocultar) {
     nodes[hIdx].scale = [0.0, 0.0, 0.0];
   }
 }
-console.log('✓ Placas de Fiestas: Imágenes planas eliminadas.');
+console.log('✓ Placas de Fiestas: Recuadros individuales separados a escala 1.20x y elementos concéntricos.');
 
 // --------------------------------------------------------------------------
 // 4. Creación de Texto 3D Dorado para Fiestas (Extruido en Geometría GLB)
@@ -151,9 +163,9 @@ const fontLoader = new FontLoader();
 const font = fontLoader.parse(fontData);
 
 const fiestasTextosData = [
-  { parentNode: 287, name: 'NAMAWITA NEIXA', size: 0.076, suffix: 'fiesta_1_namawita_neixa' },
-  { parentNode: 313, name: 'TATEI NEIXA', size: 0.115, suffix: 'fiesta_2_tatei_neixa' },
-  { parentNode: 340, name: 'HIKURI NEIXA', size: 0.108, suffix: 'fiesta_3_hikuri_neixa' }
+  { parentNode: 287, name: 'NAMAWITA NEIXA', size: 0.078, suffix: 'fiesta_1_namawita_neixa' },
+  { parentNode: 313, name: 'TATEI NEIXA', size: 0.078, suffix: 'fiesta_2_tatei_neixa' },
+  { parentNode: 340, name: 'HIKURI NEIXA', size: 0.078, suffix: 'fiesta_3_hikuri_neixa' }
 ];
 
 gltf.bufferViews = gltf.bufferViews || [];
@@ -253,7 +265,8 @@ for (const fItem of fiestasTextosData) {
   nodes.push({
     name: `placa_texto_oro_3d_${fItem.suffix}`,
     mesh: meshIdx,
-    translation: [0.0, 0.0, 0.022]
+    translation: [0.0, 0.0, 0.022],
+    scale: [1.0, 1.0, 1.0]
   });
 
   nodes[fItem.parentNode].children = nodes[fItem.parentNode].children || [];
