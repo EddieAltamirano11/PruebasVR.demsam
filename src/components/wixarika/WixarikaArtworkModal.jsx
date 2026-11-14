@@ -343,10 +343,10 @@ export function WixarikaArtworkModal({
         />
 
         {/* 1. Encabezado Superior: Título Monumental y Subtítulo Ceremonial (sin duplicar nombre) */}
-        <group position={[0, 1.30, 0]}>
+        <group position={[0, 1.32, 0]}>
           <Text
             position={[0, 0.08, 0]}
-            fontSize={0.360}
+            fontSize={0.320}
             color="#1c1917"
             anchorX="center"
             anchorY="middle"
@@ -357,8 +357,8 @@ export function WixarikaArtworkModal({
           </Text>
 
           <Text
-            position={[0, -0.22, 0]}
-            fontSize={0.170}
+            position={[0, -0.18, 0]}
+            fontSize={0.145}
             color="#78350f"
             anchorX="center"
             anchorY="middle"
@@ -369,44 +369,44 @@ export function WixarikaArtworkModal({
           </Text>
 
           {/* Línea divisoria dorada ceremonial */}
-          <mesh position={[0, -0.32, 0]}>
+          <mesh position={[0, -0.27, 0]}>
             <planeGeometry args={[rightColWidth * 0.96, 0.008]} />
             <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
           </mesh>
         </group>
 
-        {/* 2. Recuadro de Descripción Ampliado (Arriba de las viñetas, inmediatamente bajo el encabezado) */}
-        <group position={[0, 0.26, 0]}>
+        {/* 2. Recuadro de Descripción Ampliado (Arriba de las viñetas, máximo tamaño sin desbordar) */}
+        <group position={[0, 0.22, 0]}>
           <mesh position={[0, 0, -0.001]}>
-            <planeGeometry args={[rightColWidth * 0.98, 1.28]} />
+            <planeGeometry args={[rightColWidth * 0.98, 1.46]} />
             <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
           </mesh>
           <mesh position={[0, 0, -0.002]}>
-            <planeGeometry args={[rightColWidth * 0.98 + 0.03, 1.31]} />
+            <planeGeometry args={[rightColWidth * 0.98 + 0.03, 1.49]} />
             <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
           </mesh>
 
           <Text
             position={[-rightColWidth * 0.46, 0, 0.002]}
-            fontSize={0.215}
+            fontSize={0.152}
             color="#1c1917"
             anchorX="left"
             anchorY="middle"
             maxWidth={rightColWidth * 0.92}
             textAlign="left"
-            lineHeight={1.46}
+            lineHeight={1.36}
           >
             {artwork.description}
           </Text>
         </group>
 
-        {/* 3. Viñetas de Atributos Sagrados (Debajo del recuadro, alineadas a la izquierda y con tipografía grande) */}
-        <group position={[0, -1.02, 0]}>
+        {/* 3. Viñetas de Atributos Sagrados (Debajo del recuadro, formato original a 0.130 alineadas a la izquierda) */}
+        <group position={[0, -0.80, 0]}>
           {(artwork.keywords || []).map((keyword, idx) => (
             <Text
               key={idx}
-              position={[-rightColWidth * 0.46, 0.26 - idx * 0.26, 0]}
-              fontSize={0.200}
+              position={[-rightColWidth * 0.46, 0.16 - idx * 0.22, 0]}
+              fontSize={0.130}
               color="#1c1917"
               anchorX="left"
               anchorY="middle"
