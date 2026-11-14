@@ -375,33 +375,33 @@ export function WixarikaArtworkModal({
           </mesh>
         </group>
 
-        {/* 2. Recuadro de Descripción Ampliado (Arriba de las viñetas, máximo tamaño sin desbordar) */}
-        <group position={[0, 0.22, 0]}>
+        {/* 2. Recuadro de Descripción Ampliado (Arriba de las viñetas, altura ampliada a 1.56m) */}
+        <group position={[0, 0.20, 0]}>
           <mesh position={[0, 0, -0.001]}>
-            <planeGeometry args={[rightColWidth * 0.98, 1.46]} />
+            <planeGeometry args={[rightColWidth * 0.98, 1.56]} />
             <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
           </mesh>
           <mesh position={[0, 0, -0.002]}>
-            <planeGeometry args={[rightColWidth * 0.98 + 0.03, 1.49]} />
+            <planeGeometry args={[rightColWidth * 0.98 + 0.03, 1.59]} />
             <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
           </mesh>
 
           <Text
             position={[-rightColWidth * 0.46, 0, 0.002]}
-            fontSize={0.152}
+            fontSize={0.154}
             color="#1c1917"
             anchorX="left"
             anchorY="middle"
             maxWidth={rightColWidth * 0.92}
             textAlign="left"
-            lineHeight={1.36}
+            lineHeight={1.38}
           >
             {artwork.description}
           </Text>
         </group>
 
-        {/* 3. Viñetas de Atributos Sagrados (Debajo del recuadro, formato original a 0.130 alineadas a la izquierda) */}
-        <group position={[0, -0.80, 0]}>
+        {/* 3. Viñetas de Atributos Sagrados (Debajo del recuadro, con margin top de separación) */}
+        <group position={[0, -0.96, 0]}>
           {(artwork.keywords || []).map((keyword, idx) => (
             <Text
               key={idx}
