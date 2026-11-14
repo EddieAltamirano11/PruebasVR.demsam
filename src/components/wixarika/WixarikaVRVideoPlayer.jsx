@@ -64,7 +64,9 @@ export function WixarikaVRVideoPlayer({
     let isMounted = true;
     let loadedRef = null;
     const loader = new THREE.TextureLoader();
-    loader.setCrossOrigin('anonymous');
+    if (posterUrl.startsWith('http://') || posterUrl.startsWith('https://')) {
+      loader.setCrossOrigin('anonymous');
+    }
     loader.load(
       posterUrl,
       (tex) => {
@@ -127,7 +129,9 @@ export function WixarikaVRVideoPlayer({
     if (typeof document === 'undefined') return;
 
     const el = document.createElement('video');
-    el.crossOrigin = 'anonymous';
+    if (sourceUrl && (sourceUrl.startsWith('http://') || sourceUrl.startsWith('https://'))) {
+      el.crossOrigin = 'anonymous';
+    }
     el.playsInline = true;
     el.preload = 'metadata';
     el.setAttribute('playsinline', '');
@@ -343,10 +347,8 @@ export function WixarikaVRVideoPlayer({
   useFrame(() => {
     const el = videoElRef.current;
     const tex = videoTextureRef.current;
-    if (el && tex && hasFrame && !el.paused && !el.ended) {
-      if (!('requestVideoFrameCallback' in el) && el.readyState >= 2) {
-        tex.needsUpdate = true;
-      }
+    if (el && tex && !el.paused && !el.ended) {
+      tex.needsUpdate = true;
     }
   });
 
@@ -438,7 +440,7 @@ export function WixarikaVRVideoPlayer({
             {activeTexture ? (
               <meshBasicMaterial map={activeTexture} toneMapped={false} />
             ) : (
-              <meshBasicMaterial color="#111827" />
+              <meshBasicMaterial color="#2d1b0e" />
             )}
           </mesh>
 

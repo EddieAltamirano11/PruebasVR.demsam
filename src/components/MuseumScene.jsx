@@ -205,10 +205,15 @@ export function MuseumScene({
   const orbitRef = useRef();
   const cameraRigRef = useRef();
   const [internalShowButtons, setInternalShowButtons] = useState(true);
+  const showButtons =
+    externalShowButtons !== undefined ? externalShowButtons : internalShowButtons;
+  const setShowButtons = externalSetShowButtons || setInternalShowButtons;
+
   const [activeArtwork, setActiveArtwork] = useState(null);
   const [kioskRotationTarget, setKioskRotationTarget] = useState(0);
 
   // Manejador al seleccionar una sala cultural (Deidades, Gastronomía o Fiestas)
+  // Gira el quiosco suavemente para que la sala quede de frente al usuario
   const handleSelectStation = useCallback((stationId) => {
     if (stationId === 'deidades') {
       setKioskRotationTarget(Math.PI); // Gira 180°: Muro de Deidades viene al frente (+Z)
@@ -219,15 +224,7 @@ export function MuseumScene({
     } else {
       setKioskRotationTarget(0); // Menú / Entrada (+Z)
     }
-
-    // Al seleccionar una sala, ocultar el menú para que el quiosco gire al centro de su vista
-    // y el usuario pueda contemplar directamente el muro y sus cuadros sagrados
-    setShowButtons(false);
-  }, [setShowButtons]);
-
-  const showButtons =
-    externalShowButtons !== undefined ? externalShowButtons : internalShowButtons;
-  const setShowButtons = externalSetShowButtons || setInternalShowButtons;
+  }, []);
 
   // Registro de objetos interactivos para el raycaster de Gaze Fuse
   const interactiveRegistry = useRef(new Set());
