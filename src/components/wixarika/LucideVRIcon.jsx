@@ -32,7 +32,7 @@ export const LUCIDE_SVG_PATHS = {
 const iconTextureCache = new Map();
 
 /**
- * Genera una textura CanvasTexture en alta resolución (128x128) con el icono Lucide SVG especificado.
+ * Genera una textura CanvasTexture en ultra alta resolución (512x512) con el icono Lucide SVG especificado.
  */
 export function getLucideIconTexture(name, color = '#1c1917', strokeWidth = 2.4) {
   const safeName = LUCIDE_SVG_PATHS[name] ? name : 'compass';
@@ -50,17 +50,19 @@ export function getLucideIconTexture(name, color = '#1c1917', strokeWidth = 2.4)
   }
 
   const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 256;
+  canvas.width = 512;
+  canvas.height = 512;
   const ctx = canvas.getContext('2d');
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   texture.magFilter = THREE.LinearFilter;
   texture.generateMipmaps = true;
+  texture.anisotropy = 8;
+  texture.colorSpace = THREE.SRGBColorSpace;
 
   const svgInner = LUCIDE_SVG_PATHS[safeName];
-  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${svgInner}</svg>`;
+  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${svgInner}</svg>`;
 
   try {
     const img = new Image();
@@ -68,8 +70,8 @@ export function getLucideIconTexture(name, color = '#1c1917', strokeWidth = 2.4)
     const url = URL.createObjectURL(blob);
 
     img.onload = () => {
-      ctx.clearRect(0, 0, 256, 256);
-      ctx.drawImage(img, 0, 0, 256, 256);
+      ctx.clearRect(0, 0, 512, 512);
+      ctx.drawImage(img, 0, 0, 512, 512);
       texture.needsUpdate = true;
       URL.revokeObjectURL(url);
     };
@@ -88,7 +90,7 @@ export function getLucideIconTexture(name, color = '#1c1917', strokeWidth = 2.4)
 }
 
 /**
- * Componente 3D para renderizar un icono vectorial Lucide nítido sin emojis.
+ * Componente 3D para renderizar un icono vectorial Lucide nítido y antialiasado sin emojis ni pixelación.
  */
 export function LucideVRIcon({
   name,
@@ -105,7 +107,12 @@ export function LucideVRIcon({
   return (
     <mesh position={position}>
       <planeGeometry args={[size, size]} />
-      <meshBasicMaterial map={texture} transparent alphaTest={0.01} />
+      <meshBasicMaterial
+        map={texture}
+        transparent={true}
+        depthWrite={false}
+        toneMapped={false}
+      />
     </mesh>
   );
 }

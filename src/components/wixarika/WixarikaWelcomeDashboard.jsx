@@ -61,10 +61,10 @@ function DashboardTile({
   title,
   iconName,
   accentColor = UNIFIED_ICON_COLOR,
-  width = 1.34,
-  height = 0.72,
-  iconSize = 0.20,
-  titleSize = 0.102,
+  width = 1.80,
+  height = 0.88,
+  iconSize = 0.26,
+  titleSize = 0.125,
   position = [0, 0, 0],
   onClick,
   registerMesh,
@@ -105,21 +105,21 @@ function DashboardTile({
     }
   };
 
-  // Colores claros inspirados en cantera de Tepic y oro ceremonial
+  // Colores claros inspirados en cantera de Tepic y oro ceremonial (cero negros)
   const bgIdle = '#fbf7ee';
   const bgHover = '#f3ebd6';
   const currentBg = isHovered ? bgHover : bgIdle;
   const borderColor = isHovered ? accentColor : '#d4af37';
 
   // Centrado vertical amplio de icono y título
-  const iconY = 0.115;
-  const titleY = -0.145;
+  const iconY = 0.140;
+  const titleY = -0.175;
 
   return (
     <group position={position}>
       {/* Marco de oro bruñido exterior */}
       <mesh position={[0, 0, -0.001]}>
-        <planeGeometry args={[width + 0.024, height + 0.024]} />
+        <planeGeometry args={[width + 0.030, height + 0.030]} />
         <meshBasicMaterial color={borderColor} />
       </mesh>
 
@@ -137,51 +137,51 @@ function DashboardTile({
       {/* Rombos protectores Tsikuri en esquinas */}
       <group position={[0, 0, 0.003]}>
         <TsikuriDiamond
-          size={0.045}
-          position={[-width / 2 + 0.045, height / 2 - 0.045, 0]}
+          size={0.055}
+          position={[-width / 2 + 0.055, height / 2 - 0.055, 0]}
           colors={['#d4af37', accentColor, '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.045}
-          position={[width / 2 - 0.045, height / 2 - 0.045, 0]}
+          size={0.055}
+          position={[width / 2 - 0.055, height / 2 - 0.055, 0]}
           colors={['#d4af37', accentColor, '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.045}
-          position={[-width / 2 + 0.045, -height / 2 + 0.045, 0]}
+          size={0.055}
+          position={[-width / 2 + 0.055, -height / 2 + 0.055, 0]}
           colors={['#d4af37', accentColor, '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.045}
-          position={[width / 2 - 0.045, -height / 2 + 0.045, 0]}
+          size={0.055}
+          position={[width / 2 - 0.055, -height / 2 + 0.055, 0]}
           colors={['#d4af37', accentColor, '#ffffff']}
         />
       </group>
 
       {/* Barra de progreso de Gaze Fuse */}
       {isHovered && fuseProgress > 0 && (
-        <group position={[0, -height / 2 + 0.022, 0.005]}>
+        <group position={[0, -height / 2 + 0.026, 0.005]}>
           <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[width * 0.90, 0.022]} />
+            <planeGeometry args={[width * 0.90, 0.024]} />
             <meshBasicMaterial color="#e7dec8" />
           </mesh>
           <mesh
             position={[-((width * 0.90) * (1 - fuseProgress)) / 2, 0, 0.001]}
             scale={[fuseProgress, 1, 1]}
           >
-            <planeGeometry args={[width * 0.90, 0.020]} />
+            <planeGeometry args={[width * 0.90, 0.022]} />
             <meshBasicMaterial color={accentColor} />
           </mesh>
         </group>
       )}
 
-      {/* Icono Lucide vectorial nítido (color unificado) */}
+      {/* Icono Lucide vectorial nítido en alta resolución */}
       <LucideVRIcon
         name={iconName}
         size={iconSize}
         color={accentColor}
         position={[0, iconY, 0.004]}
-        strokeWidth={2.4}
+        strokeWidth={2.6}
       />
 
       {/* Título de la opción en carbón oscuro con tamaño amplio para legibilidad VR */}
@@ -206,10 +206,10 @@ function DashboardTile({
  * Ubicado en el cuadrante Sur (+Z) del Kalihuey Sagrado.
  * Ahora actúa como el ÚNICO menú flotante del museo: todas las salas, videos y libros
  * se exploran dentro de su superficie con sub-vistas modulares y botón de retorno.
- * Elevado ergonómicamente a Y = 2.15m y alejado del centro a Z = 2.85m con dimensiones ampliadas 5.00m × 2.85m.
+ * Elevado ergonómicamente a Y = 2.30m y situado más atrás a Z = 3.75m con escala monumental 6.40m × 3.50m.
  */
 export function WixarikaWelcomeDashboard({
-  position = [0, 2.15, 2.85],
+  position = [0, 2.30, 3.75],
   rotation = [0, Math.PI, 0],
   initialView = 'home',
   stations = DEFAULT_CULTURAL_STATIONS,
@@ -223,8 +223,8 @@ export function WixarikaWelcomeDashboard({
   fuseProgress = 0
 }) {
   // Dimensiones monumentales y ergonómicas que aprovechan todo el espacio frontal
-  const panelWidth = 5.00;
-  const panelHeight = 2.85;
+  const panelWidth = 6.40;
+  const panelHeight = 3.50;
 
   // Estado de navegación interna: 'home' | 'deidades' | 'gastronomia' | 'fiestas' | 'videos' | 'books'
   const [currentView, setCurrentView] = useState(initialView);
@@ -295,13 +295,13 @@ export function WixarikaWelcomeDashboard({
     <group position={position} rotation={rotation}>
       {/* 1. Marco exterior de madera de nogal ceremonial */}
       <mesh position={[0, 0, -0.003]}>
-        <planeGeometry args={[panelWidth + 0.06, panelHeight + 0.06]} />
+        <planeGeometry args={[panelWidth + 0.08, panelHeight + 0.08]} />
         <meshBasicMaterial color="#5c381e" />
       </mesh>
 
       {/* 2. Bisel perimetral de oro bruñido */}
       <mesh position={[0, 0, -0.002]}>
-        <planeGeometry args={[panelWidth + 0.024, panelHeight + 0.024]} />
+        <planeGeometry args={[panelWidth + 0.03, panelHeight + 0.03]} />
         <meshBasicMaterial color="#c69214" />
       </mesh>
 
@@ -314,23 +314,23 @@ export function WixarikaWelcomeDashboard({
       {/* 4. Rombos protectores Tsikuri en las 4 esquinas del panel monumental */}
       <group position={[0, 0, 0.004]}>
         <TsikuriDiamond
-          size={0.090}
-          position={[-panelWidth / 2 + 0.090, panelHeight / 2 - 0.090, 0]}
+          size={0.110}
+          position={[-panelWidth / 2 + 0.110, panelHeight / 2 - 0.110, 0]}
           colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.090}
-          position={[panelWidth / 2 - 0.090, panelHeight / 2 - 0.090, 0]}
+          size={0.110}
+          position={[panelWidth / 2 - 0.110, panelHeight / 2 - 0.110, 0]}
           colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.090}
-          position={[-panelWidth / 2 + 0.090, -panelHeight / 2 + 0.090, 0]}
+          size={0.110}
+          position={[-panelWidth / 2 + 0.110, -panelHeight / 2 + 0.110, 0]}
           colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.090}
-          position={[panelWidth / 2 - 0.090, -panelHeight / 2 + 0.090, 0]}
+          size={0.110}
+          position={[panelWidth / 2 - 0.110, -panelHeight / 2 + 0.110, 0]}
           colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
         />
       </group>
@@ -341,18 +341,18 @@ export function WixarikaWelcomeDashboard({
       {currentView === 'home' && (
         <group position={[0, 0, 0.005]}>
           {/* Cabecera Monumental del Dashboard */}
-          <group position={[0, 0.98, 0]}>
+          <group position={[0, 1.22, 0]}>
             <LucideVRIcon
               name="compass"
-              size={0.20}
+              size={0.26}
               color={UNIFIED_ICON_COLOR}
-              position={[0, 0.170, 0]}
+              position={[0, 0.22, 0]}
               strokeWidth={2.6}
             />
 
             <Text
-              position={[0, 0.005, 0]}
-              fontSize={0.160}
+              position={[0, 0.02, 0]}
+              fontSize={0.200}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
@@ -363,8 +363,8 @@ export function WixarikaWelcomeDashboard({
             </Text>
 
             <Text
-              position={[0, -0.115, 0]}
-              fontSize={0.082}
+              position={[0, -0.13, 0]}
+              fontSize={0.104}
               color="#78350f"
               anchorX="center"
               anchorY="middle"
@@ -375,9 +375,9 @@ export function WixarikaWelcomeDashboard({
             </Text>
 
             <Text
-              position={[0, -0.205, 0]}
-              fontSize={0.072}
-              color="#a16207"
+              position={[0, -0.23, 0]}
+              fontSize={0.090}
+              color="#78350f"
               anchorX="center"
               anchorY="middle"
               maxWidth={panelWidth * 0.94}
@@ -386,25 +386,25 @@ export function WixarikaWelcomeDashboard({
               «Taikiyari xanepu» · Bienvenidos al Kalihuey Sagrado
             </Text>
 
-            <mesh position={[0, -0.265, 0]}>
-              <planeGeometry args={[panelWidth * 0.94, 0.006]} />
+            <mesh position={[0, -0.30, 0]}>
+              <planeGeometry args={[panelWidth * 0.94, 0.007]} />
               <meshBasicMaterial color="#d4af37" />
             </mesh>
           </group>
 
           {/* Fila 1: Servicios y Catálogos Culturales */}
-          <group position={[0, 0.18, 0]}>
+          <group position={[0, 0.22, 0]}>
             <DashboardTile
               key="btn-dash-recenter"
               id="btn-dash-recenter"
               title="Recentrar Visor"
               iconName="rotate-ccw"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.34}
-              height={0.72}
-              iconSize={0.20}
-              titleSize={0.102}
-              position={[-1.45, 0, 0]}
+              width={1.80}
+              height={0.88}
+              iconSize={0.26}
+              titleSize={0.125}
+              position={[-1.95, 0, 0]}
               onClick={onRecenter}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -418,10 +418,10 @@ export function WixarikaWelcomeDashboard({
               title={isAudioActive ? 'Audio: Activo' : 'Audio Cultural'}
               iconName={isAudioActive ? 'volume-2' : 'volume-x'}
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.34}
-              height={0.72}
-              iconSize={0.20}
-              titleSize={0.102}
+              width={1.80}
+              height={0.88}
+              iconSize={0.26}
+              titleSize={0.125}
               position={[0, 0, 0]}
               onClick={handleToggleAudio}
               registerMesh={registerMesh}
@@ -436,11 +436,11 @@ export function WixarikaWelcomeDashboard({
               title="Videos Culturales"
               iconName="video"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.34}
-              height={0.72}
-              iconSize={0.20}
-              titleSize={0.102}
-              position={[1.45, 0, 0]}
+              width={1.80}
+              height={0.88}
+              iconSize={0.26}
+              titleSize={0.125}
+              position={[1.95, 0, 0]}
               onClick={() => setCurrentView('videos')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -450,18 +450,18 @@ export function WixarikaWelcomeDashboard({
           </group>
 
           {/* Fila 2: Salas Cardinales (Apertura directa dentro del menú) */}
-          <group position={[0, -0.62, 0]}>
+          <group position={[0, -0.78, 0]}>
             <DashboardTile
               key="btn-dash-deidades"
               id="btn-dash-deidades"
               title="Panteón de Deidades"
               iconName="sun"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.34}
-              height={0.72}
-              iconSize={0.20}
-              titleSize={0.102}
-              position={[-1.45, 0, 0]}
+              width={1.80}
+              height={0.88}
+              iconSize={0.26}
+              titleSize={0.125}
+              position={[-1.95, 0, 0]}
               onClick={() => {
                 setActiveStationId('deidades');
                 setCurrentView('deidades');
@@ -478,10 +478,10 @@ export function WixarikaWelcomeDashboard({
               title="Gastronomía Tradicional"
               iconName="utensils"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.34}
-              height={0.72}
-              iconSize={0.20}
-              titleSize={0.102}
+              width={1.80}
+              height={0.88}
+              iconSize={0.26}
+              titleSize={0.125}
               position={[0, 0, 0]}
               onClick={() => {
                 setActiveStationId('gastronomia');
@@ -499,11 +499,11 @@ export function WixarikaWelcomeDashboard({
               title="Fiestas y Ceremonias"
               iconName="sparkles"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.34}
-              height={0.72}
-              iconSize={0.20}
-              titleSize={0.102}
-              position={[1.45, 0, 0]}
+              width={1.80}
+              height={0.88}
+              iconSize={0.26}
+              titleSize={0.125}
+              position={[1.95, 0, 0]}
               onClick={() => {
                 setActiveStationId('fiestas');
                 setCurrentView('fiestas');
@@ -516,20 +516,20 @@ export function WixarikaWelcomeDashboard({
           </group>
 
           {/* Pie de página con guía de interacción por mirada */}
-          <group position={[0, -1.20, 0]}>
-            <group position={[-1.48, 0, 0]}>
+          <group position={[0, -1.48, 0]}>
+            <group position={[-1.95, 0, 0]}>
               <LucideVRIcon
                 name="eye"
-                size={0.090}
+                size={0.110}
                 color={UNIFIED_ICON_COLOR}
                 position={[0, 0, 0.002]}
                 strokeWidth={2.4}
               />
             </group>
             <Text
-              position={[0.08, 0, 0]}
-              fontSize={0.074}
-              color="#44403c"
+              position={[0.10, 0, 0]}
+              fontSize={0.092}
+              color="#78350f"
               anchorX="center"
               anchorY="middle"
               maxWidth={panelWidth * 0.88}
@@ -549,15 +549,15 @@ export function WixarikaWelcomeDashboard({
         currentView === 'fiestas') && (
         <group position={[0, 0, 0.005]}>
           {/* Barra Superior con botón Volver al Menú y acceso a Libros */}
-          <group position={[0, 1.10, 0]}>
+          <group position={[0, 1.40, 0]}>
             <WixarikaVRButton
               id="btn-station-back-top"
               label="Volver al Menú"
               iconName="arrow-left"
               variant="cantera"
-              width={1.25}
-              height={0.20}
-              position={[-1.70, 0, 0]}
+              width={1.60}
+              height={0.26}
+              position={[-2.20, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -570,10 +570,10 @@ export function WixarikaWelcomeDashboard({
               id="btn-station-open-books-top"
               label="Libros de esta Sala"
               iconName="book-open"
-              variant="solar"
-              width={1.45}
-              height={0.20}
-              position={[1.60, 0, 0]}
+              variant="cantera"
+              width={1.80}
+              height={0.26}
+              position={[2.10, 0, 0]}
               onClick={() => setCurrentView('books')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -584,18 +584,18 @@ export function WixarikaWelcomeDashboard({
           </group>
 
           {/* Encabezado del Pabellón Cultural */}
-          <group position={[0, 0.72, 0]}>
+          <group position={[0, 0.90, 0]}>
             <LucideVRIcon
               name={activeStation.iconName || 'sun'}
-              size={0.19}
+              size={0.26}
               color={UNIFIED_ICON_COLOR}
-              position={[0, 0.15, 0]}
+              position={[0, 0.18, 0]}
               strokeWidth={2.6}
             />
 
             <Text
-              position={[0, -0.015, 0]}
-              fontSize={0.145}
+              position={[0, -0.02, 0]}
+              fontSize={0.190}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
@@ -606,8 +606,8 @@ export function WixarikaWelcomeDashboard({
             </Text>
 
             <Text
-              position={[0, -0.130, 0]}
-              fontSize={0.082}
+              position={[0, -0.15, 0]}
+              fontSize={0.108}
               color="#78350f"
               anchorX="center"
               anchorY="middle"
@@ -617,20 +617,20 @@ export function WixarikaWelcomeDashboard({
               {activeStation.subtitle}
             </Text>
 
-            <mesh position={[0, -0.22, 0]}>
-              <planeGeometry args={[panelWidth * 0.92, 0.005]} />
+            <mesh position={[0, -0.25, 0]}>
+              <planeGeometry args={[panelWidth * 0.92, 0.006]} />
               <meshBasicMaterial color="#d4af37" />
             </mesh>
           </group>
 
           {/* Palabras Clave y Contenido en Tipografía Maximizada */}
-          <group position={[0, 0.02, 0]}>
+          <group position={[0, 0.05, 0]}>
             {(activeStation.bullets || activeStation.description?.split('\n') || []).map(
               (bullet, idx) => (
                 <Text
                   key={idx}
-                  position={[0, 0.16 - idx * 0.18, 0]}
-                  fontSize={0.096}
+                  position={[0, 0.22 - idx * 0.26, 0]}
+                  fontSize={0.125}
                   color="#1c1917"
                   anchorX="center"
                   anchorY="middle"
@@ -645,22 +645,22 @@ export function WixarikaWelcomeDashboard({
           </group>
 
           {/* Cédula de Identidad y Sede Cultural */}
-          <group position={[0, -0.58, 0]}>
+          <group position={[0, -0.72, 0]}>
             <mesh position={[0, 0, -0.001]}>
-              <planeGeometry args={[3.80, 0.18]} />
+              <planeGeometry args={[4.80, 0.22]} />
               <meshBasicMaterial color="#f4ebd8" />
             </mesh>
             <mesh position={[0, 0, -0.002]}>
-              <planeGeometry args={[3.84, 0.22]} />
+              <planeGeometry args={[4.84, 0.26]} />
               <meshBasicMaterial color="#c69214" transparent opacity={0.8} />
             </mesh>
             <Text
               position={[0, 0, 0.001]}
-              fontSize={0.076}
+              fontSize={0.096}
               color="#78350f"
               anchorX="center"
               anchorY="middle"
-              maxWidth={3.70}
+              maxWidth={4.60}
               textAlign="center"
             >
               Sede: Biblioteca Solón Argüello · Acervo y Tradición Oral Wixárika
@@ -668,15 +668,15 @@ export function WixarikaWelcomeDashboard({
           </group>
 
           {/* Botones de Acción al Pie de la Sala */}
-          <group position={[0, -1.02, 0]}>
+          <group position={[0, -1.30, 0]}>
             <WixarikaVRButton
               id="btn-station-books-bottom"
               label="Ver Libros de la Sala"
               iconName="book-open"
-              variant="solar"
-              width={1.80}
-              height={0.24}
-              position={[-1.02, 0, 0]}
+              variant="cantera"
+              width={2.25}
+              height={0.30}
+              position={[-1.30, 0, 0]}
               onClick={() => setCurrentView('books')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -689,9 +689,9 @@ export function WixarikaWelcomeDashboard({
               label="Volver al Menú Principal"
               iconName="arrow-left"
               variant="cantera"
-              width={1.80}
-              height={0.24}
-              position={[1.02, 0, 0]}
+              width={2.25}
+              height={0.30}
+              position={[1.30, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -708,15 +708,15 @@ export function WixarikaWelcomeDashboard({
       {currentView === 'books' && (
         <group position={[0, 0, 0.005]}>
           {/* Barra Superior con botón Volver al Menú */}
-          <group position={[0, 1.12, 0]}>
+          <group position={[0, 1.40, 0]}>
             <WixarikaVRButton
               id="btn-books-back-top"
               label="Volver al Menú"
               iconName="arrow-left"
               variant="cantera"
-              width={1.25}
-              height={0.20}
-              position={[-1.70, 0, 0]}
+              width={1.60}
+              height={0.26}
+              position={[-2.20, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -727,7 +727,7 @@ export function WixarikaWelcomeDashboard({
 
             <Text
               position={[0.20, 0.02, 0]}
-              fontSize={0.115}
+              fontSize={0.145}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
@@ -735,22 +735,22 @@ export function WixarikaWelcomeDashboard({
               LIBROS DE LA BIBLIOTECA SOLÓN ARGÜELLO
             </Text>
 
-            <mesh position={[0, -0.14, 0]}>
-              <planeGeometry args={[panelWidth * 0.92, 0.005]} />
+            <mesh position={[0, -0.16, 0]}>
+              <planeGeometry args={[panelWidth * 0.92, 0.006]} />
               <meshBasicMaterial color="#d4af37" />
             </mesh>
           </group>
 
           {/* Navegación Anterior / Siguiente entre libros */}
-          <group position={[0, 0.72, 0]}>
+          <group position={[0, 0.92, 0]}>
             <WixarikaVRButton
               id="btn-dash-book-prev"
               label="Anterior"
               iconName="chevron-left"
               variant="cantera"
-              width={0.80}
-              height={0.18}
-              position={[-1.45, 0, 0]}
+              width={1.10}
+              height={0.24}
+              position={[-1.90, 0, 0]}
               onClick={handlePrevBook}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -761,12 +761,12 @@ export function WixarikaWelcomeDashboard({
 
             <group position={[0, 0, 0]}>
               <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[1.50, 0.17]} />
+                <planeGeometry args={[2.20, 0.22]} />
                 <meshBasicMaterial color="#f4ebd8" />
               </mesh>
               <Text
                 position={[0, 0, 0.001]}
-                fontSize={0.078}
+                fontSize={0.100}
                 color="#1c1917"
                 anchorX="center"
                 anchorY="middle"
@@ -780,9 +780,9 @@ export function WixarikaWelcomeDashboard({
               label="Siguiente"
               iconName="chevron-right"
               variant="cantera"
-              width={0.80}
-              height={0.18}
-              position={[1.45, 0, 0]}
+              width={1.10}
+              height={0.24}
+              position={[1.90, 0, 0]}
               onClick={handleNextBook}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -797,8 +797,8 @@ export function WixarikaWelcomeDashboard({
             <group position={[0, -0.05, 0]}>
               {/* Título de la obra */}
               <Text
-                position={[0, 0.28, 0]}
-                fontSize={0.098}
+                position={[0, 0.35, 0]}
+                fontSize={0.130}
                 color="#1c1917"
                 anchorX="center"
                 anchorY="top"
@@ -811,8 +811,8 @@ export function WixarikaWelcomeDashboard({
 
               {/* Autor de la obra */}
               <Text
-                position={[0, 0.06, 0]}
-                fontSize={0.082}
+                position={[0, 0.10, 0]}
+                fontSize={0.110}
                 color="#78350f"
                 anchorX="center"
                 anchorY="top"
@@ -823,18 +823,18 @@ export function WixarikaWelcomeDashboard({
               </Text>
 
               {/* Cota y Signatura Topográfica de la Biblioteca */}
-              <group position={[0, -0.22, 0]}>
+              <group position={[0, -0.20, 0]}>
                 <mesh position={[0, 0, -0.001]}>
-                  <planeGeometry args={[2.40, 0.20]} />
+                  <planeGeometry args={[3.20, 0.24]} />
                   <meshBasicMaterial color="#f4ebd8" />
                 </mesh>
                 <mesh position={[0, 0, -0.002]}>
-                  <planeGeometry args={[2.44, 0.24]} />
+                  <planeGeometry args={[3.24, 0.28]} />
                   <meshBasicMaterial color="#d97706" transparent opacity={0.85} />
                 </mesh>
                 <Text
                   position={[0, 0, 0.001]}
-                  fontSize={0.080}
+                  fontSize={0.100}
                   color="#1c1917"
                   anchorX="center"
                   anchorY="middle"
@@ -848,8 +848,8 @@ export function WixarikaWelcomeDashboard({
               {currentBook.synopsis && (
                 <Text
                   position={[0, -0.52, 0]}
-                  fontSize={0.076}
-                  color="#292524"
+                  fontSize={0.095}
+                  color="#1c1917"
                   anchorX="center"
                   anchorY="top"
                   maxWidth={panelWidth * 0.85}
@@ -863,14 +863,14 @@ export function WixarikaWelcomeDashboard({
           )}
 
           {/* Botón Inferior para Volver al Menú Principal */}
-          <group position={[0, -1.08, 0]}>
+          <group position={[0, -1.35, 0]}>
             <WixarikaVRButton
               id="btn-books-return-home"
               label="Volver al Menú Principal"
               iconName="arrow-left"
               variant="cantera"
-              width={1.90}
-              height={0.24}
+              width={2.40}
+              height={0.30}
               position={[0, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
@@ -888,15 +888,15 @@ export function WixarikaWelcomeDashboard({
       {currentView === 'videos' && (
         <group position={[0, 0, 0.005]}>
           {/* Barra Superior con botón Volver al Menú */}
-          <group position={[0, 1.15, 0]}>
+          <group position={[0, 1.45, 0]}>
             <WixarikaVRButton
               id="btn-videos-back-top"
               label="Volver al Menú"
               iconName="arrow-left"
               variant="cantera"
-              width={1.25}
-              height={0.20}
-              position={[-1.70, 0, 0]}
+              width={1.60}
+              height={0.26}
+              position={[-2.20, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -907,7 +907,7 @@ export function WixarikaWelcomeDashboard({
 
             <Text
               position={[0.20, 0.02, 0]}
-              fontSize={0.115}
+              fontSize={0.145}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
@@ -915,22 +915,22 @@ export function WixarikaWelcomeDashboard({
               SALA AUDIOVISUAL · BIBLIOTECA SOLÓN ARGÜELLO
             </Text>
 
-            <mesh position={[0, -0.14, 0]}>
-              <planeGeometry args={[panelWidth * 0.92, 0.005]} />
+            <mesh position={[0, -0.16, 0]}>
+              <planeGeometry args={[panelWidth * 0.92, 0.006]} />
               <meshBasicMaterial color="#d4af37" />
             </mesh>
           </group>
 
           {/* Selector de Documentales */}
-          <group position={[0, 0.82, 0]}>
+          <group position={[0, 1.05, 0]}>
             <WixarikaVRButton
               id="btn-dash-video-prev"
               label="Anterior"
               iconName="chevron-left"
               variant="cantera"
-              width={0.88}
-              height={0.18}
-              position={[-1.45, 0, 0]}
+              width={1.10}
+              height={0.24}
+              position={[-1.90, 0, 0]}
               onClick={handlePrevVideo}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -941,12 +941,12 @@ export function WixarikaWelcomeDashboard({
 
             <group position={[0, 0, 0]}>
               <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[1.70, 0.18]} />
+                <planeGeometry args={[2.40, 0.24]} />
                 <meshBasicMaterial color="#f4ebd8" />
               </mesh>
               <Text
-                position={[0, 0.035, 0.001]}
-                fontSize={0.082}
+                position={[0, 0.045, 0.001]}
+                fontSize={0.100}
                 color="#1c1917"
                 anchorX="center"
                 anchorY="middle"
@@ -954,12 +954,12 @@ export function WixarikaWelcomeDashboard({
                 {`Documental ${videoIndex + 1} de ${totalVideos}`}
               </Text>
               <Text
-                position={[0, -0.040, 0.001]}
-                fontSize={0.070}
+                position={[0, -0.050, 0.001]}
+                fontSize={0.082}
                 color="#78350f"
                 anchorX="center"
                 anchorY="middle"
-                maxWidth={1.60}
+                maxWidth={2.20}
               >
                 {`${currentVideo?.category || 'Acervo Cultural'} · ${currentVideo?.duration || '03:22'}`}
               </Text>
@@ -970,9 +970,9 @@ export function WixarikaWelcomeDashboard({
               label="Siguiente"
               iconName="chevron-right"
               variant="cantera"
-              width={0.88}
-              height={0.18}
-              position={[1.45, 0, 0]}
+              width={1.10}
+              height={0.24}
+              position={[1.90, 0, 0]}
               onClick={handleNextVideo}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -984,7 +984,7 @@ export function WixarikaWelcomeDashboard({
 
           {/* Reproductor de Video 3D Integrado */}
           {currentVideo && (
-            <group position={[0, -0.22, 0]}>
+            <group position={[0, -0.05, 0]}>
               <WixarikaVRVideoPlayer
                 video={currentVideo}
                 quality={videoQuality}
@@ -1000,14 +1000,14 @@ export function WixarikaWelcomeDashboard({
           )}
 
           {/* Botón Inferior para Volver al Menú Principal */}
-          <group position={[0, -1.18, 0]}>
+          <group position={[0, -1.45, 0]}>
             <WixarikaVRButton
               id="btn-videos-return-home"
               label="Volver al Menú Principal"
               iconName="arrow-left"
               variant="cantera"
-              width={1.90}
-              height={0.22}
+              width={2.40}
+              height={0.30}
               position={[0, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}

@@ -22,7 +22,7 @@ export function WixarikaVRButton({
   height = 0.22,
   depth: _depth = 0.012,
   active = false,
-  variant = 'solar',
+  variant = 'cantera',
   onClick,
   onRegister,
   onUnregister,
@@ -35,7 +35,8 @@ export function WixarikaVRButton({
   distance = 2.0
 }) {
   const meshRef = useRef();
-  const theme = WIXARIKA_VARIANTS[variant] || WIXARIKA_VARIANTS.solar;
+  const isCantera = variant === 'cantera';
+  const theme = WIXARIKA_VARIANTS[variant] || WIXARIKA_VARIANTS.cantera;
   const isHovered = hoveredId === id && !disabled;
 
   // Registrar botón interactivo en el raycaster de Gaze Fuse
@@ -74,9 +75,9 @@ export function WixarikaVRButton({
     SoundFX.playHover();
   };
 
-  // Dinámica de color según estado
+  // Dinámica de color según estado (libre de tonos negros)
   const currentBg = disabled
-    ? '#1e293b'
+    ? (isCantera ? '#e2d8c3' : '#1e293b')
     : active
     ? theme.bgActive
     : isHovered
@@ -90,8 +91,6 @@ export function WixarikaVRButton({
     : isHovered
     ? theme.borderGlow
     : theme.borderColor;
-
-  const isCantera = variant === 'cantera';
 
   const currentTextColor = disabled
     ? '#64748b'
@@ -125,10 +124,10 @@ export function WixarikaVRButton({
         />
       </mesh>
 
-      {/* 2. Borde interior oscuro de contraste */}
+      {/* 2. Bisel interior de contraste armónico (libre de negro) */}
       <mesh position={[0, 0, -0.001]}>
         <planeGeometry args={[width + 0.012, height + 0.012]} />
-        <meshBasicMaterial color="#040711" />
+        <meshBasicMaterial color={isCantera ? '#e7dec8' : theme.borderColor} />
       </mesh>
 
       {/* 3. Superficie táctil / colisionador principal del raycaster */}

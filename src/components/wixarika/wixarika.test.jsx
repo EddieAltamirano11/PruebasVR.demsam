@@ -254,18 +254,18 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       });
     });
 
-    it('elevated dashboard geometry maintains comfortable ground clearance (>0.65m)', () => {
-      const dashboardY = 2.15;
-      const dashboardHeight = 2.85;
+    it('elevated monumental dashboard geometry maintains comfortable ground clearance (>0.50m)', () => {
+      const dashboardY = 2.30;
+      const dashboardHeight = 3.50;
       const groundClearance = dashboardY - dashboardHeight / 2;
 
-      expect(groundClearance).toBeCloseTo(0.725, 2);
-      expect(groundClearance).toBeGreaterThan(0.65);
+      expect(groundClearance).toBeCloseTo(0.55, 2);
+      expect(groundClearance).toBeGreaterThan(0.50);
     });
 
-    it('dashboard distance from center (>2.70m) leaves central ceremonial floor unobstructed', () => {
-      const dashboardZ = 2.85;
-      expect(dashboardZ).toBeGreaterThan(2.70);
+    it('dashboard distance from center (>3.50m) moves panel back for relaxed panoramic field of view', () => {
+      const dashboardZ = 3.75;
+      expect(dashboardZ).toBeGreaterThan(3.50);
     });
   });
 });

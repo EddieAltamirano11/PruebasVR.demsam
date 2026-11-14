@@ -188,10 +188,10 @@ export function MuseumScene({
         <MuseumModel />
       </Suspense>
 
-      {/* Menú Principal Flotante ÚNICO del Museo (Elevado, agrandado y alejado del centro) */}
+      {/* Menú Principal Flotante ÚNICO del Museo (Elevado, monumental y retranqueado) */}
       {showButtons && (
         <WixarikaWelcomeDashboard
-          position={[0, 2.15, 2.85]}
+          position={[0, 2.30, 3.75]}
           rotation={[0, Math.PI, 0]}
           stations={CULTURAL_STATIONS}
           onToggleAudio={handleToggleAudio}
