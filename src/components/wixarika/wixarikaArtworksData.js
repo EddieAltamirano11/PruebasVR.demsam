@@ -17,6 +17,7 @@ export const WIXARIKA_ARTWORKS = [
     canvasNodeName: 'lienzo_tatewari_nierika',
     stationPosition: [4.828, 2.95, -5.476],
     category: 'Deidad Sagrada',
+    alias: 'Nuestro Abuelo Fuego',
     title: 'TATEWARI',
     nativeName: '«Tatewari» · Nuestro Abuelo Fuego',
     subtitle: 'TESTIGO ANCESTRAL Y GUÍA DEL MARA\'AKAME',
@@ -36,6 +37,7 @@ export const WIXARIKA_ARTWORKS = [
     canvasNodeName: 'lienzo_tayau_nierika',
     stationPosition: [3.108, 2.95, -6.605],
     category: 'Deidad Sagrada',
+    alias: 'Nuestro Padre Sol',
     title: 'TAYAU',
     nativeName: '«Tayau» · Nuestro Padre Sol',
     subtitle: 'FUERZA CREADORA CELESTIAL Y LUZ DEL ORIENTE',
@@ -55,6 +57,7 @@ export const WIXARIKA_ARTWORKS = [
     canvasNodeName: 'lienzo_kauyumari_nierika',
     stationPosition: [1.142, 2.95, -7.210],
     category: 'Deidad Sagrada',
+    alias: 'Hermano Mayor Venado Azul',
     title: 'KAUYUMARI',
     nativeName: '«Tamats Kauyumari» · Hermano Mayor Venado Azul',
     subtitle: 'MENSAJERO DIVINO Y ESPÍRITU DEL HIKURI',
@@ -74,6 +77,7 @@ export const WIXARIKA_ARTWORKS = [
     canvasNodeName: 'lienzo_takutsi_nierika',
     stationPosition: [-1.142, 2.95, -7.210],
     category: 'Deidad Sagrada',
+    alias: 'Nuestra Abuela Crecimiento',
     title: 'TAKUTSI NAKAWE',
     nativeName: '«Takutsi Nakawe» · Nuestra Abuela Crecimiento',
     subtitle: 'MADRE PRIMORDIAL DE LA TIERRA Y LA FERTILIDAD',
@@ -93,6 +97,7 @@ export const WIXARIKA_ARTWORKS = [
     canvasNodeName: 'lienzo_niwetsika_nierika',
     stationPosition: [-3.108, 2.95, -6.605],
     category: 'Deidad Sagrada',
+    alias: 'Nuestra Madre del Maíz',
     title: 'TATEI NIWETSIKA',
     nativeName: '«Tatei Niwetsika» · Nuestra Madre del Maíz',
     subtitle: 'SUSTENTO SAGRADO Y MADRE DE LAS MAZORCAS',
@@ -112,6 +117,7 @@ export const WIXARIKA_ARTWORKS = [
     canvasNodeName: 'lienzo_haramara_nierika',
     stationPosition: [-4.828, 2.95, -5.476],
     category: 'Deidad Sagrada',
+    alias: 'Nuestra Madre el Océano',
     title: 'TATEI HARAMARA',
     nativeName: '«Tatei Haramara» · Nuestra Madre el Océano',
     subtitle: 'ORIGEN DE TODAS LAS LLUVIAS Y PUERTA DEL PONIENTE',
@@ -135,9 +141,10 @@ export const WIXARIKA_ARTWORKS = [
     canvasNodeName: 'lienzo_fiesta_namawita_neixa',
     stationPosition: [-7.062, 2.95, -1.850],
     category: 'Fiesta Ceremonial',
+    alias: 'Consagración de la Niñez',
     title: 'FIESTA DEL TAMBOR',
     nativeName: '«Namawita Neixa» / «Yuimakwaxa»',
-    subtitle: 'CONSAGRACIÓN DE LA NIÑEZ Y EL TEPU SAGRADO',
+    subtitle: 'NAMAWITA NEIXA · FIESTA DEL TEPU SAGRADO',
     image: '/texturas/cuadro_fiesta_tambor.jpg',
     matcher: (name) => name.includes('namawita') || name.includes('fiesta_1'),
     keywords: [
@@ -154,6 +161,7 @@ export const WIXARIKA_ARTWORKS = [
     canvasNodeName: 'lienzo_fiesta_tatei_neixa',
     stationPosition: [-7.300, 2.95, 0.000],
     category: 'Fiesta Ceremonial',
+    alias: 'Danza de los Primeros Frutos',
     title: 'TATEI NEIXA',
     nativeName: '«Tatei Neixa» · Danza de los Primeros Frutos',
     subtitle: 'GRATITUD POR LA PRIMERA COSECHA DEL COAMIL',
@@ -173,6 +181,7 @@ export const WIXARIKA_ARTWORKS = [
     canvasNodeName: 'lienzo_fiesta_hikuri_neixa',
     stationPosition: [-7.062, 2.95, 1.850],
     category: 'Fiesta Ceremonial',
+    alias: 'Danza Sagrada del Peyote',
     title: 'HIKURI NEIXA',
     nativeName: '«Hikuri Neixa» · Danza Sagrada del Peyote',
     subtitle: 'RETORNO DE WIRIKUTA Y RENOVACIÓN CÓSMICA',
@@ -212,8 +221,8 @@ export function getArtworkById(id) {
 
 /**
  * Calcula la posición y orientación del modal monumental frente al cuadro seleccionado.
- * Lo ubica a 3.65m del centro del museo (acercado al usuario en el centro, visual óptima en VR)
- * a una altura de Y = 2.25m, mirando hacia el centro del museo.
+ * Lo ubica a 2.85m del centro del museo (acercado aún más al usuario en el centro, máxima inmersión en VR)
+ * a una altura ergonómica de Y = 2.25m, mirando hacia el centro del museo.
  */
 export function calculateArtworkModalTransform(artwork) {
   if (!artwork) {
@@ -235,11 +244,11 @@ export function calculateArtworkModalTransform(artwork) {
     dir.normalize();
   }
 
-  // Posicionar a 3.65m del centro del museo (acercado al centro para mayor inmersión y legibilidad)
+  // Posicionar a 2.85m del centro del museo (acercado al usuario para máxima legibilidad y escala en visor VR)
   // a una altura ergonómica en Y = 2.25m
-  const targetX = dir.x * 3.65;
+  const targetX = dir.x * 2.85;
   const targetY = 2.25;
-  const targetZ = dir.z * 3.65;
+  const targetZ = dir.z * 2.85;
 
   // Orientar hacia el centro del museo: la normal frontal (+Z) debe mirar hacia [0, 0, 0]
   // angleY = Math.atan2(-dir.x, -dir.z)

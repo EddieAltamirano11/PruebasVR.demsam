@@ -179,10 +179,14 @@ function BadgeCloseButton({
  * Dimensiones exactas al menú principal: 6.40m × 3.50m.
  *
  * Estricta distribución en dos columnas:
- * - 1/3 Izquierda (~2.13m): Fotografía de la obra seleccionada a gran escala al derecho con marco ceremonial.
- * - 2/3 Derecha (~4.27m): Título, subtítulo ceremonial, palabras clave alineadas a la izquierda y
- *   recuadro ampliado con tipografía maximizada para VR.
- * - Fondo sólido e impermeable de cantera clara con marco de nogal y bisel de oro (side: DoubleSide).
+ * - 1/3 Izquierda (~2.13m): Fotografía de la obra a gran escala con marco ceremonial
+ *   y placa inferior con el alias sagrado de la deidad o fiesta.
+ * - 2/3 Derecha (~4.27m):
+ *   1. Encabezado con título monumental (nombre una sola vez) y subtítulo ceremonial.
+ *   2. Recuadro de descripción amplio (arriba de las viñetas) con tipografía maximizada 1.6x para VR.
+ *   3. Viñetas de atributos alineadas a la izquierda (debajo del recuadro) en letra grande.
+ *   4. Cero texto de bibliografía/fuente para aprovechar todo el espacio vertical.
+ * - Fondo sólido de cantera clara con marco de nogal y bisel de oro (side: DoubleSide).
  * - Paleta estricta de dos colores tipográficos: #1c1917 (Stone-900) y #78350f (Ámbar sagrado).
  */
 export function WixarikaArtworkModal({
@@ -277,18 +281,18 @@ export function WixarikaArtworkModal({
       {/* ===================================================================== */}
       <group position={[leftColX, 0, 0.005]}>
         {/* Marco de nogal para la foto */}
-        <mesh position={[0, 0.12, 0.001]}>
+        <mesh position={[0, 0.14, 0.001]}>
           <planeGeometry args={[1.96, 2.68]} />
           <meshBasicMaterial color="#5c381e" side={THREE.DoubleSide} />
         </mesh>
         {/* Marco dorado para la foto */}
-        <mesh position={[0, 0.12, 0.002]}>
+        <mesh position={[0, 0.14, 0.002]}>
           <planeGeometry args={[1.92, 2.64]} />
           <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
         </mesh>
 
         {/* Fotografía de la obra con textura oficial del cuadro (orientada al derecho) */}
-        <group position={[0, 0.12, 0]}>
+        <group position={[0, 0.14, 0]}>
           <ArtworkPhoto
             texture={artwork.texture}
             url={artwork.image}
@@ -297,25 +301,27 @@ export function WixarikaArtworkModal({
           />
         </group>
 
-        {/* Placa identificadora de la categoría */}
+        {/* Placa inferior con el alias sagrado de la deidad o fiesta */}
         <group position={[0, -1.35, 0]}>
           <mesh position={[0, 0, 0.001]}>
-            <planeGeometry args={[1.88, 0.24]} />
+            <planeGeometry args={[1.88, 0.28]} />
             <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
           </mesh>
           <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[1.92, 0.28]} />
+            <planeGeometry args={[1.92, 0.32]} />
             <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
           </mesh>
           <Text
             position={[0, 0, 0.003]}
-            fontSize={0.100}
+            fontSize={0.115}
             color="#78350f"
             anchorX="center"
             anchorY="middle"
-            letterSpacing={0.04}
+            letterSpacing={0.03}
+            maxWidth={1.82}
+            textAlign="center"
           >
-            {artwork.category?.toUpperCase() || 'PATRIMONIO CULTURAL'}
+            {(artwork.alias || artwork.category || 'PATRIMONIO CULTURAL').toUpperCase()}
           </Text>
         </group>
       </group>
@@ -327,8 +333,8 @@ export function WixarikaArtworkModal({
         {/* Botón Badge de Cierre con cruz 'x' en la esquina superior derecha */}
         <BadgeCloseButton
           id="btn-close-artwork-modal"
-          size={0.34}
-          position={[rightColWidth / 2 - 0.20, 1.42, 0]}
+          size={0.36}
+          position={[rightColWidth / 2 - 0.20, 1.45, 0]}
           onClick={onClose}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
@@ -336,11 +342,11 @@ export function WixarikaArtworkModal({
           fuseProgress={fuseProgress}
         />
 
-        {/* Encabezado: Título Principal Monumental de la Obra */}
-        <group position={[0, 1.18, 0]}>
+        {/* 1. Encabezado Superior: Título Monumental y Subtítulo Ceremonial (sin duplicar nombre) */}
+        <group position={[0, 1.30, 0]}>
           <Text
             position={[0, 0.08, 0]}
-            fontSize={0.280}
+            fontSize={0.360}
             color="#1c1917"
             anchorX="center"
             anchorY="middle"
@@ -351,20 +357,8 @@ export function WixarikaArtworkModal({
           </Text>
 
           <Text
-            position={[0, -0.13, 0]}
-            fontSize={0.140}
-            color="#78350f"
-            anchorX="center"
-            anchorY="middle"
-            maxWidth={rightColWidth * 0.90}
-            textAlign="center"
-          >
-            {artwork.nativeName}
-          </Text>
-
-          <Text
-            position={[0, -0.26, 0]}
-            fontSize={0.115}
+            position={[0, -0.22, 0]}
+            fontSize={0.170}
             color="#78350f"
             anchorX="center"
             anchorY="middle"
@@ -374,20 +368,45 @@ export function WixarikaArtworkModal({
             {artwork.subtitle}
           </Text>
 
-          {/* Línea divisoria dorada */}
-          <mesh position={[0, -0.34, 0]}>
+          {/* Línea divisoria dorada ceremonial */}
+          <mesh position={[0, -0.32, 0]}>
             <planeGeometry args={[rightColWidth * 0.96, 0.008]} />
             <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
           </mesh>
         </group>
 
-        {/* Viñetas alineadas estrictamente a la izquierda en tipografía ampliada */}
-        <group position={[0, 0.38, 0]}>
+        {/* 2. Recuadro de Descripción Ampliado (Arriba de las viñetas, inmediatamente bajo el encabezado) */}
+        <group position={[0, 0.26, 0]}>
+          <mesh position={[0, 0, -0.001]}>
+            <planeGeometry args={[rightColWidth * 0.98, 1.28]} />
+            <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
+          </mesh>
+          <mesh position={[0, 0, -0.002]}>
+            <planeGeometry args={[rightColWidth * 0.98 + 0.03, 1.31]} />
+            <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
+          </mesh>
+
+          <Text
+            position={[-rightColWidth * 0.46, 0, 0.002]}
+            fontSize={0.215}
+            color="#1c1917"
+            anchorX="left"
+            anchorY="middle"
+            maxWidth={rightColWidth * 0.92}
+            textAlign="left"
+            lineHeight={1.46}
+          >
+            {artwork.description}
+          </Text>
+        </group>
+
+        {/* 3. Viñetas de Atributos Sagrados (Debajo del recuadro, alineadas a la izquierda y con tipografía grande) */}
+        <group position={[0, -1.02, 0]}>
           {(artwork.keywords || []).map((keyword, idx) => (
             <Text
               key={idx}
-              position={[-rightColWidth * 0.46, 0.16 - idx * 0.22, 0]}
-              fontSize={0.155}
+              position={[-rightColWidth * 0.46, 0.26 - idx * 0.26, 0]}
+              fontSize={0.200}
               color="#1c1917"
               anchorX="left"
               anchorY="middle"
@@ -398,31 +417,6 @@ export function WixarikaArtworkModal({
               {keyword}
             </Text>
           ))}
-        </group>
-
-        {/* Recuadro de Texto Ampliado con Tipografía Maximizada para VR */}
-        <group position={[0, -0.85, 0]}>
-          <mesh position={[0, 0, -0.001]}>
-            <planeGeometry args={[rightColWidth * 0.98, 1.22]} />
-            <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
-          </mesh>
-          <mesh position={[0, 0, -0.002]}>
-            <planeGeometry args={[rightColWidth * 0.98 + 0.03, 1.25]} />
-            <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
-          </mesh>
-
-          <Text
-            position={[-rightColWidth * 0.46, 0, 0.002]}
-            fontSize={0.150}
-            color="#1c1917"
-            anchorX="left"
-            anchorY="middle"
-            maxWidth={rightColWidth * 0.92}
-            textAlign="left"
-            lineHeight={1.46}
-          >
-            {artwork.description}
-          </Text>
         </group>
       </group>
     </group>

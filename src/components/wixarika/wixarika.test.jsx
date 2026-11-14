@@ -292,10 +292,11 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       });
     });
 
-    it('each artwork must contain title, subtitle, image, keywords and anthropological description', () => {
+    it('each artwork must contain title, alias, subtitle, image, keywords and anthropological description', () => {
       WIXARIKA_ARTWORKS.forEach((art) => {
         expect(art.id).toBeTruthy();
         expect(art.title).toBeTruthy();
+        expect(art.alias).toBeTruthy();
         expect(art.subtitle).toBeTruthy();
         expect(art.image).toBeTruthy();
         expect(art.keywords.length).toBeGreaterThanOrEqual(3);
@@ -315,13 +316,13 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(findArtworkByNodeName('unknown_mesh')).toBeNull();
     });
 
-    it('calculateArtworkModalTransform accurately positions modal at 3.65m from center facing inward', () => {
+    it('calculateArtworkModalTransform accurately positions modal at 2.85m from center facing inward', () => {
       const tatewari = WIXARIKA_ARTWORKS[0];
       const transform = calculateArtworkModalTransform(tatewari);
 
-      // Distancia euclídea horizontal desde el centro [0, 0] debe ser 3.65m
+      // Distancia euclídea horizontal desde el centro [0, 0] debe ser 2.85m
       const dist = Math.hypot(transform.position[0], transform.position[2]);
-      expect(dist).toBeCloseTo(3.65, 2);
+      expect(dist).toBeCloseTo(2.85, 2);
 
       // Altura ergonómica Y = 2.25m
       expect(transform.position[1]).toBeCloseTo(2.25, 2);
