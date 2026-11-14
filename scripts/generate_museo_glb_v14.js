@@ -77,6 +77,30 @@ console.log('✓ Arquitectura de muros y techo: Nichos a 2.90m');
 const DEIDADES_Y = 2.95;
 const DEIDADES_SCALE = 1.30;
 const DEIDADES_PLACA_Y = 1.40;
+const PLACA_UNIFICADA_SCALE = 1.82; // 2.18m ancho total, permite que los letreros y textos 3D alcancen la escala de Kauyumari (0.155m alto)
+const R_MURO = 7.30;
+const R_TABLAS_FIESTAS = 5.993;
+const DEIDADES_DTHETA = 19.8 * Math.PI / 180; // 19.80° de separación uniforme parejo entre cada estación (cuerda = 2.510m, gap entre placas = 32.6cm)
+
+// 2.1 Reposicionamiento parejo y uniforme de las 6 estaciones de Deidades
+const deidadesEstacionesConfig = [
+  { idx: 56, angle: 2.5 * DEIDADES_DTHETA },  // 1. Tatewari (+49.50°)
+  { idx: 93, angle: 1.5 * DEIDADES_DTHETA },  // 2. Tayau (+29.70°)
+  { idx: 139, angle: 0.5 * DEIDADES_DTHETA }, // 3. Kauyumari (+9.90°)
+  { idx: 178, angle: -0.5 * DEIDADES_DTHETA },// 4. Takutsi Nakawe (-9.90°)
+  { idx: 214, angle: -1.5 * DEIDADES_DTHETA },// 5. Tatei Niwetsika (-29.70°)
+  { idx: 246, angle: -2.5 * DEIDADES_DTHETA } // 6. Tatei Haramara (-49.50°)
+];
+
+for (const est of deidadesEstacionesConfig) {
+  const x = R_MURO * Math.sin(est.angle);
+  const z = -R_MURO * Math.cos(est.angle);
+  const qy = -Math.sin(est.angle / 2);
+  const qw = Math.cos(est.angle / 2);
+  nodes[est.idx].translation = [x, 0.0, z];
+  nodes[est.idx].rotation = [0.0, qy, 0.0, qw];
+}
+console.log('✓ Estaciones de Deidades: Reposicionadas con separación uniforme parejo de 19.8° (cuerda 2.51m).');
 
 const deidadesCuadros = [46, 83, 129, 168, 204, 237];
 for (const cIdx of deidadesCuadros) {
@@ -87,24 +111,25 @@ for (const cIdx of deidadesCuadros) {
 const deidadesPlacas = [55, 92, 138, 177, 213, 245];
 for (const pIdx of deidadesPlacas) {
   nodes[pIdx].translation = [0.0, DEIDADES_PLACA_Y, 0.0];
-  nodes[pIdx].scale = [1.35, 1.35, 1.35];
+  nodes[pIdx].scale = [PLACA_UNIFICADA_SCALE, PLACA_UNIFICADA_SCALE, PLACA_UNIFICADA_SCALE];
 }
 
 // Configuración de texto 3D de cada deidad:
 // - Ocultar línea azul divisoria, adorno dorado y texto negro descripción
-// - Centrar texto 3D del nombre a Y=0.0 y escalarlo para maximizar espacio
+// - Centrar texto 3D del nombre a Y=0.0 y escalarlo para unificar la altura de letra a 0.155m (tamaño Kauyumari)
 const deidadesTextosConfig = [
   // (placaNode, textoNode, scale, [ocultarHijos])
-  { placa: 55, texto: 51, scale: [1.60, 1.60, 1.60], ocultar: [52, 53, 54] },    // Tatewari
-  { placa: 92, texto: 88, scale: [1.80, 1.80, 1.80], ocultar: [89, 90, 91] },    // Tayau
-  { placa: 138, texto: 134, scale: [1.55, 1.55, 1.55], ocultar: [135, 136, 137] }, // Kauyumari
-  { placa: 177, texto: 173, scale: [1.08, 1.08, 1.08], ocultar: [174, 175, 176] }, // Takutsi Nakawe
-  { placa: 213, texto: 209, scale: [1.12, 1.12, 1.12], ocultar: [210, 211, 212] }, // Tatei Niwetsika
-  { placa: 245, texto: 241, scale: [1.08, 1.08, 1.08], ocultar: [242, 243, 244] }  // Tatei Haramara
+  // Con escala de placa 1.82x, scale local produce exactamente 0.155m de altura de letra en el mundo:
+  { placa: 55, texto: 51, scale: [1.106, 1.106, 1.106], ocultar: [52, 53, 54] },    // Tatewari (w=1.12m, h=0.155m)
+  { placa: 92, texto: 88, scale: [1.075, 1.075, 1.075], ocultar: [89, 90, 91] },    // Tayau (w=0.71m, h=0.155m)
+  { placa: 138, texto: 134, scale: [1.075, 1.075, 1.075], ocultar: [135, 136, 137] }, // Kauyumari (w=1.23m, h=0.155m)
+  { placa: 177, texto: 173, scale: [1.048, 1.048, 1.048], ocultar: [174, 175, 176] }, // Takutsi Nakawe (w=1.84m, h=0.155m)
+  { placa: 213, texto: 209, scale: [1.048, 1.048, 1.048], ocultar: [210, 211, 212] }, // Tatei Niwetsika (w=1.75m, h=0.155m)
+  { placa: 245, texto: 241, scale: [1.106, 1.106, 1.106], ocultar: [242, 243, 244] }  // Tatei Haramara (w=1.92m, h=0.155m)
 ];
 
 for (const cfg of deidadesTextosConfig) {
-  // Centrar nombre 3D a Y=0.0 (en lugar de Y=0.052)
+  // Centrar nombre 3D a Y=0.0 concéntricamente en la placa
   nodes[cfg.texto].translation = [0.0, 0.0, 0.022];
   nodes[cfg.texto].scale = cfg.scale;
 
@@ -113,18 +138,41 @@ for (const cfg of deidadesTextosConfig) {
     nodes[hIdx].scale = [0.0, 0.0, 0.0];
   }
 }
-console.log('✓ Placas de Deidades: Línea azul y descripción eliminadas. Nombres 3D centrados y maximizados.');
+console.log('✓ Placas de Deidades: Altura de letra unificada a 0.155m (tamaño Kauyumari) y placas a 1.82x.');
 
 // --------------------------------------------------------------------------
 // 3. Cuadros y Placas de Fiestas y Ceremonias
 // --------------------------------------------------------------------------
+const FIESTAS_DTHETA = 19.8 * Math.PI / 180; // 19.80° parejo (cuerda = 2.510m, gap = 32.6cm)
+const fiestasEstacionesConfig = [
+  { stIdx: 288, tabIdx: 375, angle: -FIESTAS_DTHETA }, // 1. Namawita Neixa (-19.80°)
+  { stIdx: 314, tabIdx: 476, angle: 0.0 },              // 2. Tatei Neixa (0.00°)
+  { stIdx: 341, tabIdx: 425, angle: FIESTAS_DTHETA }   // 3. Hikuri Neixa (+19.80°)
+];
+
+for (const fEst of fiestasEstacionesConfig) {
+  const x = -R_MURO * Math.cos(fEst.angle);
+  const z = R_MURO * Math.sin(fEst.angle);
+  const rotY = Math.PI / 2 + fEst.angle;
+  const qy = Math.sin(rotY / 2);
+  const qw = Math.cos(rotY / 2);
+  nodes[fEst.stIdx].translation = [x, 0.0, z];
+  nodes[fEst.stIdx].rotation = [0.0, qy, 0.0, qw];
+
+  // Mesa ceremonial ubicada frente a cada estación a lo largo de su radio
+  const tabX = -R_TABLAS_FIESTAS * Math.cos(fEst.angle);
+  const tabZ = R_TABLAS_FIESTAS * Math.sin(fEst.angle);
+  nodes[fEst.tabIdx].translation = [tabX, 0.0, tabZ];
+  nodes[fEst.tabIdx].rotation = [0.0, qy, 0.0, qw];
+}
+console.log('✓ Estaciones y mesas de Fiestas: Reposicionadas con separación uniforme parejo de 19.8° (cuerda 2.51m).');
+
 const fiestasCuadros = [282, 308, 334];
 for (const fcIdx of fiestasCuadros) {
   nodes[fcIdx].translation = [0.0, DEIDADES_Y, 0.0];
   nodes[fcIdx].scale = [1.16 * 1.12, 1.16 * 1.12, 1.16 * 1.12];
 }
 
-const FIESTAS_PLACA_SCALE = 1.20;
 const fiestasPlacasConfig = [
   { padre: 287, madera: 283, cantera: 284, marco: 286, ocultar: [285] },
   { padre: 313, madera: 309, cantera: 310, marco: 312, ocultar: [311] },
@@ -133,9 +181,9 @@ const fiestasPlacasConfig = [
 
 for (const cfg of fiestasPlacasConfig) {
   // Posicionar y escalar la placa completa individualmente
-  // A escala 1.20x la placa mide 1.44m de ancho, dejando 42.5cm de separación limpia entre estaciones adyacentes
+  // A escala 1.82x la placa mide 2.18m de ancho, dejando 32.6cm de separación limpia entre estaciones adyacentes
   nodes[cfg.padre].translation = [0.0, DEIDADES_PLACA_Y, 0.0];
-  nodes[cfg.padre].scale = [FIESTAS_PLACA_SCALE, FIESTAS_PLACA_SCALE, FIESTAS_PLACA_SCALE];
+  nodes[cfg.padre].scale = [PLACA_UNIFICADA_SCALE, PLACA_UNIFICADA_SCALE, PLACA_UNIFICADA_SCALE];
 
   // Centrar concéntricamente los elementos de la placa en Y=0.0 y escala unitaria (idéntico al estilo de Deidades)
   nodes[cfg.madera].translation = [0.0, 0.0, 0.0];
@@ -152,7 +200,7 @@ for (const cfg of fiestasPlacasConfig) {
     nodes[hIdx].scale = [0.0, 0.0, 0.0];
   }
 }
-console.log('✓ Placas de Fiestas: Recuadros individuales separados a escala 1.20x y elementos concéntricos.');
+console.log('✓ Placas de Fiestas: Recuadros individuales a escala 1.82x y elementos concéntricos.');
 
 // --------------------------------------------------------------------------
 // 4. Creación de Texto 3D Dorado para Fiestas (Extruido en Geometría GLB)
@@ -162,10 +210,11 @@ const fontData = JSON.parse(fs.readFileSync(fontPath, 'utf8'));
 const fontLoader = new FontLoader();
 const font = fontLoader.parse(fontData);
 
+// Con size = 0.085 y escala de placa 1.82x, la altura de letra en el mundo es 0.155m (idéntica a Kauyumari y Deidades)
 const fiestasTextosData = [
-  { parentNode: 287, name: 'NAMAWITA NEIXA', size: 0.078, suffix: 'fiesta_1_namawita_neixa' },
-  { parentNode: 313, name: 'TATEI NEIXA', size: 0.078, suffix: 'fiesta_2_tatei_neixa' },
-  { parentNode: 340, name: 'HIKURI NEIXA', size: 0.078, suffix: 'fiesta_3_hikuri_neixa' }
+  { parentNode: 287, name: 'NAMAWITA NEIXA', size: 0.085, suffix: 'fiesta_1_namawita_neixa' },
+  { parentNode: 313, name: 'TATEI NEIXA', size: 0.085, suffix: 'fiesta_2_tatei_neixa' },
+  { parentNode: 340, name: 'HIKURI NEIXA', size: 0.085, suffix: 'fiesta_3_hikuri_neixa' }
 ];
 
 gltf.bufferViews = gltf.bufferViews || [];

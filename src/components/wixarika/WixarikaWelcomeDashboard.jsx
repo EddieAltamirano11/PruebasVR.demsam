@@ -318,7 +318,7 @@ export function WixarikaWelcomeDashboard({
       {currentView === 'home' && (
         <group position={[0, 0, 0.005]}>
           {/* Cabecera Monumental del Dashboard */}
-          <group position={[0, 1.25, 0]}>
+          <group position={[0, 1.22, 0]}>
             <LucideVRIcon
               name="compass"
               size={0.26}
@@ -340,7 +340,7 @@ export function WixarikaWelcomeDashboard({
             </Text>
 
             <Text
-              position={[0, -0.16, 0]}
+              position={[0, -0.24, 0]}
               fontSize={0.125}
               color="#78350f"
               anchorX="center"
