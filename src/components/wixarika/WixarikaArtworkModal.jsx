@@ -12,6 +12,7 @@ const UNIFIED_ICON_COLOR = '#b45309';
  * Subcomponente para renderizar la fotografía de la obra.
  * Prioriza la textura directa ya cargada en la escena 3D (artwork.texture);
  * si no está disponible, la carga desde la URL pública oficial.
+ * Escala Y=-1 para orientar la imagen al derecho (en glTF las texturas tienen flipY=false).
  */
 function ArtworkPhoto({ texture: directTexture, url, width = 1.88, height = 2.60 }) {
   const [loadedTexture, setLoadedTexture] = useState(null);
@@ -32,6 +33,7 @@ function ArtworkPhoto({ texture: directTexture, url, width = 1.88, height = 2.60
       cleanUrl,
       (tex) => {
         if (!isMounted) return;
+        tex.flipY = false;
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.minFilter = THREE.LinearMipmapLinearFilter;
         tex.magFilter = THREE.LinearFilter;
@@ -51,7 +53,7 @@ function ArtworkPhoto({ texture: directTexture, url, width = 1.88, height = 2.60
   const activeTex = directTexture || loadedTexture;
 
   return (
-    <mesh position={[0, 0, 0.004]}>
+    <mesh position={[0, 0, 0.004]} scale={[1, -1, 1]}>
       <planeGeometry args={[width, height]} />
       {activeTex ? (
         <meshBasicMaterial
@@ -177,8 +179,9 @@ function BadgeCloseButton({
  * Dimensiones exactas al menú principal: 6.40m × 3.50m.
  *
  * Estricta distribución en dos columnas:
- * - 1/3 Izquierda (~2.13m): Fotografía de la obra seleccionada a gran escala con marco ceremonial.
- * - 2/3 Derecha (~4.27m): Título, subtítulo ceremonial, palabras clave y síntesis en tipografía maximizada.
+ * - 1/3 Izquierda (~2.13m): Fotografía de la obra seleccionada a gran escala al derecho con marco ceremonial.
+ * - 2/3 Derecha (~4.27m): Título, subtítulo ceremonial, palabras clave alineadas a la izquierda y
+ *   recuadro ampliado con tipografía maximizada para VR.
  * - Fondo sólido e impermeable de cantera clara con marco de nogal y bisel de oro (side: DoubleSide).
  * - Paleta estricta de dos colores tipográficos: #1c1917 (Stone-900) y #78350f (Ámbar sagrado).
  */
@@ -194,6 +197,23 @@ export function WixarikaArtworkModal({
 }) {
   const panelWidth = 6.40;
   const panelHeight = 3.50;
+  const bgMeshRef = useRef();
+
+  // Registro del fondo del modal como bloqueador visual y de raycast
+  useEffect(() => {
+    const mesh = bgMeshRef.current;
+    if (mesh) {
+      mesh.userData = {
+        id: 'artwork-modal-backdrop-blocker',
+        onClick: () => {},
+        onSelect: () => {}
+      };
+      if (registerMesh) registerMesh(mesh);
+    }
+    return () => {
+      if (mesh && unregisterMesh) unregisterMesh(mesh);
+    };
+  }, [registerMesh, unregisterMesh]);
 
   if (!artwork) return null;
 
@@ -216,8 +236,8 @@ export function WixarikaArtworkModal({
         <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
       </mesh>
 
-      {/* 3. Superficie principal sólida e impermeable de Cantera Clara */}
-      <mesh position={[0, 0, 0]}>
+      {/* 3. Superficie principal sólida e impermeable de Cantera Clara (actúa como bloqueador de raycast) */}
+      <mesh ref={bgMeshRef} position={[0, 0, 0]}>
         <planeGeometry args={[panelWidth, panelHeight]} />
         <meshBasicMaterial color="#faf6eb" side={THREE.DoubleSide} />
       </mesh>
@@ -267,7 +287,7 @@ export function WixarikaArtworkModal({
           <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
         </mesh>
 
-        {/* Fotografía de la obra con textura oficial del cuadro */}
+        {/* Fotografía de la obra con textura oficial del cuadro (orientada al derecho) */}
         <group position={[0, 0.12, 0]}>
           <ArtworkPhoto
             texture={artwork.texture}
@@ -280,16 +300,16 @@ export function WixarikaArtworkModal({
         {/* Placa identificadora de la categoría */}
         <group position={[0, -1.35, 0]}>
           <mesh position={[0, 0, 0.001]}>
-            <planeGeometry args={[1.88, 0.22]} />
+            <planeGeometry args={[1.88, 0.24]} />
             <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
           </mesh>
           <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[1.92, 0.26]} />
+            <planeGeometry args={[1.92, 0.28]} />
             <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
           </mesh>
           <Text
             position={[0, 0, 0.003]}
-            fontSize={0.088}
+            fontSize={0.100}
             color="#78350f"
             anchorX="center"
             anchorY="middle"
@@ -308,7 +328,7 @@ export function WixarikaArtworkModal({
         <BadgeCloseButton
           id="btn-close-artwork-modal"
           size={0.34}
-          position={[rightColWidth / 2 - 0.20, 1.40, 0]}
+          position={[rightColWidth / 2 - 0.20, 1.42, 0]}
           onClick={onClose}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
@@ -316,11 +336,11 @@ export function WixarikaArtworkModal({
           fuseProgress={fuseProgress}
         />
 
-        {/* Título Principal Monumental de la Obra */}
-        <group position={[0, 1.15, 0]}>
+        {/* Encabezado: Título Principal Monumental de la Obra */}
+        <group position={[0, 1.18, 0]}>
           <Text
             position={[0, 0.08, 0]}
-            fontSize={0.240}
+            fontSize={0.280}
             color="#1c1917"
             anchorX="center"
             anchorY="middle"
@@ -331,8 +351,8 @@ export function WixarikaArtworkModal({
           </Text>
 
           <Text
-            position={[0, -0.11, 0]}
-            fontSize={0.125}
+            position={[0, -0.13, 0]}
+            fontSize={0.140}
             color="#78350f"
             anchorX="center"
             anchorY="middle"
@@ -343,8 +363,8 @@ export function WixarikaArtworkModal({
           </Text>
 
           <Text
-            position={[0, -0.22, 0]}
-            fontSize={0.098}
+            position={[0, -0.26, 0]}
+            fontSize={0.115}
             color="#78350f"
             anchorX="center"
             anchorY="middle"
@@ -355,24 +375,24 @@ export function WixarikaArtworkModal({
           </Text>
 
           {/* Línea divisoria dorada */}
-          <mesh position={[0, -0.30, 0]}>
+          <mesh position={[0, -0.34, 0]}>
             <planeGeometry args={[rightColWidth * 0.96, 0.008]} />
             <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
           </mesh>
         </group>
 
-        {/* Palabras Clave y Atributos Sagrados en Tipografía Grande */}
-        <group position={[0, 0.28, 0]}>
+        {/* Viñetas alineadas estrictamente a la izquierda en tipografía ampliada */}
+        <group position={[0, 0.38, 0]}>
           {(artwork.keywords || []).map((keyword, idx) => (
             <Text
               key={idx}
-              position={[0, 0.12 - idx * 0.22, 0]}
-              fontSize={0.130}
+              position={[-rightColWidth * 0.46, 0.16 - idx * 0.22, 0]}
+              fontSize={0.155}
               color="#1c1917"
-              anchorX="center"
+              anchorX="left"
               anchorY="middle"
-              maxWidth={rightColWidth * 0.94}
-              textAlign="center"
+              maxWidth={rightColWidth * 0.92}
+              textAlign="left"
               lineHeight={1.35}
             >
               {keyword}
@@ -380,43 +400,28 @@ export function WixarikaArtworkModal({
           ))}
         </group>
 
-        {/* Síntesis Cultural en Cédula de Cantera */}
-        <group position={[0, -0.78, 0]}>
+        {/* Recuadro de Texto Ampliado con Tipografía Maximizada para VR */}
+        <group position={[0, -0.85, 0]}>
           <mesh position={[0, 0, -0.001]}>
-            <planeGeometry args={[rightColWidth * 0.96, 0.85]} />
+            <planeGeometry args={[rightColWidth * 0.98, 1.22]} />
             <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
           </mesh>
           <mesh position={[0, 0, -0.002]}>
-            <planeGeometry args={[rightColWidth * 0.96 + 0.03, 0.88]} />
+            <planeGeometry args={[rightColWidth * 0.98 + 0.03, 1.25]} />
             <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
           </mesh>
 
           <Text
-            position={[0, 0.02, 0.002]}
-            fontSize={0.112}
+            position={[-rightColWidth * 0.46, 0, 0.002]}
+            fontSize={0.150}
             color="#1c1917"
-            anchorX="center"
+            anchorX="left"
             anchorY="middle"
-            maxWidth={rightColWidth * 0.90}
-            textAlign="center"
-            lineHeight={1.42}
+            maxWidth={rightColWidth * 0.92}
+            textAlign="left"
+            lineHeight={1.46}
           >
             {artwork.description}
-          </Text>
-        </group>
-
-        {/* Cédula de Fuente Antropológica Oficial */}
-        <group position={[0, -1.40, 0]}>
-          <Text
-            position={[0, 0, 0]}
-            fontSize={0.082}
-            color="#78350f"
-            anchorX="center"
-            anchorY="middle"
-            maxWidth={rightColWidth * 0.90}
-            textAlign="center"
-          >
-            Fuente: Etnografía Sagrada Wixárika · Instituto Nacional de Antropología e Historia (INAH)
           </Text>
         </group>
       </group>

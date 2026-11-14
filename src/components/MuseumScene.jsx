@@ -182,8 +182,21 @@ export function MuseumScene({
   }, []);
 
   const getInteractiveObjects = useCallback(() => {
-    return Array.from(interactiveRegistry.current);
-  }, []);
+    const all = Array.from(interactiveRegistry.current);
+    if (activeArtwork) {
+      // Cuando hay un cuadro/deidad abierto, desactivar el gaze fuse de las cosas detrás del menú.
+      // Solo permitir interactuar con el botón badge de cerrar y el botón inferior para no traspasar el menú.
+      return all.filter((mesh) => {
+        const id = mesh.userData?.id || '';
+        return (
+          id.includes('btn-close') ||
+          id.includes('close-artwork') ||
+          id.includes('toggle-station-buttons')
+        );
+      });
+    }
+    return all;
+  }, [activeArtwork]);
 
   // Alternar audio cultural tradicional
   const handleToggleAudio = useCallback(() => {

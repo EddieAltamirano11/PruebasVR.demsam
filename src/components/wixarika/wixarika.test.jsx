@@ -315,13 +315,13 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(findArtworkByNodeName('unknown_mesh')).toBeNull();
     });
 
-    it('calculateArtworkModalTransform accurately positions modal at 4.60m from center facing inward', () => {
+    it('calculateArtworkModalTransform accurately positions modal at 3.65m from center facing inward', () => {
       const tatewari = WIXARIKA_ARTWORKS[0];
       const transform = calculateArtworkModalTransform(tatewari);
 
-      // Distancia euclídea horizontal desde el centro [0, 0] debe ser 4.60m
+      // Distancia euclídea horizontal desde el centro [0, 0] debe ser 3.65m
       const dist = Math.hypot(transform.position[0], transform.position[2]);
-      expect(dist).toBeCloseTo(4.60, 2);
+      expect(dist).toBeCloseTo(3.65, 2);
 
       // Altura ergonómica Y = 2.25m
       expect(transform.position[1]).toBeCloseTo(2.25, 2);
