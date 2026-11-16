@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { SoundFX } from '../services/audioService.js';
 import { WIXARIKA_ARTWORKS } from './wixarika/wixarikaArtworksData.js';
 
-const MODEL_URL = './museo_wixarika_v15.glb?v=15.2';
+const MODEL_URL = './museo_wixarika_v15.glb?v=15.3';
 
 export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   const group = useRef();
