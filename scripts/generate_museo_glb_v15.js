@@ -3,28 +3,27 @@
  * Generador de Sala de Museo Wixárika v15 (.GLB)
  * Genera public/museo_wixarika_v15.glb a partir de public/museo_wixarika_v14.glb
  *
- * Implementa la Propuesta 3 seleccionada por el usuario para la sección de Gastronomía:
- * "Altar Etnográfico de Mazorcas en Muro + Pérgola Rústica / Mostrador Escalonado":
+ * Correcciones críticas aplicadas:
+ * 1. Recuadros en Muro Curvo (R = 7.24m):
+ *    - Posicionados exactamente sobre el muro curvo (R = 7.24m) y a la altura oficial
+ *      de los cuadros del museo (Y = 2.80m, idéntico a Deidades y Fiestas).
+ *    - Rotaciones matemáticamente corregidas hacia el origen (centro del museo):
+ *      • Retablo Sur (Colores del Maíz Wixárika):
+ *        pos = [6.886, 2.80, 2.237], rot = [0, -0.809017, 0, 0.587785] (facing -108°)
+ *      • Retablo Norte (Tatei Niwetsika · Madre del Maíz):
+ *        pos = [6.886, 2.80, -2.237], rot = [0, -0.587785, 0, 0.809017] (facing -72°)
+ *      • Altar Central de Mazorcas:
+ *        pos = [7.240, 2.80, 0.0], rot = [0, -0.707107, 0, 0.707107] (facing -90°)
+ *    - Eliminada la viga transversal pesada para dejar la vista despejada y limpia hacia
+ *      los retablos y el letrero superior.
  *
- * 1. Muro Curvo Posterior (R = 7.25m):
- *    - Retablo Sur: Lámina monumental enmarcada "Colores del maíz en el pueblo wixárika"
- *      (Tuxame blanco, Taxawime amarillo, Tairawime rosa, Yuawime azul, Tsinawime pinto).
- *    - Retablo Norte: Cuadro monumental enmarcado de "Tatei Niwetsika · Nuestra Madre del Maíz".
- *    - Altar Central: Retablo/expositor vertical de madera rústica con mazorcas en los 5 colores sagrados.
- *
- * 2. Estructura Rústica Superior (Pérgola / Tejabán):
- *    - Vigas de madera maciza suspendidas (Y = 3.35m) con adornos Tsikuri (Ojos de Dios).
- *    - Se retiran las dos repisas flotantes artificiales del poste central (repisa_gastronomia_1 y 2).
- *
- * 3. Mostrador Escalonado a Dos Niveles (Sin que los letreros tapen la comida):
- *    - Grada trasera elevada de madera en ambas mesas (+0.12m).
- *    - Platillos elevados sobre la grada trasera y escalados a 1.35x para destacar en VR
- *      (Caldo de Toro, Tamales totomoxtle, Tortillas de comal, Maíz tostado, Atole, Perruri).
- *    - Letreros bajados al borde frontal (Y = 0.885m, Z = +0.34m) con inclinación a -36°
- *      y escala compacta (0.72x) estilo cédula de museo: cero obstrucción visual.
- *
- * 4. Metate Tradicional Reubicado:
- *    - Reubicado en el punto focal central entre las mesas (X = 4.80m, Z = 0.0m) sobre su petate.
+ * 2. Letreros de las Mesas:
+ *    - Elevados a Y = 0.95m sobre el tablero frontal (Z = +0.22m).
+ *    - Inclinación suave a -20° (rotX = [-0.1736, 0, 0, 0.9848]) para que se presenten
+ *      claros y frontales a los ojos del visitante en VR sin quedar acostados.
+ *    - Escala ampliada a 1.28x para tipografía de máxima legibilidad y presencia.
+ *    - Los platillos permanecen sobre la grada trasera elevada (Z = -0.16m, Y = 0.98m,
+ *      escala 1.35x), por lo que sobresalen por encima de los letreros sin ser tapados.
  */
 
 import fs from 'fs';
@@ -43,7 +42,7 @@ if (!fs.existsSync(inputPath)) {
   process.exit(1);
 }
 
-console.log('=== Generando Museo Wixárika v15 (Rediseño Integral de Gastronomía) ===');
+console.log('=== Generando Museo Wixárika v15 (Recuadros en Muro y Letreros Optimizados) ===');
 console.log(`Cargando base v14: ${inputPath}`);
 
 const data = fs.readFileSync(inputPath);
@@ -129,7 +128,6 @@ function registerMesh(positions, normals, uvs, indices, materialIdx, name) {
     target: 34962
   });
 
-  // Calcular min y max de posiciones
   let minX = Infinity, minY = Infinity, minZ = Infinity;
   let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
   for (let i = 0; i < positions.length; i += 3) {
@@ -143,7 +141,7 @@ function registerMesh(positions, normals, uvs, indices, materialIdx, name) {
   gltf.accessors.push({
     bufferView: posBv,
     byteOffset: 0,
-    componentType: 5126, // FLOAT
+    componentType: 5126,
     count: positions.length / 3,
     type: 'VEC3',
     min: [minX, minY, minZ],
@@ -199,7 +197,7 @@ function registerMesh(positions, normals, uvs, indices, materialIdx, name) {
   gltf.accessors.push({
     bufferView: idxBv,
     byteOffset: 0,
-    componentType: 5123, // UNSIGNED_SHORT
+    componentType: 5123,
     count: indices.length,
     type: 'SCALAR'
   });
@@ -329,9 +327,9 @@ function createCornEarMesh(radius = 0.040, length = 0.26, materialIdx, name) {
 }
 
 // --------------------------------------------------------------------------
-// 1. Texturas y Materiales Nuevos
+// 1. Texturas y Materiales
 // --------------------------------------------------------------------------
-console.log('\n--- 1. Cargando Texturas de Maíces Sagrados y Tatei Niwetsika ---');
+console.log('\n--- 1. Texturas y Materiales Sagrados ---');
 
 const texMaiz5Colores = addImageTexture(
   path.resolve(rootDir, 'public', 'texturas', 'maiz_5_colores_wixarika.jpg'),
@@ -368,7 +366,7 @@ gltf.materials.push({
   doubleSided: true
 });
 
-// Materiales de los 5 Colores Sagrados del Maíz Wixárika
+// Materiales de los 5 Colores Sagrados del Maíz
 const matMaizTuxameBlanco = gltf.materials.length;
 gltf.materials.push({
   name: 'mat_maiz_tuxame_blanco',
@@ -419,42 +417,28 @@ gltf.materials.push({
   }
 });
 
-const matTotomoxtle = gltf.materials.length;
-gltf.materials.push({
-  name: 'mat_maiz_totomoxtle',
-  pbrMetallicRoughness: {
-    baseColorFactor: [0.82, 0.76, 0.58, 1.0],
-    metallicFactor: 0.0,
-    roughnessFactor: 0.85
-  }
-});
-
 // Materiales existentes reutilizados
 const MAT_MADERA_OSCURA = 3;  // mat_madera_oscura.036
 const MAT_ORO = 1;            // mat_kauyumari_oro.044
 
-console.log('✓ Texturas y 7 materiales sagrados creados correctamente.');
+console.log('✓ Texturas y materiales preparados.');
 
 // --------------------------------------------------------------------------
-// 2. Mallas para Retablos, Pérgola y Altar
+// 2. Mallas 3D para Retablos de Muro y Altar
 // --------------------------------------------------------------------------
-console.log('\n--- 2. Creando Geometrías 3D de Retablos, Pérgola y Altar ---');
+console.log('\n--- 2. Geometrías 3D de Retablos de Muro y Altar ---');
 
-// Lienzos
-const meshCanvasMaiz5Colores = createQuadMesh(2.00, 2.50, matMuralMaiz5Colores, 'mesh_canvas_maiz_5_colores');
-const meshCanvasTateiNiwetsika = createQuadMesh(2.00, 2.50, matMuralTateiNiwetsika, 'mesh_canvas_tatei_niwetsika');
+// Lienzos de cuadros proporcionales (ancho 1.92m, alto 2.40m, ratio 0.80)
+const meshCanvasMaiz5Colores = createQuadMesh(1.92, 2.40, matMuralMaiz5Colores, 'mesh_canvas_maiz_5_colores');
+const meshCanvasTateiNiwetsika = createQuadMesh(1.92, 2.40, matMuralTateiNiwetsika, 'mesh_canvas_tatei_niwetsika');
 
-// Marcos de nogal y biseles de oro
-const meshMarcoNogal = createBoxMesh(2.16, 2.66, 0.06, MAT_MADERA_OSCURA, 'mesh_marco_nogal_gastronomia');
-const meshBiselOro = createBoxMesh(2.04, 2.54, 0.02, MAT_ORO, 'mesh_bisel_oro_gastronomia');
+// Marco de nogal con bisel de oro ceremonial (idéntico al estilo del museo)
+const meshMarcoNogal = createBoxMesh(2.08, 2.56, 0.06, MAT_MADERA_OSCURA, 'mesh_marco_nogal_gastronomia');
+const meshBiselOro = createBoxMesh(1.96, 2.44, 0.02, MAT_ORO, 'mesh_bisel_oro_gastronomia');
 
 // Altar central en muro
-const meshAltarPanel = createBoxMesh(1.60, 2.80, 0.05, MAT_MADERA_OSCURA, 'mesh_altar_panel_central');
-const meshAltarRiel = createBoxMesh(1.50, 0.05, 0.08, MAT_MADERA_OSCURA, 'mesh_altar_riel_madera');
-
-// Pérgola superior de vigas rústicas
-const meshVigaPrincipal = createBoxMesh(0.14, 0.18, 5.20, MAT_MADERA_OSCURA, 'mesh_viga_principal_pergola');
-const meshVigaTransversal = createBoxMesh(0.10, 0.12, 1.90, MAT_MADERA_OSCURA, 'mesh_viga_transversal_pergola');
+const meshAltarPanel = createBoxMesh(1.40, 2.60, 0.04, MAT_MADERA_OSCURA, 'mesh_altar_panel_central');
+const meshAltarRiel = createBoxMesh(1.30, 0.04, 0.06, MAT_MADERA_OSCURA, 'mesh_altar_riel_madera');
 
 // Gradas de madera para las mesas
 const meshGradaMesa = createBoxMesh(3.00, 0.12, 0.46, MAT_MADERA_OSCURA, 'mesh_grada_elevada_mesa');
@@ -466,17 +450,18 @@ const meshMazorcaTairawime = createCornEarMesh(0.040, 0.26, matMaizTairawimeRosa
 const meshMazorcaYuawime = createCornEarMesh(0.040, 0.26, matMaizYuawimeAzul, 'mesh_mazorca_yuawime');
 const meshMazorcaTsinawime = createCornEarMesh(0.040, 0.26, matMaizTsinawimePinto, 'mesh_mazorca_tsinawime');
 
-console.log('✓ Geometrías 3D generadas y registradas con éxito.');
+console.log('✓ Geometrías registradas con éxito.');
 
 // --------------------------------------------------------------------------
-// 3. Nodos de Retablos, Pérgola y Altar en Cuadrante Gastronomía
+// 3. Montaje de los Cuadros Flush en el Muro Curvo (R = 7.24m, Y = 2.80m)
 // --------------------------------------------------------------------------
-console.log('\n--- 3. Ensamblando Nodos en el Cuadrante de Gastronomía ---');
+console.log('\n--- 3. Montaje de Retablos en Muro Curvo ---');
 
 const nodes = gltf.nodes;
 const gastroQuadrant = nodes[598]; // cuadrante_gastronomia
 
 // 3.1 Retablo Sur (Colores del Maíz Wixárika)
+// Ubicado en R = 7.24m, ángulo +18°, rotación en Y = -108° hacia el centro
 const retabloSurChildren = [];
 
 const nodeMarcoSur = nodes.length;
@@ -506,14 +491,15 @@ retabloSurChildren.push(nodeCanvasSur);
 const nodeRetabloSur = nodes.length;
 nodes.push({
   name: 'retablo_maiz_5_colores_sur',
-  translation: [6.895, 2.45, 2.12],
-  rotation: [0, 0.9877, 0, -0.1564], // Y-rot 198° orientada hacia el centro
+  translation: [6.886, 2.80, 2.237],
+  rotation: [0, -0.809017, 0, 0.587785], // Y-rot -108° mirando exactamente hacia el centro
   children: retabloSurChildren
 });
 gastroQuadrant.children.push(nodeRetabloSur);
-console.log('  ✓ Retablo Sur (Colores del Maíz) ubicado en [6.90, 2.45, 2.12]');
+console.log('  ✓ Retablo Sur (Colores del Maíz) montado en muro [6.886, 2.80, 2.237], rotY: -108° (hacia el centro)');
 
 // 3.2 Retablo Norte (Tatei Niwetsika · Madre del Maíz)
+// Ubicado en R = 7.24m, ángulo -18°, rotación en Y = -72° hacia el centro
 const retabloNorteChildren = [];
 
 const nodeMarcoNorte = nodes.length;
@@ -543,14 +529,14 @@ retabloNorteChildren.push(nodeCanvasNorte);
 const nodeRetabloNorte = nodes.length;
 nodes.push({
   name: 'retablo_tatei_niwetsika_norte',
-  translation: [6.895, 2.45, -2.12],
-  rotation: [0, 0.9877, 0, 0.1564], // Y-rot 162° orientada hacia el centro
+  translation: [6.886, 2.80, -2.237],
+  rotation: [0, -0.587785, 0, 0.809017], // Y-rot -72° mirando exactamente hacia el centro
   children: retabloNorteChildren
 });
 gastroQuadrant.children.push(nodeRetabloNorte);
-console.log('  ✓ Retablo Norte (Tatei Niwetsika) ubicado en [6.90, 2.45, -2.12]');
+console.log('  ✓ Retablo Norte (Tatei Niwetsika) montado en muro [6.886, 2.80, -2.237], rotY: -72° (hacia el centro)');
 
-// 3.3 Altar Central de Mazorcas (detrás del pilar central)
+// 3.3 Altar Central de Mazorcas (en el muro detrás del pilar central)
 const altarCentralChildren = [];
 
 const nodeAltarPanel = nodes.length;
@@ -561,9 +547,9 @@ nodes.push({
 });
 altarCentralChildren.push(nodeAltarPanel);
 
-// 3 rieles horizontales
-for (let ri = 0; ri < 3; ri++) {
-  const yOffset = 0.60 - ri * 0.60;
+// Rieles horizontales
+for (let ri = 0; ri < 2; ri++) {
+  const yOffset = 0.40 - ri * 0.70;
   const nodeRiel = nodes.length;
   nodes.push({
     name: `altar_riel_${ri + 1}`,
@@ -573,13 +559,13 @@ for (let ri = 0; ri < 3; ri++) {
   altarCentralChildren.push(nodeRiel);
 }
 
-// 5 Mazorcas sagradas colgando en el riel superior e intermedio
+// 5 Mazorcas sagradas colgando en el muro
 const cornConfigs = [
-  { mesh: meshMazorcaTuxame, pos: [-0.48, 0.45, 0.08], rot: [0, 0, 0.05, 0.998], name: 'mazorca_altar_tuxame' },
-  { mesh: meshMazorcaTaxawime, pos: [-0.24, 0.45, 0.08], rot: [0, 0, -0.04, 0.999], name: 'mazorca_altar_taxawime' },
-  { mesh: meshMazorcaTairawime, pos: [0.0, 0.45, 0.08], rot: [0, 0, 0.02, 0.999], name: 'mazorca_altar_tairawime' },
-  { mesh: meshMazorcaYuawime, pos: [0.24, 0.45, 0.08], rot: [0, 0, 0.06, 0.998], name: 'mazorca_altar_yuawime' },
-  { mesh: meshMazorcaTsinawime, pos: [0.48, 0.45, 0.08], rot: [0, 0, -0.05, 0.998], name: 'mazorca_altar_tsinawime' }
+  { mesh: meshMazorcaTuxame, pos: [-0.44, 0.35, 0.06], rot: [0, 0, 0.05, 0.998], name: 'mazorca_altar_tuxame' },
+  { mesh: meshMazorcaTaxawime, pos: [-0.22, 0.35, 0.06], rot: [0, 0, -0.04, 0.999], name: 'mazorca_altar_taxawime' },
+  { mesh: meshMazorcaTairawime, pos: [0.0, 0.35, 0.06], rot: [0, 0, 0.02, 0.999], name: 'mazorca_altar_tairawime' },
+  { mesh: meshMazorcaYuawime, pos: [0.22, 0.35, 0.06], rot: [0, 0, 0.06, 0.998], name: 'mazorca_altar_yuawime' },
+  { mesh: meshMazorcaTsinawime, pos: [0.44, 0.35, 0.06], rot: [0, 0, -0.05, 0.998], name: 'mazorca_altar_tsinawime' }
 ];
 
 for (const cCfg of cornConfigs) {
@@ -597,137 +583,104 @@ for (const cCfg of cornConfigs) {
 const nodeAltarCentral = nodes.length;
 nodes.push({
   name: 'altar_central_mazorcas_muro',
-  translation: [7.22, 2.45, 0.0],
-  rotation: [0, 1, 0, 0], // Y-rot 180° hacia el centro
+  translation: [7.240, 2.80, 0.0],
+  rotation: [0, -0.707107, 0, 0.707107], // Y-rot -90° hacia el centro
   children: altarCentralChildren
 });
 gastroQuadrant.children.push(nodeAltarCentral);
-console.log('  ✓ Altar Central de Mazorcas ubicado en [7.22, 2.45, 0.0]');
+console.log('  ✓ Altar Central de Mazorcas montado en muro [7.240, 2.80, 0.0], rotY: -90° (hacia el centro)');
 
-// 3.4 Pérgola / Tejabán Superior
-const pergolaChildren = [];
-
-const nodeVigaPrinc = nodes.length;
-nodes.push({
-  name: 'viga_principal_pergola',
-  translation: [0, 0, 0],
-  mesh: meshVigaPrincipal
-});
-pergolaChildren.push(nodeVigaPrinc);
-
-// 3 vigas transversales hacia el muro
-for (let vi = 0; vi < 3; vi++) {
-  const zOff = -1.8 + vi * 1.8;
-  const nodeVigaTrans = nodes.length;
-  nodes.push({
-    name: `viga_transversal_${vi + 1}`,
-    translation: [0.90, 0.12, zOff],
-    rotation: [0, 0.7071, 0, 0.7071], // 90° hacia el muro
-    mesh: meshVigaTransversal
-  });
-  pergolaChildren.push(nodeVigaTrans);
-}
-
-const nodePergola = nodes.length;
-nodes.push({
-  name: 'pergola_tejaban_gastronomia',
-  translation: [5.25, 3.35, 0.0],
-  rotation: [0, 0, 0, 1],
-  children: pergolaChildren
-});
-gastroQuadrant.children.push(nodePergola);
-console.log('  ✓ Pérgola rústica de vigas instalada en [5.25, 3.35, 0.0]');
-
-// 3.5 Ocultar repisas improvisadas en el poste central
+// 3.4 Desactivar repisas improvisadas en el poste central
 nodes[582].scale = [0.0, 0.0, 0.0]; // repisa_gastronomia_1
 nodes[597].scale = [0.0, 0.0, 0.0]; // repisa_gastronomia_2
-console.log('  ✓ Repisas improvisadas del poste central retiradas.');
 
-// 3.6 Reubicar el Metate Tradicional al centro de honor
-nodes[486].translation = [4.80, 0.0, 0.0];
-nodes[486].rotation = [0, -0.7071, 0, 0.7071]; // Orientado hacia el centro del museo (-X)
-nodes[486].scale = [1.20, 1.20, 1.20];
-console.log('  ✓ Metate tradicional reubicado en centro ceremonial [4.80, 0.0, 0.0]');
+// 3.5 Reubicar metate tradicional
+nodes[486].translation = [6.30, 0.0, 2.80]; // Estación lateral limpia
+nodes[486].rotation = [0, -0.92388, 0, 0.38268];
 
 // --------------------------------------------------------------------------
-// 4. Mostrador Escalonado y Reubicación de Letreros (Sin obstrucción visual)
+// 4. Mostrador: Letreros Claros y Alimentos en Grada Elevada
 // --------------------------------------------------------------------------
-console.log('\n--- 4. Configurando Mostrador Escalonado y Cédulas Inclinadas Bajas ---');
+console.log('\n--- 4. Mostrador: Letreros Claros al Frente y Alimentos Elevados Atrás ---');
 
-// 4.1 Mesa 1 (Norte): Grada trasera, alimentos elevados y letreros al frente
+// Configuración de Letreros:
+// - Posición: Y = 0.94m (sobre el tablero frontal, Z = +0.20m)
+// - Inclinación suave de -20° hacia el visitante: texto completamente frontal a los ojos
+// - Escala: 1.28x para tipografía clara, sólida y de gran tamaño
+const QUAT_INCLINADO_LETRERO = [-0.173648, 0, 0, 0.984808]; // rotX = -20°
+const SCALE_LETRERO_OFICIAL = [1.28, 1.28, 1.28];
+
+// 4.1 Mesa Norte (Tortillas, Tamales, Atole)
 const mesaNorte = nodes[520];
 
 const nodeGradaNorte = nodes.length;
 nodes.push({
   name: 'grada_elevada_mesa_norte',
-  translation: [0, 0.90, -0.14],
+  translation: [0, 0.90, -0.16],
   mesh: meshGradaMesa
 });
 mesaNorte.children.push(nodeGradaNorte);
 
-// Elevar los 3 alimentos de Mesa Norte
-nodes[501].translation = [-1.02, 0.975, -0.14]; // Tortillas
-nodes[501].scale = [1.38, 1.38, 1.38];
+// Alimentos elevados en la grada trasera (Z = -0.16m, Y = 0.98m, scale 1.35x)
+nodes[501].translation = [-1.02, 0.980, -0.16]; // Tortillas
+nodes[501].scale = [1.35, 1.35, 1.35];
 
-nodes[497].translation = [0, 0.975, -0.14];     // Tamales
-nodes[497].scale = [1.38, 1.38, 1.38];
+nodes[497].translation = [0, 0.980, -0.16];     // Tamales
+nodes[497].scale = [1.35, 1.35, 1.35];
 
-nodes[490].translation = [1.02, 0.975, -0.10];   // Atole
-nodes[490].scale = [1.38, 1.38, 1.38];
+nodes[490].translation = [1.02, 0.980, -0.12];   // Atole
+nodes[490].scale = [1.35, 1.35, 1.35];
 
-// Bajar e inclinar los 3 letreros al borde frontal inferior (rotX = -36°)
-const QUAT_INCLINADO_BAJO = [-0.3090, 0, 0, 0.9511];
-const SCALE_LETRERO_COMPACTO = [0.72, 0.72, 0.72];
+// Letreros claros y frontales sobre la mesa (Z = +0.20m, Y = 0.94m, rotX = -20°)
+nodes[513].translation = [-1.02, 0.940, 0.20];  // Letrero Tortillas
+nodes[513].rotation = QUAT_INCLINADO_LETRERO;
+nodes[513].scale = SCALE_LETRERO_OFICIAL;
 
-nodes[513].translation = [-1.02, 0.885, 0.34];  // Letrero Tortillas
-nodes[513].rotation = QUAT_INCLINADO_BAJO;
-nodes[513].scale = SCALE_LETRERO_COMPACTO;
+nodes[509].translation = [0, 0.940, 0.20];      // Letrero Tamales
+nodes[509].rotation = QUAT_INCLINADO_LETRERO;
+nodes[509].scale = SCALE_LETRERO_OFICIAL;
 
-nodes[509].translation = [0, 0.885, 0.34];      // Letrero Tamales
-nodes[509].rotation = QUAT_INCLINADO_BAJO;
-nodes[509].scale = SCALE_LETRERO_COMPACTO;
+nodes[505].translation = [1.02, 0.940, 0.20];   // Letrero Atole
+nodes[505].rotation = QUAT_INCLINADO_LETRERO;
+nodes[505].scale = SCALE_LETRERO_OFICIAL;
 
-nodes[505].translation = [1.02, 0.885, 0.34];   // Letrero Atole
-nodes[505].rotation = QUAT_INCLINADO_BAJO;
-nodes[505].scale = SCALE_LETRERO_COMPACTO;
+console.log('  ✓ Mesa Norte: Letreros a Y=0.94m (1.28x, tilt -20°) y alimentos a Y=0.98m (1.35x)');
 
-console.log('  ✓ Mesa Norte: Grada trasera instalada, alimentos a Y=0.975m (1.38x) y letreros a Y=0.885m');
-
-// 4.2 Mesa 2 (Sur): Grada trasera, alimentos elevados y letreros al frente
+// 4.2 Mesa Sur (Caldo de Toro, Maíz Tostado, Perruri)
 const mesaSur = nodes[558];
 
 const nodeGradaSur = nodes.length;
 nodes.push({
   name: 'grada_elevada_mesa_sur',
-  translation: [0, 0.90, -0.14],
+  translation: [0, 0.90, -0.16],
   mesh: meshGradaMesa
 });
 mesaSur.children.push(nodeGradaSur);
 
-// Elevar los 3 alimentos de Mesa Sur
-nodes[529].translation = [-1.02, 0.975, -0.14]; // Caldo de Toro
-nodes[529].scale = [1.38, 1.38, 1.38];
+// Alimentos elevados en la grada trasera (Z = -0.16m, Y = 0.98m, scale 1.35x)
+nodes[529].translation = [-1.02, 0.980, -0.16]; // Caldo de Toro
+nodes[529].scale = [1.35, 1.35, 1.35];
 
-nodes[533].translation = [0, 0.975, -0.14];     // Maíz Tostado
-nodes[533].scale = [1.38, 1.38, 1.38];
+nodes[533].translation = [0, 0.980, -0.16];     // Maíz Tostado
+nodes[533].scale = [1.35, 1.35, 1.35];
 
-nodes[539].translation = [1.02, 0.975, -0.14];   // Perruri
-nodes[539].scale = [1.38, 1.38, 1.38];
+nodes[539].translation = [1.02, 0.980, -0.16];   // Perruri
+nodes[539].scale = [1.35, 1.35, 1.35];
 
-// Bajar e inclinar los 3 letreros al borde frontal inferior (rotX = -36°)
-nodes[543].translation = [-1.02, 0.885, 0.34];  // Letrero Caldo de Toro
-nodes[543].rotation = QUAT_INCLINADO_BAJO;
-nodes[543].scale = SCALE_LETRERO_COMPACTO;
+// Letreros claros y frontales sobre la mesa (Z = +0.20m, Y = 0.94m, rotX = -20°)
+nodes[543].translation = [-1.02, 0.940, 0.20];  // Letrero Caldo de Toro
+nodes[543].rotation = QUAT_INCLINADO_LETRERO;
+nodes[543].scale = SCALE_LETRERO_OFICIAL;
 
-nodes[547].translation = [0, 0.885, 0.34];      // Letrero Maíz Tostado
-nodes[547].rotation = QUAT_INCLINADO_BAJO;
-nodes[547].scale = SCALE_LETRERO_COMPACTO;
+nodes[547].translation = [0, 0.940, 0.20];      // Letrero Maíz Tostado
+nodes[547].rotation = QUAT_INCLINADO_LETRERO;
+nodes[547].scale = SCALE_LETRERO_OFICIAL;
 
-nodes[551].translation = [1.02, 0.885, 0.34];   // Letrero Perruri
-nodes[551].rotation = QUAT_INCLINADO_BAJO;
-nodes[551].scale = SCALE_LETRERO_COMPACTO;
+nodes[551].translation = [1.02, 0.940, 0.20];   // Letrero Perruri
+nodes[551].rotation = QUAT_INCLINADO_LETRERO;
+nodes[551].scale = SCALE_LETRERO_OFICIAL;
 
-console.log('  ✓ Mesa Sur: Grada trasera instalada, alimentos a Y=0.975m (1.38x) y letreros a Y=0.885m');
+console.log('  ✓ Mesa Sur: Letreros a Y=0.94m (1.28x, tilt -20°) y alimentos a Y=0.98m (1.35x)');
 
 // --------------------------------------------------------------------------
 // 5. Empaquetado y Exportación de public/museo_wixarika_v15.glb
@@ -776,7 +729,7 @@ fs.writeFileSync(outputPath, finalGlb);
 const sizeMb = (finalGlb.length / (1024 * 1024)).toFixed(2);
 
 console.log(`\n================================================================`);
-console.log(`✓ ÉXITO: Modelo Museo Virtual Wixárika v15 generado`);
+console.log(`✓ ÉXITO: Modelo Museo Virtual Wixárika v15 actualizado`);
 console.log(`  - Archivo v15: ${outputPath} (${sizeMb} MB)`);
 console.log(`  - Total nodos: ${gltf.nodes.length}`);
 console.log(`  - Total mallas: ${gltf.meshes.length}`);
