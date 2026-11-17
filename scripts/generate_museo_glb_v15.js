@@ -13,16 +13,19 @@
  *   • Nichos posteriores (Deidades, Fiestas, Gastronomía): cubren de Y=0.10m a 5.40m.
  *   • Letreros flotantes de sección: posicionados a Y=4.25m.
  *
- * 2. Rediseño de Galería en Gastronomía:
- *   • Mesas dobles conservadas limpias y vacías (sin platillos ni letreros sobre ellas).
+ * 2. Rediseño de Galería y Mesa en Gastronomía:
+ *   • Se reemplazan las dos mesas rectangulares anteriores por una sola mesa de
+ *     media luna (demi-lune) vacía, en madera oscura idéntica a la de los pilares
+ *     (mat_madera_oscura.036), con la parte curva apuntando hacia el centro del museo
+ *     (vista del espectador) y el respaldo recto paralelo al muro.
  *   • Repisas antiguas del muro retiradas para dar espacio limpio a la galería.
- *   • 6 recuadros museográficos en cuadrícula de 2 filas × 3 columnas sobre el muro curvo:
+ *   • 6 recuadros museográficos (+15% en tamaño respecto a la base, manteniendo los
+ *     mismos gaps horizontal y vertical) en 2 filas × 3 columnas sobre el muro curvo:
  *       Fila 1 (Superior): TORTILLAS DE MAÍZ | TAMALES | ATOLE DE MAÍZ
  *       Fila 2 (Inferior): CALDO DE TORO     | MAÍZ TOSTADO | PERRURI
  *   • Lienzos limpios en tono cantera sin imagen (con UVs 0..1 listos para futuras texturas).
- *   • Debajo de cada recuadro: placa ceremonial (madera oscura + marco oro + cantera)
- *     con el nombre en texto 3D extruido en oro ceremonial (mat_texto_oro_3d.021, helvetiker_bold),
- *     idéntico al estilo y color de los demás letreros del museo.
+ *   • Debajo de cada recuadro: placa ceremonial (+15% proporcional) con texto 3D extruido
+ *     en oro ceremonial (mat_texto_oro_3d.021, helvetiker_bold).
  */
 
 import fs from 'fs';
@@ -229,28 +232,14 @@ for (const signId of [1001, 1027, 1051, 1077]) {
 console.log('✓ Arquitectura: Paredes a 5.40m, cenefa a 5.10m, techo a 7.00m.');
 
 // ==========================================================================
-// PARTE 2: LIMPIEZA DE MESAS Y REPISAS EN GASTRONOMÍA
+// PARTE 2: REEMPLAZO DE MESAS POR MESA DE MEDIA LUNA EN MADERA OSCURA
 // ==========================================================================
-console.log('\n[2] Limpiando mesas y repisas de Gastronomía...');
+console.log('\n[2] Retirando mesas antiguas y repisas, y construyendo mesa de media luna en madera oscura...');
 
-// Mesa Norte (520): dejar solo patas (514-517), tablero (518) y travesaño (519)
-const mesaNorteOcultar = [490, 497, 501, 505, 509, 513];
-nodes[520].children = nodes[520].children.filter((c) => !mesaNorteOcultar.includes(c));
-for (const idx of mesaNorteOcultar) {
-  nodes[idx].scale = [0.0, 0.0, 0.0];
-}
-
-// Mesa Sur (558): dejar solo patas (552-555), tablero (556) y travesaño (557)
-const mesaSurOcultar = [529, 533, 539, 543, 547, 551];
-nodes[558].children = nodes[558].children.filter((c) => !mesaSurOcultar.includes(c));
-for (const idx of mesaSurOcultar) {
-  nodes[idx].scale = [0.0, 0.0, 0.0];
-}
-
-// Quitar repisas antiguas del muro de gastronomía (582 y 597)
-const repisasOcultar = [582, 597];
-nodes[598].children = nodes[598].children.filter((c) => !repisasOcultar.includes(c));
-for (const idx of repisasOcultar) {
+// Retirar completamente ambas mesas rectangulares anteriores (520 norte y 558 sur) y repisas (582, 597)
+const gastronomiaRetirar = [520, 558, 582, 597];
+nodes[598].children = nodes[598].children.filter((c) => !gastronomiaRetirar.includes(c));
+for (const idx of gastronomiaRetirar) {
   nodes[idx].scale = [0.0, 0.0, 0.0];
 }
 
@@ -261,12 +250,198 @@ nodes[760].children = nodes[760].children.filter((c) => !pilastra3Medallones.inc
 for (const idx of pilastra3Medallones) {
   nodes[idx].scale = [0.0, 0.0, 0.0];
 }
-console.log('✓ Mesas de gastronomía conservadas vacías y sin letreros; repisas retiradas.');
+
+// Materiales existentes en el GLB (idénticos a los pilares, Deidades y Fiestas)
+const MAT_MADERA_OSCURA = 3;    // mat_madera_oscura.036 (mismo material de los pilares)
+const MAT_MARCO_ORO = 1;        // mat_kauyumari_oro.044
+const MAT_CANTERA = 9;          // mat_letrero_cantera.021
+const MAT_TEXTO_ORO_3D = 10;    // mat_texto_oro_3d.021
+
+// Helper para construir una geometría extruida en media luna (demi-lune) en XZ:
+// - Borde recto en X local = 0 (respaldo paralelo al muro +X)
+// - Borde curvo semi-elíptico apuntando hacia -X (centro del museo / vista del espectador)
+const createHalfMoonExtrude = (rx, rz, height, bevelSize = 0, segments = 48) => {
+  const shape = new THREE.Shape();
+  // Recorrido antihorario en 2D (u, v): de (0, +rz) pasando por (-rx, 0) hasta (0, -rz),
+  // cerrando con el borde recto de regreso a (0, +rz).
+  for (let i = 0; i <= segments; i++) {
+    const t = Math.PI / 2 - (i / segments) * Math.PI; // +PI/2 .. -PI/2
+    const u = -rx * Math.cos(t); // 0 .. -rx .. 0 (curva apuntando al centro -X)
+    const v = rz * Math.sin(t);  // +rz .. 0 .. -rz
+    if (i === 0) shape.moveTo(u, v);
+    else shape.lineTo(u, v);
+  }
+  shape.closePath();
+
+  const extrudeDepth = Math.max(0.01, height - bevelSize * 2);
+  const geom = new THREE.ExtrudeGeometry(shape, {
+    depth: extrudeDepth,
+    bevelEnabled: bevelSize > 0,
+    bevelThickness: bevelSize,
+    bevelSize: bevelSize,
+    bevelSegments: bevelSize > 0 ? 2 : 0,
+    curveSegments: 1
+  });
+  // Rotar -90° en X: local (u, v, z) -> (u, +z, -v), asentando base en Y=0
+  geom.rotateX(-Math.PI / 2);
+  if (bevelSize > 0) {
+    geom.translate(0, bevelSize, 0);
+  }
+  geom.computeVertexNormals();
+  return geom;
+};
+
+// Helper para construir un travesaño curvo hueco en forma de arco (D-ring)
+const createHalfMoonArcBand = (rxOuter, rzOuter, bandWidth, height, segments = 48) => {
+  const rxInner = rxOuter - bandWidth;
+  const rzInner = rzOuter - bandWidth;
+  const shape = new THREE.Shape();
+
+  // Arco exterior (de +PI/2 a -PI/2)
+  for (let i = 0; i <= segments; i++) {
+    const t = Math.PI / 2 - (i / segments) * Math.PI;
+    const u = -rxOuter * Math.cos(t);
+    const v = rzOuter * Math.sin(t);
+    if (i === 0) shape.moveTo(u, v);
+    else shape.lineTo(u, v);
+  }
+  // Arco interior de regreso (de -PI/2 a +PI/2)
+  for (let i = segments; i >= 0; i--) {
+    const t = Math.PI / 2 - (i / segments) * Math.PI;
+    const u = -rxInner * Math.cos(t);
+    const v = rzInner * Math.sin(t);
+    shape.lineTo(u, v);
+  }
+  shape.closePath();
+
+  const geom = new THREE.ExtrudeGeometry(shape, {
+    depth: height,
+    bevelEnabled: false,
+    curveSegments: 1
+  });
+  geom.rotateX(-Math.PI / 2);
+  geom.computeVertexNormals();
+  return geom;
+};
+
+// Dimensiones y posición de la mesa de media luna (vacía, madera oscura de pilares)
+const MESA_X_BACK = 6.05; // Respaldo recto a 1.65m del centro de recuadros y libre del metate
+const MESA_RX = 1.85;     // Profundidad hacia el centro: ápice curvo en X = 4.20m
+const MESA_RZ = 2.15;     // Ancho total en Z = 4.30m (Z = -2.15m..+2.15m)
+const MESA_TOP_Y = 0.86;  // Superficie superior limpia a 0.86m (bajo línea de vista de Fila 2)
+const TABLERO_H = 0.075;  // Espesor del tablero (Y = 0.785m..0.860m)
+const FALDON_H = 0.115;   // Faldón estructural curvo bajo el tablero (Y = 0.675m..0.790m)
+const PATA_H = 0.79;      // Altura de las patas (Y = 0.00m..0.79m)
+const PATA_SIZE = 0.115;  // Sección cuadrada robusta de madera oscura
+
+const { meshIdx: tableroMediaLunaMeshIdx } = addGeometryMeshToGltf(
+  createHalfMoonExtrude(MESA_RX, MESA_RZ, TABLERO_H, 0.012, 48),
+  MAT_MADERA_OSCURA,
+  'mesh_tablero_mesa_media_luna'
+);
+
+const { meshIdx: faldonMediaLunaMeshIdx } = addGeometryMeshToGltf(
+  createHalfMoonExtrude(MESA_RX - 0.09, MESA_RZ - 0.09, FALDON_H, 0, 48),
+  MAT_MADERA_OSCURA,
+  'mesh_faldon_mesa_media_luna'
+);
+
+const { meshIdx: pataMediaLunaMeshIdx } = addGeometryMeshToGltf(
+  new THREE.BoxGeometry(PATA_SIZE, PATA_H, PATA_SIZE),
+  MAT_MADERA_OSCURA,
+  'mesh_pata_mesa_media_luna'
+);
+
+// 5 patas sólidas + travesaño curvo/trasero alineados exactamente sobre la misma semi-elipse
+const LEG_BACK_X = -0.14;
+const LEG_ARC_RX = MESA_RX - 0.19 + LEG_BACK_X; // 1.52m desde el eje trasero -> ápice en -1.66m
+const LEG_ARC_RZ = MESA_RZ - 0.19;              // 1.96m -> esquinas traseras en Z = ±1.96m
+const TRAV_BAND = 0.065;
+
+const { meshIdx: travesanoCurvoMeshIdx } = addGeometryMeshToGltf(
+  createHalfMoonArcBand(LEG_ARC_RX + TRAV_BAND / 2, LEG_ARC_RZ + TRAV_BAND / 2, TRAV_BAND, 0.055, 48),
+  MAT_MADERA_OSCURA,
+  'mesh_travesano_curvo_mesa_media_luna'
+);
+
+const { meshIdx: travesanoTraseroMeshIdx } = addGeometryMeshToGltf(
+  new THREE.BoxGeometry(TRAV_BAND, 0.055, LEG_ARC_RZ * 2),
+  MAT_MADERA_OSCURA,
+  'mesh_travesano_trasero_mesa_media_luna'
+);
+
+const mesaMediaLunaChildren = [];
+
+// Tablero principal en media luna
+const tableroNodeIdx = nodes.length;
+nodes.push({
+  name: 'tablero_mesa_media_luna',
+  mesh: tableroMediaLunaMeshIdx,
+  translation: [0.0, MESA_TOP_Y - TABLERO_H, 0.0]
+});
+mesaMediaLunaChildren.push(tableroNodeIdx);
+
+// Faldón curvo estructural bajo el tablero
+const faldonNodeIdx = nodes.length;
+nodes.push({
+  name: 'faldon_mesa_media_luna',
+  mesh: faldonMediaLunaMeshIdx,
+  translation: [-0.04, MESA_TOP_Y - TABLERO_H - FALDON_H + 0.005, 0.0]
+});
+mesaMediaLunaChildren.push(faldonNodeIdx);
+
+// Travesaño inferior curvo + barra trasera a Y=0.20m pasando por el centro exacto de las 5 patas
+const travesanoCurvoNodeIdx = nodes.length;
+nodes.push({
+  name: 'travesano_curvo_mesa_media_luna',
+  mesh: travesanoCurvoMeshIdx,
+  translation: [LEG_BACK_X, 0.20, 0.0]
+});
+mesaMediaLunaChildren.push(travesanoCurvoNodeIdx);
+
+const travesanoTraseroNodeIdx = nodes.length;
+nodes.push({
+  name: 'travesano_trasero_mesa_media_luna',
+  mesh: travesanoTraseroMeshIdx,
+  translation: [LEG_BACK_X, 0.2275, 0.0]
+});
+mesaMediaLunaChildren.push(travesanoTraseroNodeIdx);
+
+// 5 patas sólidas siguiendo exactamente el perímetro del travesaño (2 traseras + 3 en el arco frontal)
+const legCoords = [
+  { name: 'pata_trasera_norte', x: LEG_BACK_X, z: -LEG_ARC_RZ },
+  { name: 'pata_trasera_sur',   x: LEG_BACK_X, z: +LEG_ARC_RZ },
+  { name: 'pata_curva_norte',   x: LEG_BACK_X - LEG_ARC_RX * Math.cos(-45 * Math.PI / 180), z: LEG_ARC_RZ * Math.sin(-45 * Math.PI / 180) },
+  { name: 'pata_curva_centro',  x: LEG_BACK_X - LEG_ARC_RX, z: 0.0 },
+  { name: 'pata_curva_sur',     x: LEG_BACK_X - LEG_ARC_RX * Math.cos(45 * Math.PI / 180),  z: LEG_ARC_RZ * Math.sin(45 * Math.PI / 180) }
+];
+
+for (const leg of legCoords) {
+  const legNodeIdx = nodes.length;
+  nodes.push({
+    name: `mesa_media_luna_${leg.name}`,
+    mesh: pataMediaLunaMeshIdx,
+    translation: [leg.x, PATA_H / 2, leg.z]
+  });
+  mesaMediaLunaChildren.push(legNodeIdx);
+}
+
+const mesaMediaLunaRootIdx = nodes.length;
+nodes.push({
+  name: 'mesa_gastronomia_media_luna',
+  translation: [MESA_X_BACK, 0.0, 0.0],
+  children: mesaMediaLunaChildren
+});
+nodes[598].children.push(mesaMediaLunaRootIdx);
+
+console.log(
+  `✓ Mesa de media luna creada en mat_madera_oscura (respaldo X=${MESA_X_BACK}m, ápice curvo X=${(MESA_X_BACK - MESA_RX).toFixed(2)}m apuntando al centro, Z=±${MESA_RZ}m, Y=${MESA_TOP_Y}m).`
+);
 
 // ==========================================================================
-// PARTE 3: 6 RECUADROS EN 2 FILAS × 3 COLUMNAS CON PLACAS DE NOMBRE EN ORO 3D
+// PARTE 3: 6 RECUADROS (+15%) EN 2 FILAS × 3 COLUMNAS CON PLACAS EN ORO 3D
 // ==========================================================================
-console.log('\n[3] Construyendo 6 recuadros en 2 filas × 3 columnas en el muro de Gastronomía...');
+console.log('\n[3] Construyendo 6 recuadros (+15% incluyendo letreros, mismos gaps) en Gastronomía...');
 
 // Cargar tipografía oficial helvetiker_bold e inyectar glifo 'Í' para ortografía impecable
 const fontPath = path.resolve(rootDir, 'node_modules/three/examples/fonts/helvetiker_bold.typeface.json');
@@ -283,19 +458,16 @@ if (!fontData.glyphs['Í'] && fontData.glyphs['I']) {
 const fontLoader = new FontLoader();
 const font = fontLoader.parse(fontData);
 
-// Materiales existentes en el GLB (idénticos a Deidades y Fiestas)
-const MAT_MADERA_OSCURA = 3;    // mat_madera_oscura.036
-const MAT_MARCO_ORO = 1;        // mat_kauyumari_oro.044
-const MAT_CANTERA = 9;          // mat_letrero_cantera.021
-const MAT_TEXTO_ORO_3D = 10;    // mat_texto_oro_3d.021
+// Factor de ampliación uniforme del +15% para cuadros y letreros manteniendo el mismo gap entre cuadros
+const SCALE_15 = 1.15;
 
-// Geometrías compartidas del marco del recuadro (1.44m ancho × 0.98m alto)
-const RECUADRO_W = 1.44;
-const RECUADRO_H = 0.98;
-const ORO_W = 1.36;
-const ORO_H = 0.90;
-const LIENZO_W = 1.32;
-const LIENZO_H = 0.86;
+// Geometrías compartidas del marco del recuadro (+15%: 1.656m ancho × 1.127m alto)
+const RECUADRO_W = 1.44 * SCALE_15; // 1.656m
+const RECUADRO_H = 0.98 * SCALE_15; // 1.127m
+const ORO_W = 1.36 * SCALE_15;      // 1.564m
+const ORO_H = 0.90 * SCALE_15;      // 1.035m
+const LIENZO_W = 1.32 * SCALE_15;   // 1.518m
+const LIENZO_H = 0.86 * SCALE_15;   // 0.989m
 
 const { meshIdx: marcoMaderaMeshIdx } = addGeometryMeshToGltf(
   new THREE.BoxGeometry(RECUADRO_W, RECUADRO_H, 0.045),
@@ -310,19 +482,21 @@ const { meshIdx: marcoOroMeshIdx } = addGeometryMeshToGltf(
 );
 
 // Reutilizamos las mallas exactas de las placas de Deidades/Fiestas (meshes 40, 41, 42)
-// Escala no uniforme solo en los fondos para hacer la placa estilizada (1.38m × 0.272m),
-// manteniendo el texto 3D en escala uniforme [1, 1, 1] sin deformación.
+// Escala +15% proporcional: 1.587m × 0.3128m, con texto 3D a escala uniforme [1, 1, 1]
 const PLACA_MESH_MADERA = 40;
 const PLACA_MESH_ORO = 41;
 const PLACA_MESH_CANTERA = 42;
-const PLACA_BG_SCALE = [1.15, 0.80, 1.0];
-const PLACA_OFFSET_Y = -0.686; // 6cm debajo del borde inferior del recuadro
+const PLACA_BG_SCALE = [1.15 * SCALE_15, 0.80 * SCALE_15, 1.0]; // [1.3225, 0.92, 1.0]
+const PLACA_H = 0.34 * PLACA_BG_SCALE[1]; // 0.3128m
+const PLACA_GAP_LOCAL = 0.065; // Separación limpia entre borde inferior del cuadro y placa
+const PLACA_OFFSET_Y = -(RECUADRO_H / 2 + PLACA_GAP_LOCAL + PLACA_H / 2); // -0.7849m
 
 // Distribución 2 filas × 3 columnas sobre el muro curvo de Gastronomía (+X)
+// Manteniendo los mismos gaps previos: ~0.435m horizontal y ~0.275m vertical entre filas
 const R_GALERIA = 7.70; // 10cm delante del fuste de pilastra y 24cm dentro del nicho (7.94m)
-const COL_ANGLES_DEG = [-14.0, 0.0, 14.0]; // Izquierda (Norte), Centro, Derecha (Sur)
-const ROW_Y_TOP = 3.55;    // Recuadro: 3.06m..4.04m | Placa: 2.73m..3.00m
-const ROW_Y_BOTTOM = 1.96; // Recuadro: 1.47m..2.45m | Placa: 1.14m..1.41m (sobre mesa 0.885m)
+const COL_ANGLES_DEG = [-15.6, 0.0, 15.6]; // Cuerda centro-centro 2.090m -> gap 0.434m (idéntico al 0.437m previo)
+const ROW_Y_TOP = 3.77;    // Recuadro: 3.207m..4.334m | Placa: 2.829m..3.141m (59cm bajo cenefa)
+const ROW_Y_BOTTOM = 1.99; // Recuadro: 1.427m..2.554m | Placa: 1.049m..1.361m (gap vertical 0.275m; 19cm sobre mesa 0.86m)
 
 const gastronomiaItems = [
   // Fila 1 (Superior)
@@ -335,7 +509,7 @@ const gastronomiaItems = [
   { id: 'perruri',      label: 'PERRURI',           row: 1, col: 2, y: ROW_Y_BOTTOM, deg: COL_ANGLES_DEG[2] }
 ];
 
-const TEXT_SIZE = 0.082; // Tamaño uniforme legible en VR que cabe holgado en 1.288m de cantera
+const TEXT_SIZE = 0.082 * SCALE_15; // 0.0943m (+15% exacto)
 
 for (const item of gastronomiaItems) {
   const rad = (item.deg * Math.PI) / 180;

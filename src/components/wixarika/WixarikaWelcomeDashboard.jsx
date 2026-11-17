@@ -747,9 +747,17 @@ export function WixarikaWelcomeDashboard({
       )}
 
       {/* ===================================================================== */}
-      {/* VISTA C: LIBROS RECOMENDADOS (CON EL NUEVO DISEÑO MONUMENTAL)         */}
+      {/* VISTA C: LIBROS RECOMENDADOS (ESTÁNDAR TIPOGRÁFICO DEIDADES/FIESTAS)  */}
       {/* ===================================================================== */}
-      {currentView === 'books' && (
+      {currentView === 'books' && (() => {
+        const bookTitleText = currentBook?.title || currentBook?.titulo || 'Libro sin título';
+        const bookTitleFontSize =
+          bookTitleText.length <= 28 ? 0.240 : bookTitleText.length <= 58 ? 0.205 : 0.180;
+        const authorY = bookTitleText.length <= 28 ? 0.88 : 0.72;
+        const rightColX = -panelWidth / 2 + panelWidth / 3 + (panelWidth * 2) / 3 / 2;
+        const rightColWidth = (panelWidth * 2 / 3) * 0.92; // ~3.92m
+
+        return (
         <group position={[0, 0, 0.005]}>
           {/* Barra Superior con botón Volver al Menú (solo icono de flecha), título y paginador */}
           <group position={[0, 1.48, 0]}>
@@ -769,16 +777,17 @@ export function WixarikaWelcomeDashboard({
             />
 
             <Text
-              position={[-0.45, 0.02, 0]}
-              fontSize={0.140}
+              position={[-0.38, 0.02, 0]}
+              fontSize={0.145}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
+              maxWidth={4.10}
             >
               LIBROS RECOMENDADOS · BIBLIOTECA SOLÓN ARGÜELLO
             </Text>
 
-            {/* Contador de libros: X de N (sin botones de navegación en header) */}
+            {/* Contador de libros: X de N */}
             <group position={[2.40, 0, 0]}>
               <mesh position={[0, 0, -0.001]}>
                 <planeGeometry args={[1.00, 0.24]} />
@@ -786,7 +795,7 @@ export function WixarikaWelcomeDashboard({
               </mesh>
               <Text
                 position={[0, 0, 0.001]}
-                fontSize={0.095}
+                fontSize={0.115}
                 color="#1c1917"
                 anchorX="center"
                 anchorY="middle"
@@ -803,78 +812,78 @@ export function WixarikaWelcomeDashboard({
           </group>
 
           {/* Línea divisoria vertical ceremonial de oro entre las dos columnas (1/3 y 2/3) */}
-          <mesh position={[-panelWidth / 2 + panelWidth / 3, -0.12, 0.002]}>
-            <planeGeometry args={[0.008, 2.70]} />
+          <mesh position={[-panelWidth / 2 + panelWidth / 3, -0.15, 0.002]}>
+            <planeGeometry args={[0.008, 2.86]} />
             <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
           </mesh>
 
           {/* ================================================================= */}
           {/* COLUMNA IZQUIERDA (1/3 DEL PANEL, ~2.13m): PORTADA DEL LIBRO      */}
           {/* ================================================================= */}
-          <group position={[-panelWidth / 2 + (panelWidth / 3) / 2, -0.12, 0.005]}>
+          <group position={[-panelWidth / 2 + (panelWidth / 3) / 2, 0, 0.005]}>
             {/* Marco de nogal exterior de la portada */}
-            <mesh position={[0, 0.14, 0.001]}>
-              <planeGeometry args={[1.96, 1.96]} />
+            <mesh position={[0, 0.18, 0.001]}>
+              <planeGeometry args={[1.96, 2.12]} />
               <meshBasicMaterial color="#5c381e" side={THREE.DoubleSide} />
             </mesh>
             {/* Marco dorado de la portada */}
-            <mesh position={[0, 0.14, 0.002]}>
-              <planeGeometry args={[1.92, 1.92]} />
+            <mesh position={[0, 0.18, 0.002]}>
+              <planeGeometry args={[1.92, 2.08]} />
               <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
             </mesh>
 
             {/* Portada del libro con textura segura o fondo cantera */}
-            <group position={[0, 0.14, 0]}>
+            <group position={[0, 0.18, 0]}>
               <DashboardBookCover
                 url={currentBook?.portadaUrl}
                 width={1.88}
-                height={1.88}
+                height={2.04}
               />
             </group>
 
             {/* Rombos Tsikuri en las esquinas de la portada */}
-            <group position={[0, 0.14, 0.006]}>
+            <group position={[0, 0.18, 0.006]}>
               <TsikuriDiamond
                 size={0.060}
-                position={[-1.88 / 2 + 0.045, 1.88 / 2 - 0.045, 0]}
+                position={[-1.88 / 2 + 0.045, 2.04 / 2 - 0.045, 0]}
                 colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
               />
               <TsikuriDiamond
                 size={0.060}
-                position={[1.88 / 2 - 0.045, 1.88 / 2 - 0.045, 0]}
+                position={[1.88 / 2 - 0.045, 2.04 / 2 - 0.045, 0]}
                 colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
               />
               <TsikuriDiamond
                 size={0.060}
-                position={[-1.88 / 2 + 0.045, -1.88 / 2 + 0.045, 0]}
+                position={[-1.88 / 2 + 0.045, -2.04 / 2 + 0.045, 0]}
                 colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
               />
               <TsikuriDiamond
                 size={0.060}
-                position={[1.88 / 2 - 0.045, -1.88 / 2 + 0.045, 0]}
+                position={[1.88 / 2 - 0.045, -2.04 / 2 + 0.045, 0]}
                 colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
               />
             </group>
 
-            {/* Placa inferior con categoría y disponibilidad del libro */}
-            <group position={[0, -0.98, 0]}>
+            {/* Placa inferior con categoría y disponibilidad (estándar 0.115 de Deidades/Fiestas) */}
+            <group position={[0, -1.24, 0]}>
               <mesh position={[0, 0, 0.001]}>
-                <planeGeometry args={[1.88, 0.40]} />
+                <planeGeometry args={[1.88, 0.44]} />
                 <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
               </mesh>
               <mesh position={[0, 0, 0]}>
-                <planeGeometry args={[1.92, 0.44]} />
+                <planeGeometry args={[1.92, 0.48]} />
                 <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
               </mesh>
               <Text
                 position={[0, 0, 0.003]}
-                fontSize={0.078}
+                fontSize={0.115}
                 color="#78350f"
                 anchorX="center"
                 anchorY="middle"
-                letterSpacing={0.01}
-                lineHeight={1.15}
-                maxWidth={1.78}
+                letterSpacing={0.02}
+                lineHeight={1.18}
+                maxWidth={1.80}
                 textAlign="center"
               >
                 {((currentBook?.category || currentBook?.badge || 'ACERVO CULTURAL') + (currentBook?.available ? ' · DISPONIBLE' : '')).toUpperCase()}
@@ -884,61 +893,61 @@ export function WixarikaWelcomeDashboard({
 
           {/* ================================================================= */}
           {/* COLUMNA DERECHA (2/3 DEL PANEL, ~4.27m): DATOS, RESEÑA Y METADATOS */}
-
-          <group position={[-panelWidth / 2 + (panelWidth / 3) + (panelWidth * 2 / 3) / 2, -0.05, 0.005]}>
-            {/* 1. Encabezado: Título Monumental y Autor con anchorY='top' y cálculo limpio */}
-            <group position={[0, 1.35, 0]}>
+          {/* ================================================================= */}
+          <group position={[rightColX, 0, 0.005]}>
+            {/* 1. Encabezado: Título Monumental y Autor (estándar Deidades/Fiestas) */}
+            <group position={[0, 0, 0]}>
               <Text
-                position={[0, 0, 0]}
-                fontSize={0.165}
+                position={[0, 1.25, 0]}
+                fontSize={bookTitleFontSize}
                 color="#1c1917"
                 anchorX="center"
                 anchorY="top"
-                maxWidth={3.85}
+                maxWidth={rightColWidth}
                 textAlign="center"
-                lineHeight={1.16}
+                lineHeight={1.14}
               >
-                {currentBook?.title || currentBook?.titulo || 'Libro sin título'}
+                {bookTitleText}
               </Text>
 
               <Text
-                position={[0, -0.42, 0]}
-                fontSize={0.105}
+                position={[0, authorY, 0]}
+                fontSize={0.120}
                 color="#78350f"
                 anchorX="center"
                 anchorY="top"
-                maxWidth={3.85}
+                maxWidth={rightColWidth}
                 textAlign="center"
-                lineHeight={1.20}
+                lineHeight={1.22}
               >
                 {`Autor: ${currentBook?.author || currentBook?.autor || 'Desconocido'}${currentBook?.year ? ` (${currentBook.year})` : ''}`}
               </Text>
 
               {/* Línea divisoria dorada debajo del autor */}
-              <mesh position={[0, -0.60, 0]}>
-                <planeGeometry args={[3.85, 0.006]} />
+              <mesh position={[0, 0.39, 0]}>
+                <planeGeometry args={[rightColWidth * 0.98, 0.008]} />
                 <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
               </mesh>
             </group>
 
-            {/* 2. Recuadro de Descripción / Sinopsis (altura 0.82m, centrado en Y=0.48) */}
-            <group position={[0, 0.36, 0]}>
+            {/* 2. Recuadro de Descripción / Sinopsis (fontSize 0.142 idéntico a Deidades/Fiestas) */}
+            <group position={[0, -0.08, 0]}>
               <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[3.85, 0.82]} />
+                <planeGeometry args={[rightColWidth * 0.98, 0.86]} />
                 <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
               </mesh>
               <mesh position={[0, 0, -0.002]}>
-                <planeGeometry args={[3.88, 0.85]} />
+                <planeGeometry args={[rightColWidth * 0.98 + 0.03, 0.89]} />
                 <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
               </mesh>
 
               <Text
-                position={[-1.80, 0, 0.002]}
-                fontSize={0.108}
+                position={[-rightColWidth * 0.46, 0, 0.002]}
+                fontSize={0.142}
                 color="#1c1917"
                 anchorX="left"
                 anchorY="middle"
-                maxWidth={3.60}
+                maxWidth={rightColWidth * 0.92}
                 textAlign="left"
                 lineHeight={1.32}
               >
@@ -946,52 +955,54 @@ export function WixarikaWelcomeDashboard({
               </Text>
             </group>
 
-            {/* 3. Viñetas de Atributos Sagrados (Debajo del recuadro, en Y=-0.22 con espaciado 0.22m) */}
-            <group position={[0, -0.58, 0]}>
+            {/* 3. Viñetas de Atributos (fontSize 0.130 idéntico a Deidades/Fiestas) */}
+            <group position={[0, -0.66, 0]}>
               <Text
-                position={[-1.80, 0.20, 0]}
-                fontSize={0.105}
+                position={[-rightColWidth * 0.46, 0, 0]}
+                fontSize={0.130}
                 color="#1c1917"
                 anchorX="left"
                 anchorY="middle"
-                maxWidth={3.80}
+                maxWidth={rightColWidth * 0.96}
+                lineHeight={1.25}
               >
-                {`• Código de Biblioteca / ISBN: ${currentBook?.callNumber || currentBook?.code || currentBook?.isbn || '299.72 ECH-2022'}`}
+                {`• Código / ISBN: ${currentBook?.callNumber || currentBook?.code || currentBook?.isbn || '299.72 ECH-2022'}`}
               </Text>
 
               <Text
-                position={[-1.80, -0.02, 0]}
-                fontSize={0.105}
+                position={[-rightColWidth * 0.46, -0.21, 0]}
+                fontSize={0.130}
                 color="#1c1917"
                 anchorX="left"
                 anchorY="middle"
-                maxWidth={3.80}
+                maxWidth={rightColWidth * 0.96}
+                lineHeight={1.25}
               >
-                {`• Clasificación Cultural: ${currentBook?.category || 'Cosmovisión Wixárika'} · ${currentBook?.badge || 'SALA DE LECTURA'}`}
+                {`• Clasificación: ${currentBook?.category || 'Cosmovisión Wixárika'} · ${currentBook?.badge || 'SALA DE LECTURA'}`}
               </Text>
 
               <Text
-                position={[-1.80, -0.24, 0]}
-                fontSize={0.105}
+                position={[-rightColWidth * 0.46, -0.42, 0]}
+                fontSize={0.130}
                 color="#1c1917"
                 anchorX="left"
                 anchorY="middle"
-                maxWidth={3.80}
+                maxWidth={rightColWidth * 0.96}
+                lineHeight={1.25}
               >
-                {`• Estatus de Préstamo: ${currentBook?.available !== false ? 'Disponible para Consulta en Sala y Préstamo a Domicilio' : 'En Préstamo (Solicitar reserva en mostrador)'}`}
+                {`• Estatus: ${currentBook?.available !== false ? 'Disponible en Sala y Préstamo a Domicilio' : 'En Préstamo (Solicitar reserva en mostrador)'}`}
               </Text>
             </group>
 
-            
             {/* 4. Barra Inferior de Navegación de Libros (Anterior / Siguiente) */}
-            <group position={[0, -1.18, 0]}>
+            <group position={[0, -1.42, 0]}>
               <WixarikaVRButton
                 id="btn-books-nav-prev"
                 label="Libro Anterior"
                 iconName="chevron-left"
                 variant="cantera"
-                width={1.65}
-                height={0.28}
+                width={1.74}
+                height={0.30}
                 position={[-1.00, 0, 0]}
                 onClick={handlePrevBook}
                 registerMesh={registerMesh}
@@ -1005,8 +1016,8 @@ export function WixarikaWelcomeDashboard({
                 label="Libro Siguiente"
                 iconName="chevron-right"
                 variant="cantera"
-                width={1.65}
-                height={0.28}
+                width={1.74}
+                height={0.30}
                 position={[1.00, 0, 0]}
                 onClick={handleNextBook}
                 registerMesh={registerMesh}
@@ -1017,7 +1028,8 @@ export function WixarikaWelcomeDashboard({
             </group>
           </group>
         </group>
-      )}
+        );
+      })()}
 
       {/* ===================================================================== */}
       {/* VISTA D: SALA AUDIOVISUAL Y VIDEOS DOCUMENTALES                      */}
