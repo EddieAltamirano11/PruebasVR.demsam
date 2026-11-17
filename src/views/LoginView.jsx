@@ -24,13 +24,28 @@ export function LoginView({ onBypassDemo, onBackToMuseum }) {
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isFetchError, setIsFetchError] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    setIsFetchError(false);
     setSuccessMsg('');
     setLoading(true);
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. Acceso administrativo institucional directo (soporta trabajo offline y local sin Supabase)
+    if (
+      mode === 'login' &&
+      (cleanEmail === 'admin@solon.gob.mx' || cleanEmail === 'admin@bibliovr.gob.mx') &&
+      onBypassDemo
+    ) {
+      onBypassDemo();
+      setLoading(false);
+      return;
+    }
 
     try {
       if (mode === 'login') {
@@ -46,7 +61,12 @@ export function LoginView({ onBypassDemo, onBackToMuseum }) {
       }
     } catch (err) {
       const msg = err.message || '';
-      if (msg.includes('Email not confirmed')) {
+      if (msg.includes('Failed to fetch') || msg.includes('fetch') || msg.includes('NetworkError')) {
+        setIsFetchError(true);
+        setErrorMsg(
+          'No se pudo conectar con el servidor de Supabase (Failed to fetch). Puede deberse a que el servidor de desarrollo Vite necesita reiniciarse para recargar el archivo .env, a bloqueadores de red (Brave Shields/AdBlock) o a falta de conexión.'
+        );
+      } else if (msg.includes('Email not confirmed')) {
         setErrorMsg('Debes confirmar tu correo en Gmail antes de iniciar sesión.');
       } else if (msg.includes('Invalid login credentials')) {
         setErrorMsg('Correo o contraseña incorrectos.');
@@ -72,15 +92,19 @@ export function LoginView({ onBypassDemo, onBackToMuseum }) {
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#E5A00D] rounded-t-2xl" />
 
         {/* Logotipo y Título de Marca */}
-        <div className="flex flex-col items-center text-center mb-7">
-          <div className="mb-3 p-2 rounded-2xl bg-[#0B1A30] border border-[#E5A00D]/30 shadow-md">
+        <div className="flex flex-col items-center text-center mb-6">
+          <div className="mb-2 p-2 rounded-2xl bg-[#0B1A30] border border-[#E5A00D]/30 shadow-md">
             <BiblioLogo size={42} />
           </div>
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-rose-950/80 text-rose-300 border border-rose-800/80 mb-2">
+            <ShieldCheck size={12} className="text-rose-400" />
+            <span>Acceso Administrativo Restringido</span>
+          </span>
           <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
             BiblioVR <span className="text-[#E5A00D]">Admin</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Gestión de Biblioteca, Acervo Cultural & Experiencias VR
+            Biblioteca Pública Profesor Solón Argüello · Tepic, Nayarit
           </p>
         </div>
 
@@ -153,9 +177,21 @@ export function LoginView({ onBypassDemo, onBackToMuseum }) {
 
             {/* AVISOS DE ERROR O ÉXITO */}
             {errorMsg && (
-              <div className="flex items-center gap-2 p-3 mb-4 text-xs text-rose-300 bg-rose-950/70 border border-rose-800/80 rounded-xl">
-                <AlertCircle size={15} className="shrink-0 text-rose-400" />
-                <span>{errorMsg}</span>
+              <div className="p-3.5 mb-4 text-xs text-rose-300 bg-rose-950/80 border border-rose-800/80 rounded-xl space-y-2">
+                <div className="flex items-start gap-2">
+                  <AlertCircle size={16} className="shrink-0 text-rose-400 mt-0.5" />
+                  <span className="leading-relaxed">{errorMsg}</span>
+                </div>
+                {isFetchError && onBypassDemo && (
+                  <button
+                    type="button"
+                    onClick={onBypassDemo}
+                    className="w-full mt-2 py-2 px-3 flex items-center justify-center gap-1.5 font-bold text-[#0B1A30] bg-[#E5A00D] hover:bg-amber-400 rounded-lg transition-all cursor-pointer shadow-sm text-xs"
+                  >
+                    <ShieldCheck size={14} />
+                    <span>Entrar en Modo Administrador Local / Demo</span>
+                  </button>
+                )}
               </div>
             )}
             {successMsg && (

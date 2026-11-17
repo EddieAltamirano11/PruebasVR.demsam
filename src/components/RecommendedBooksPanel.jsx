@@ -1,6 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import {
+  addRequestedBook,
+  removeRequestedBook,
+  isBookRequested,
+  getRequestedBooks,
+  subscribeRequestedBooks
+} from '../services/counterCheckoutService';
+import {
   BookOpen,
   Sparkles,
   X,
@@ -97,13 +104,21 @@ export function RecommendedBooksPanel({
   allStations = [],
   onSelectStation = () => {},
   autoOpenOnFocus = true,
-  onToggleAutoOpen = () => {}
+  onToggleAutoOpen = () => {},
+  onOpenCheckout = () => {}
 }) {
   const [supabaseBooks, setSupabaseBooks] = useState([]);
   const [showDemoPreview, setShowDemoPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStationFilter, setSelectedStationFilter] = useState('all');
-  const [requestedBookId, setRequestedBookId] = useState(null);
+  const [requestedList, setRequestedList] = useState(() => getRequestedBooks());
+
+  useEffect(() => {
+    const unsub = subscribeRequestedBooks((list) => {
+      setRequestedList(list);
+    });
+    return () => unsub();
+  }, []);
 
   // Consulta reactiva a Supabase para cuando se introduzcan libros reales
   useEffect(() => {
@@ -155,11 +170,12 @@ export function RecommendedBooksPanel({
     });
   }, [rawBooks, activeStation, selectedStationFilter, searchQuery]);
 
-  const handleRequestBook = (book) => {
-    setRequestedBookId(book.id);
-    setTimeout(() => {
-      setRequestedBookId(null);
-    }, 3000);
+  const handleToggleRequestBook = (book) => {
+    if (isBookRequested(book.id)) {
+      removeRequestedBook(book.id);
+    } else {
+      addRequestedBook(book);
+    }
   };
 
   return (
@@ -319,6 +335,22 @@ export function RecommendedBooksPanel({
         </div>
       </div>
 
+      {/* BANNER DE LIBROS APARTADOS PARA MOSTRADOR (SPRINT 5) */}
+      {requestedList.length > 0 && (
+        <div className="mx-4 mt-3 p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-between gap-2 shadow-xs">
+          <div className="flex items-center gap-2 text-xs text-amber-300 font-bold">
+            <CheckCircle2 size={16} className="text-amber-400 shrink-0" />
+            <span>{requestedList.length} {requestedList.length === 1 ? 'libro apartado' : 'libros apartados'} para mostrador</span>
+          </div>
+          <button
+            onClick={onOpenCheckout}
+            className="px-3 py-1 bg-[#E5A00D] hover:bg-amber-400 text-[#0B1A30] font-black text-xs rounded-lg transition-all shadow-xs cursor-pointer shrink-0"
+          >
+            Ficha de Salida →
+          </button>
+        </div>
+      )}
+
       {/* 4. CONTENIDO PRINCIPAL: LISTADO O ESTADO VACÍO PREPARADO */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
         {filteredBooks.length > 0 ? (
@@ -335,8 +367,6 @@ export function RecommendedBooksPanel({
             </div>
 
             {filteredBooks.map((book) => {
-              const isRequested = requestedBookId === book.id;
-
               return (
                 <article
                   key={book.id}
@@ -361,27 +391,31 @@ export function RecommendedBooksPanel({
 
                   {/* Botón de Acción Interactivo */}
                   <div className="pt-2 border-t border-slate-800/60 flex items-center justify-end">
-                    <button
-                      onClick={() => handleRequestBook(book)}
-                      disabled={isRequested}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                        isRequested
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-[#E5A00D] hover:bg-amber-400 text-slate-950 shadow-sm'
-                      }`}
-                    >
-                      {isRequested ? (
-                        <>
-                          <CheckCircle2 size={13} />
-                          <span>¡Apartado en Mostrador!</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Apartar en Biblioteca</span>
-                          <ChevronRight size={13} />
-                        </>
-                      )}
-                    </button>
+                    {(() => {
+                      const isRequested = isBookRequested(book.id);
+                      return (
+                        <button
+                          onClick={() => handleToggleRequestBook(book)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                            isRequested
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                              : 'bg-[#E5A00D] hover:bg-amber-400 text-slate-950 shadow-sm'
+                          }`}
+                        >
+                          {isRequested ? (
+                            <>
+                              <CheckCircle2 size={13} />
+                              <span>¡Apartado en Mostrador! (Quitar)</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Apartar para Mostrador</span>
+                              <ChevronRight size={13} />
+                            </>
+                          )}
+                        </button>
+                      );
+                    })()}
                   </div>
                 </article>
               );

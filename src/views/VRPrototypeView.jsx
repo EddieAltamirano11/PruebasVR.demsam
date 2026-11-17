@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { MuseumScene, CULTURAL_STATIONS } from '../components/MuseumScene.jsx';
 import { RecommendedBooksPanel } from '../components/RecommendedBooksPanel.jsx';
+import { CounterCheckoutModal } from '../components/CounterCheckoutModal.jsx';
 import { Glasses, ArrowLeft, Crosshair, Sparkles, BookOpen } from 'lucide-react';
 
 /**
@@ -12,6 +13,7 @@ export function VRPrototypeView({ onBackToDashboard }) {
   const [activeStation, setActiveStation] = useState(null);
   const [isBooksPanelOpen, setIsBooksPanelOpen] = useState(false);
   const [autoOpenOnFocus, _setAutoOpenOnFocus] = useState(true);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const onRecenterRef = useRef(null);
   const onWebXRTriggerRef = useRef(null);
@@ -107,6 +109,28 @@ export function VRPrototypeView({ onBackToDashboard }) {
         onOpenBooksPanel={handleOpenBooksPanel}
         isBooksOpen={isBooksPanelOpen}
         onToggleBooksOpen={setIsBooksPanelOpen}
+      />
+
+      {/* Panel Lateral de Libros Recomendados (Sprint 3) */}
+      <RecommendedBooksPanel
+        isOpen={isBooksPanelOpen}
+        onClose={() => setIsBooksPanelOpen(false)}
+        activeStation={activeStation}
+        allStations={CULTURAL_STATIONS}
+        onSelectStation={handleStationChange}
+        autoOpenOnFocus={autoOpenOnFocus}
+        onToggleAutoOpen={() => _setAutoOpenOnFocus(!autoOpenOnFocus)}
+        onOpenCheckout={() => setIsCheckoutOpen(true)}
+      />
+
+      {/* Pantalla de Salida con Resumen de Libros para Pedir en Mostrador (Sprint 5) */}
+      <CounterCheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        onFinishVisit={() => {
+          setIsCheckoutOpen(false);
+          setIsBooksPanelOpen(false);
+        }}
       />
 
       {/* Barra Flotante Superior (Visible en modo normal) */}

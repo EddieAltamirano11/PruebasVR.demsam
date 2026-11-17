@@ -1,10 +1,13 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
-import { MuseumScene } from './components/MuseumScene.jsx';
+import { MuseumScene, CULTURAL_STATIONS } from './components/MuseumScene.jsx';
 import { RecommendedBooksPanel } from './components/RecommendedBooksPanel.jsx';
+import { CounterCheckoutModal } from './components/CounterCheckoutModal.jsx';
+import { getRequestedBooks, subscribeRequestedBooks } from './services/counterCheckoutService.js';
 import { AdminLayout } from './components/AdminLayout.jsx';
 import { DashboardView } from './views/DashboardView.jsx';
 import { BooksManagementView } from './views/BooksManagementView.jsx';
+import { CulturesManagementView } from './views/CulturesManagementView.jsx';
 import { WireframesView } from './views/WireframesView.jsx';
 import { VRPrototypeView } from './views/VRPrototypeView.jsx';
 import { LoginView } from './views/LoginView.jsx';
@@ -16,9 +19,77 @@ import { LoginView } from './views/LoginView.jsx';
  */
 function AppContent() {
   const { user, signOut } = useAuth();
-  const [isDemoMode, setIsDemoMode] = useState(false);
-  const [viewMode, setViewMode] = useState('museum'); // 'museum' | 'admin'
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'books' | 'wireframes' | 'vr'
+  const [isDemoMode, setIsDemoMode] = useState(() => {
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        return window.sessionStorage.getItem('bibliovr_admin_session') === 'true';
+      }
+    } catch {
+      // ignore
+    }
+    return false;
+  });
+
+  const handleSetDemoMode = useCallback((val) => {
+    setIsDemoMode(val);
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        if (val) {
+          window.sessionStorage.setItem('bibliovr_admin_session', 'true');
+        } else {
+          window.sessionStorage.removeItem('bibliovr_admin_session');
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+  // Detección segura del endpoint administrativo (/admin o #/admin)
+  const checkIsAdminEndpoint = useCallback(() => {
+    if (typeof window === 'undefined') return false;
+    const path = (window.location.pathname || '').toLowerCase();
+    const hash = (window.location.hash || '').toLowerCase();
+    const search = (window.location.search || '').toLowerCase();
+    return (
+      path === '/admin' ||
+      path.startsWith('/admin/') ||
+      hash === '#/admin' ||
+      hash.startsWith('#/admin') ||
+      search.includes('admin')
+    );
+  }, []);
+
+  const [viewMode, setViewMode] = useState(() => (checkIsAdminEndpoint() ? 'admin' : 'museum'));
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'books' | 'cultures' | 'wireframes' | 'vr'
+
+  const navigateTo = useCallback((target) => {
+    if (target === 'museum' || target === '/') {
+      const cleanPath = (window.location.pathname || '').replace(/\/admin.*$/i, '') || '/';
+      window.history.pushState(null, '', cleanPath);
+      if (window.location.hash.toLowerCase().includes('admin')) {
+        window.location.hash = '';
+      }
+      setViewMode('museum');
+    } else if (target === 'admin' || target === '/admin') {
+      window.history.pushState(null, '', '/admin');
+      setViewMode('admin');
+    }
+  }, []);
+
+  // Sincronización reactiva con URL del navegador (popstate y hashchange)
+  useEffect(() => {
+    const handleUrlSync = () => {
+      const isAdmin = checkIsAdminEndpoint();
+      setViewMode(isAdmin ? 'admin' : 'museum');
+    };
+
+    window.addEventListener('popstate', handleUrlSync);
+    window.addEventListener('hashchange', handleUrlSync);
+    return () => {
+      window.removeEventListener('popstate', handleUrlSync);
+      window.removeEventListener('hashchange', handleUrlSync);
+    };
+  }, [checkIsAdminEndpoint]);
 
   // Estados de la experiencia 3D y VR
   const [vrMode, setVrMode] = useState(false);
@@ -26,6 +97,15 @@ function AppContent() {
   const [activeStation, setActiveStation] = useState(null);
   const [isBooksOpen, setIsBooksOpen] = useState(false);
   const [autoOpenOnFocus] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [requestedCount, setRequestedCount] = useState(() => getRequestedBooks().length);
+
+  useEffect(() => {
+    const unsub = subscribeRequestedBooks((list) => {
+      setRequestedCount(list.length);
+    });
+    return () => unsub();
+  }, []);
 
   const onRecenterRef = useRef(null);
   const onWebXRTriggerRef = useRef(null);
@@ -33,13 +113,12 @@ function AppContent() {
   const isAuthenticated = Boolean(user) || isDemoMode;
 
   const handleSignOut = async () => {
-    if (isDemoMode) {
-      setIsDemoMode(false);
-    } else {
+    handleSetDemoMode(false);
+    if (!isDemoMode) {
       await signOut();
     }
     setActiveTab('dashboard');
-    setViewMode('museum');
+    navigateTo('/');
   };
 
   // Manejador cuando cambia la estación enfocada en 3D
@@ -119,13 +198,13 @@ function AppContent() {
     }
   }, []);
 
-  // Si el usuario decide entrar a la vista administrativa de BiblioVR:
+  // Si el usuario accede al endpoint administrativo (/admin o #/admin):
   if (viewMode === 'admin') {
     if (!isAuthenticated) {
       return (
         <LoginView
-          onBypassDemo={() => setIsDemoMode(true)}
-          onBackToMuseum={() => setViewMode('museum')}
+          onBypassDemo={() => handleSetDemoMode(true)}
+          onBackToMuseum={() => navigateTo('/')}
         />
       );
     }
@@ -134,23 +213,20 @@ function AppContent() {
       <AdminLayout
         activeTab={activeTab}
         onSelectTab={(tab) => {
-          if (tab === 'vr') {
-            setViewMode('museum');
-          } else {
-            setActiveTab(tab);
-          }
+          setActiveTab(tab);
         }}
         onSignOut={handleSignOut}
       >
         {activeTab === 'dashboard' && (
           <DashboardView
             onNavigate={(tab) => {
-              if (tab === 'vr') setViewMode('museum');
+              if (tab === 'vr') setActiveTab('vr');
               else setActiveTab(tab);
             }}
           />
         )}
         {activeTab === 'books' && <BooksManagementView />}
+        {activeTab === 'cultures' && <CulturesManagementView />}
         {activeTab === 'wireframes' && <WireframesView />}
         {activeTab === 'vr' && (
           <VRPrototypeView onBackToDashboard={() => setActiveTab('dashboard')} />
@@ -177,6 +253,27 @@ function AppContent() {
         onToggleBooksOpen={setIsBooksOpen}
       />
 
+      {/* Panel Lateral de Libros Recomendados (Sprint 3) */}
+      <RecommendedBooksPanel
+        isOpen={isBooksOpen}
+        onClose={() => setIsBooksOpen(false)}
+        activeStation={activeStation}
+        allStations={CULTURAL_STATIONS}
+        onSelectStation={handleStationChange}
+        autoOpenOnFocus={autoOpenOnFocus}
+        onOpenCheckout={() => setIsCheckoutOpen(true)}
+      />
+
+      {/* Pantalla de Salida con Resumen de Libros para Pedir en Mostrador (Sprint 5 - Luis Carlos Durán) */}
+      <CounterCheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        onFinishVisit={() => {
+          setIsCheckoutOpen(false);
+          setIsBooksOpen(false);
+        }}
+      />
+
       {/* Barra de Controles Superior (No VR) */}
       {!vrMode && (
         <div
@@ -192,41 +289,70 @@ function AppContent() {
             pointerEvents: 'none'
           }}
         >
-          {/* Botón para acceder al Panel de Administración BiblioVR */}
-          <button
-            onClick={() => setViewMode('admin')}
-            style={{
-              padding: '9px 16px',
-              fontSize: '13px',
-              fontWeight: '700',
-              color: '#f8fafc',
-              background: 'rgba(11, 26, 48, 0.85)',
-              border: '1px solid rgba(229, 160, 13, 0.6)',
-              borderRadius: '24px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
-              backdropFilter: 'blur(8px)',
-              pointerEvents: 'auto',
-              transition: 'all 0.2s ease'
-            }}
-            title="Abrir Panel de Gestión BiblioVR (Dashboard, Libros, Wireframes)"
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e5a00d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 21h18"/>
-              <path d="M5 21V10"/>
-              <path d="M19 21V10"/>
-              <path d="M9 21V10"/>
-              <path d="M15 21V10"/>
-              <path d="M2 10h20"/>
-              <path d="m12 3 10 7H2z"/>
-            </svg>
-            <span>Panel BiblioVR</span>
-          </button>
+          {/* El botón de administración se encuentra protegido y oculto para el público general.
+              Solamente se muestra este acceso directo al panel cuando el administrador ya ha iniciado sesión previamente. */}
+          {isAuthenticated ? (
+            <button
+              onClick={() => navigateTo('/admin')}
+              style={{
+                padding: '9px 16px',
+                fontSize: '13px',
+                fontWeight: '700',
+                color: '#f8fafc',
+                background: 'rgba(11, 26, 48, 0.90)',
+                border: '1px solid rgba(229, 160, 13, 0.8)',
+                borderRadius: '24px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(8px)',
+                pointerEvents: 'auto',
+                transition: 'all 0.2s ease'
+              }}
+              title="Volver al Panel de Administración (/admin)"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e5a00d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5"/>
+                <path d="m12 19-7-7 7-7"/>
+              </svg>
+              <span>← Panel Admin</span>
+            </button>
+          ) : (
+            <div />
+          )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', pointerEvents: 'auto' }}>
+            {/* Botón: Pantalla de salida con resumen de libros para pedir en mostrador (Sprint 5) */}
+            <button
+              onClick={() => setIsCheckoutOpen(true)}
+              style={{
+                padding: '9px 16px',
+                fontSize: '13px',
+                fontWeight: '700',
+                color: requestedCount > 0 ? '#0B1A30' : '#f8fafc',
+                background: requestedCount > 0 ? '#E5A00D' : 'rgba(11, 26, 48, 0.85)',
+                border: requestedCount > 0 ? '1px solid #f59e0b' : '1px solid rgba(229, 160, 13, 0.6)',
+                borderRadius: '24px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: requestedCount > 0 ? '0 4px 14px rgba(229, 160, 13, 0.4)' : '0 4px 14px rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(8px)',
+                transition: 'all 0.2s ease'
+              }}
+              title="Abrir resumen de libros para pedir en mostrador"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                <path d="M6 6h10"/>
+                <path d="M6 10h10"/>
+              </svg>
+              <span>{requestedCount > 0 ? `Mostrador (${requestedCount})` : 'Pedir en Mostrador'}</span>
+            </button>
+
             {/* Botón de recentrar orientación */}
             <button
               onClick={() => onRecenterRef.current?.()}

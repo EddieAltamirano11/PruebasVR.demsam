@@ -37,7 +37,9 @@ export function AuthModal({ isOpen, onClose }) {
       }
     } catch (err) {
       const msg = err.message || '';
-      if (msg.includes('Email not confirmed')) {
+      if (msg.includes('Failed to fetch') || msg.includes('fetch') || msg.includes('NetworkError')) {
+        setErrorMsg('No se pudo conectar con el servidor de Supabase (Failed to fetch). Comprueba tu conexión a internet o bloqueadores de red.');
+      } else if (msg.includes('Email not confirmed')) {
         setErrorMsg('Debes confirmar tu correo en Gmail antes de iniciar sesión.');
       } else if (msg.includes('Invalid login credentials')) {
         setErrorMsg('Correo o contraseña incorrectos.');

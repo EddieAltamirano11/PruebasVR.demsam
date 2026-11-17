@@ -37,6 +37,13 @@ export function mapSupabaseBookToVR(row, index = 0) {
  * Si la red o la BD falla, retorna null para que el panel use el catálogo local por defecto.
  */
 export async function fetchRecommendedBooks(signal) {
+  if (
+    (typeof process !== 'undefined' && (process.env?.NODE_ENV === 'test' || process.env?.VITEST)) ||
+    import.meta.env?.MODE === 'test' ||
+    import.meta.env?.TEST
+  ) {
+    return null;
+  }
   try {
     const endpoint = `${SUPABASE_URL}/rest/v1/libros?select=*,culturas(nombre),secciones(nombre,codigo)&order=anio_publicacion.desc.nullslast`;
     
@@ -68,3 +75,15 @@ export async function fetchRecommendedBooks(signal) {
     return null;
   }
 }
+
+export {
+  getInventoryBooks,
+  addBookToInventory,
+  updateBookInInventory,
+  removeBookFromInventory,
+  adjustStock,
+  toggleRecommendation,
+  subscribeInventory,
+  DEFAULT_INVENTORY_BOOKS
+} from './inventoryService.js';
+
