@@ -5,13 +5,11 @@ import * as THREE from 'three';
 import { SoundFX } from '../services/audioService.js';
 import { WIXARIKA_ARTWORKS } from './wixarika/wixarikaArtworksData.js';
 
-const MODEL_URL = './museo_wixarika_v15.glb?v=15.3';
-
 export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   const group = useRef();
   const { gl } = useThree();
-  // Carga del modelo 3D oficial v15 del Museo Wixarika (Gastronomía renovada con los 5 maíces sagrados)
-  const { scene } = useGLTF(MODEL_URL);
+  // Carga del modelo 3D oficial v14 del Museo Wixarika
+  const { scene } = useGLTF('./museo_wixarika_v14.glb');
 
   useEffect(() => {
     if (!scene) return;
@@ -162,5 +160,5 @@ export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   );
 }
 
-useGLTF.preload(MODEL_URL);
+useGLTF.preload('./museo_wixarika_v14.glb');
 export default MuseumModel;
