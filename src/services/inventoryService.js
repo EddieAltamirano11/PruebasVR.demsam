@@ -217,7 +217,7 @@ export async function getInventoryBooks() {
     try {
       const { data, error } = await supabase
         .from('libros')
-        .select('*, culturas(id, nombre, variante), secciones(nombre, codigo)')
+        .select('*, culturas(id, nombre), secciones(id, nombre, codigo)')
         .order('id', { ascending: true });
 
       if (!error && Array.isArray(data) && data.length > 0) {
@@ -226,16 +226,19 @@ export async function getInventoryBooks() {
           titulo: b.titulo || 'Sin título',
           autor: b.autor || 'Autor no especificado',
           cultura_id: b.culturas?.id || b.cultura_id || null,
-          cultura: b.culturas?.nombre || b.cultura || 'Cultura Viva',
+          cultura: b.culturas?.nombre || b.cultura || 'Wixárika (Huichol)',
           isbn: b.isbn || b.codigo || '',
-          codigo: b.codigo || b.isbn || '',
+          codigo: b.secciones?.codigo || b.codigo || b.isbn || 'SEC-VR-01',
           stock: typeof b.stock === 'number' ? b.stock : 1,
           disponible: b.disponible !== false && (b.stock === null || b.stock > 0),
-          recomendado: Boolean(b.recomendado),
+          recomendado: b.recomendado !== undefined ? Boolean(b.recomendado) : true,
           anio: b.anio_publicacion || b.anio || 2024,
           editorial: b.editorial || 'Fondo Cultural de Nayarit',
           seccion: b.secciones?.nombre || b.seccion || 'Sala de Culturas Vivas & VR',
-          sinopsis: b.sinopsis || b.descripcion || ''
+          seccion_id: b.seccion_id || null,
+          sinopsis: b.sinopsis || b.descripcion || `${b.titulo || 'Libro'}. Acervo bibliográfico en resguardo.`,
+          portada_url: b.portada_url || null,
+          archivo_digital_url: b.archivo_digital_url || null
         }));
       }
     } catch (err) {
@@ -247,11 +250,16 @@ export async function getInventoryBooks() {
     rawBooks = loadLocalBooks();
   }
 
-  // Filtrar estrictamente: SOLO libros de culturas vivas que existen en el catálogo
+  // Filtrar: libros de culturas vivas recomendadas o registrados en la base de datos
   const filtered = rawBooks.filter((book) => {
+    if (isSupabaseConfigured && book.id) return true;
     if (book.cultura_id && validCultureIds.has(book.cultura_id)) return true;
-    if (book.cultura && validCultureNames.has(book.cultura.toLowerCase())) return true;
-    // Si no tiene cultura explícita o era de literatura genérica previa, se descarta
+    if (book.cultura) {
+      const lower = book.cultura.toLowerCase();
+      for (const validName of validCultureNames) {
+        if (lower.includes(validName) || validName.includes(lower)) return true;
+      }
+    }
     return false;
   });
 
@@ -289,7 +297,7 @@ export async function addBookToInventory(bookData) {
 
   if (isSupabaseConfigured) {
     try {
-      await supabase.from('libros').insert({
+      const payload = {
         id: newBook.id,
         titulo: newBook.titulo,
         autor: newBook.autor,
@@ -297,11 +305,13 @@ export async function addBookToInventory(bookData) {
         isbn: newBook.isbn,
         stock: newBook.stock,
         disponible: newBook.disponible,
-        recomendado: newBook.recomendado,
         anio_publicacion: newBook.anio,
-        editorial: newBook.editorial,
-        sinopsis: newBook.sinopsis
-      });
+        editorial: newBook.editorial
+      };
+      if (newBook.portada_url) payload.portada_url = newBook.portada_url;
+      if (newBook.archivo_digital_url) payload.archivo_digital_url = newBook.archivo_digital_url;
+
+      await supabase.from('libros').insert(payload);
     } catch (err) {
       console.info('[inventoryService] Inserción en Supabase diferida a local:', err?.message);
     }
@@ -334,21 +344,17 @@ export async function updateBookInInventory(id, updatedFields) {
 
   if (isSupabaseConfigured) {
     try {
-      await supabase
-        .from('libros')
-        .update({
-          titulo: updatedBook.titulo,
-          autor: updatedBook.autor,
-          cultura_id: updatedBook.cultura_id,
-          isbn: updatedBook.isbn,
-          stock: updatedBook.stock,
-          disponible: updatedBook.disponible,
-          recomendado: updatedBook.recomendado,
-          anio_publicacion: updatedBook.anio,
-          editorial: updatedBook.editorial,
-          sinopsis: updatedBook.sinopsis
-        })
-        .eq('id', id);
+      const payload = {
+        titulo: updatedBook.titulo,
+        autor: updatedBook.autor,
+        cultura_id: updatedBook.cultura_id,
+        isbn: updatedBook.isbn,
+        stock: updatedBook.stock,
+        disponible: updatedBook.disponible,
+        anio_publicacion: updatedBook.anio,
+        editorial: updatedBook.editorial
+      };
+      await supabase.from('libros').update(payload).eq('id', id);
     } catch (err) {
       console.info('[inventoryService] Actualización en Supabase diferida a local:', err?.message);
     }

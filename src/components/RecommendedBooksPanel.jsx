@@ -1,5 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import {
+  getInventoryBooks,
+  subscribeInventory
+} from '../services/inventoryService';
 import {
   addRequestedBook,
   removeRequestedBook,
@@ -107,7 +110,7 @@ export function RecommendedBooksPanel({
   onToggleAutoOpen = () => {},
   onOpenCheckout = () => {}
 }) {
-  const [supabaseBooks, setSupabaseBooks] = useState([]);
+  const [inventoryBooks, setInventoryBooks] = useState([]);
   const [showDemoPreview, setShowDemoPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStationFilter, setSelectedStationFilter] = useState('all');
@@ -120,54 +123,101 @@ export function RecommendedBooksPanel({
     return () => unsub();
   }, []);
 
-  // Consulta reactiva a Supabase para cuando se introduzcan libros reales
+  // Consulta reactiva al inventario de libros (Supabase + fallback)
   useEffect(() => {
     let isMounted = true;
-    const fetchBooks = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('libros')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (!error && data && data.length > 0 && isMounted) {
-          setSupabaseBooks(data);
-        }
-      } catch (err) {
-        // En caso de que la tabla aún no exista o esté vacía, permanece vacío
-        console.info('Aún no hay registros en public.libros:', err?.message || err);
+    getInventoryBooks().then((books) => {
+      if (isMounted && Array.isArray(books) && books.length > 0) {
+        setInventoryBooks(books);
       }
-    };
+    });
 
-    fetchBooks();
+    const unsub = subscribeInventory((books) => {
+      if (isMounted && Array.isArray(books) && books.length > 0) {
+        setInventoryBooks(books);
+      }
+    });
+
     return () => {
       isMounted = false;
+      unsub();
     };
   }, []);
 
-  // Fuente de libros: registros de Supabase si existen, o catálogo base de la Biblioteca Solón Argüello
-  const rawBooks =
-    supabaseBooks && supabaseBooks.length > 0
-      ? supabaseBooks
-      : MOCK_RECOMMENDED_BOOKS;
+  // Fuente de libros: inventario sincronizado con Supabase o maqueta base
+  const rawBooks = useMemo(() => {
+    if (showDemoPreview) return MOCK_RECOMMENDED_BOOKS;
+    if (inventoryBooks && inventoryBooks.length > 0) return inventoryBooks;
+    return MOCK_RECOMMENDED_BOOKS;
+  }, [showDemoPreview, inventoryBooks]);
 
-  // Filtrar estrictamente según el tema que se esté visualizando en la biblioteca
+  // Filtrar según el tema enfocado o búsqueda
   const filteredBooks = useMemo(() => {
-    return rawBooks.filter((book) => {
-      const targetStationId = activeStation?.id || (selectedStationFilter !== 'all' ? selectedStationFilter : null);
-      const matchStation =
-        !targetStationId ||
-        book.stationId === targetStationId ||
-        book.themeId === targetStationId ||
-        book.seccion_id === targetStationId;
+    const targetStationId = activeStation?.id || (selectedStationFilter !== 'all' ? selectedStationFilter : null);
 
+    const matches = rawBooks.filter((book) => {
       const matchQuery =
         !searchQuery ||
         (book.titulo && book.titulo.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (book.autor && book.autor.toLowerCase().includes(searchQuery.toLowerCase()));
+        (book.autor && book.autor.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (book.cultura && book.cultura.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      return matchStation && matchQuery;
+      if (!matchQuery) return false;
+
+      if (!targetStationId) return true;
+
+      const titleLower = (book.titulo || '').toLowerCase();
+      const synopsisLower = (book.sinopsis || book.descripcionCorta || '').toLowerCase();
+      const text = `${titleLower} ${synopsisLower}`;
+
+      if (targetStationId === 'deidades') {
+        return (
+          book.stationId === 'deidades' ||
+          text.includes('fuego') ||
+          text.includes('mara\'akame') ||
+          text.includes('tatewari') ||
+          text.includes('venado') ||
+          text.includes('wirikuta') ||
+          text.includes('cosmovisión') ||
+          text.includes('chaquira') ||
+          text.includes('sagrado')
+        );
+      }
+
+      if (targetStationId === 'gastronomia') {
+        return (
+          book.stationId === 'gastronomia' ||
+          text.includes('sabor') ||
+          text.includes('cocina') ||
+          text.includes('etnobotánica') ||
+          text.includes('maíz') ||
+          text.includes('alimento') ||
+          text.includes('gastronom')
+        );
+      }
+
+      if (targetStationId === 'fiestas') {
+        return (
+          book.stationId === 'fiestas' ||
+          text.includes('fiesta') ||
+          text.includes('rito') ||
+          text.includes('ceremonia') ||
+          text.includes('danza') ||
+          text.includes('mitote') ||
+          text.includes('judea') ||
+          text.includes('tambor')
+        );
+      }
+
+      return true;
     });
+
+    // Si el filtro específico por estación no arroja libros pero el catálogo sí tiene, mostrar el acervo completo
+    if (matches.length === 0 && !searchQuery) {
+      return rawBooks;
+    }
+
+    return matches;
   }, [rawBooks, activeStation, selectedStationFilter, searchQuery]);
 
   const handleToggleRequestBook = (book) => {
@@ -383,9 +433,25 @@ export function RecommendedBooksPanel({
                       Autor: <span className="text-slate-200">{book.autor || book.author}</span>
                     </p>
 
-                    {/* Código de libro */}
-                    <div className="inline-block mt-1 px-2.5 py-1 rounded bg-[#0B1A30] border border-amber-500/40 text-xs font-mono text-slate-200">
-                      Código: <strong className="text-amber-400">{book.isbn || book.callNumber || book.codigo || book.code || 'SEC-VR-01'}</strong>
+                    {/* Metadatos: Cultura, Código y Existencias */}
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      {book.cultura && (
+                        <span className="px-2 py-0.5 rounded-md bg-[#0B1A30] border border-amber-500/40 text-[11px] font-semibold text-amber-300">
+                          {book.cultura}
+                        </span>
+                      )}
+                      <span className="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-[11px] font-mono text-slate-300">
+                        {book.codigo || book.isbn || book.callNumber || 'SEC-VR-01'}
+                      </span>
+                      {typeof book.stock === 'number' && (
+                        <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                          book.stock > 0
+                            ? 'bg-emerald-950/70 border border-emerald-800/80 text-emerald-400'
+                            : 'bg-rose-950/70 border border-rose-800/80 text-rose-400'
+                        }`}>
+                          {book.stock > 0 ? `${book.stock} en sala` : 'En préstamo'}
+                        </span>
+                      )}
                     </div>
                   </div>
 
