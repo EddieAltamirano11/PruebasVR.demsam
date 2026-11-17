@@ -316,32 +316,88 @@ console.log('✓ Pilastras flanqueantes creadas en +75° y +105° (3 vanos limpi
 // ==========================================================================
 console.log('\n[2] Construyendo Portal Ceremonial del Kalihuey y Medallón Circular del Techo...');
 
+// Material propio de cantera labrada con alto contraste frente al muro adobe claro (0.77,0.67,0.56)
+// y frente a las hojas de madera oscura (0.047,0.017,0.007)
+const MAT_PORTAL_CANTERA = gltf.materials.length;
+gltf.materials.push({
+  name: 'mat_portal_cantera_labrada',
+  pbrMetallicRoughness: {
+    baseColorFactor: [0.42, 0.32, 0.23, 1.0],
+    metallicFactor: 0.04,
+    roughnessFactor: 0.72
+  }
+});
+
 const PORTAL_Z = 7.78;
 const portalChildren = [];
 
-// 2.1 Marco de cantera (jambas laterales + dintel escalonado)
+// 2.1 Marco arquitectónico de cantera labrada (jambas + bases + dintel escalonado + filetes de contraste)
 const { meshIdx: jambaMeshIdx } = addGeometryMeshToGltf(
-  new THREE.BoxGeometry(0.28, 2.26, 0.16),
-  MAT_CANTERA,
+  new THREE.BoxGeometry(0.30, 2.26, 0.22),
+  MAT_PORTAL_CANTERA,
   'mesh_portal_jamba_cantera'
 );
+const { meshIdx: jambaBaseMeshIdx } = addGeometryMeshToGltf(
+  new THREE.BoxGeometry(0.36, 0.22, 0.26),
+  MAT_MADERA_OSCURA,
+  'mesh_portal_jamba_base'
+);
 const { meshIdx: dintelMeshIdx } = addGeometryMeshToGltf(
-  new THREE.BoxGeometry(2.68, 0.28, 0.18),
-  MAT_CANTERA,
+  new THREE.BoxGeometry(2.74, 0.30, 0.26),
+  MAT_PORTAL_CANTERA,
   'mesh_portal_dintel_cantera'
+);
+const { meshIdx: dintelCornisaMeshIdx } = addGeometryMeshToGltf(
+  new THREE.BoxGeometry(2.84, 0.07, 0.29),
+  MAT_MADERA_OSCURA,
+  'mesh_portal_dintel_cornisa'
+);
+const { meshIdx: dintelFileteOroMeshIdx } = addGeometryMeshToGltf(
+  new THREE.BoxGeometry(2.68, 0.028, 0.275),
+  MAT_MARCO_ORO,
+  'mesh_portal_dintel_filete_oro'
+);
+const { meshIdx: jambaPerfilOroMeshIdx } = addGeometryMeshToGltf(
+  new THREE.BoxGeometry(0.026, 2.24, 0.235),
+  MAT_MARCO_ORO,
+  'mesh_portal_jamba_filete_oro'
 );
 
 const jambaIzqIdx = nodes.length;
-nodes.push({ name: 'portal_jamba_izquierda', mesh: jambaMeshIdx, translation: [-1.10, 1.13, 0.0] });
+nodes.push({ name: 'portal_jamba_izquierda', mesh: jambaMeshIdx, translation: [-1.11, 1.13, 0.02] });
 portalChildren.push(jambaIzqIdx);
 
 const jambaDerIdx = nodes.length;
-nodes.push({ name: 'portal_jamba_derecha', mesh: jambaMeshIdx, translation: [1.10, 1.13, 0.0] });
+nodes.push({ name: 'portal_jamba_derecha', mesh: jambaMeshIdx, translation: [1.11, 1.13, 0.02] });
 portalChildren.push(jambaDerIdx);
 
+const jambaBaseIzqIdx = nodes.length;
+nodes.push({ name: 'portal_jamba_base_izquierda', mesh: jambaBaseMeshIdx, translation: [-1.11, 0.11, 0.03] });
+portalChildren.push(jambaBaseIzqIdx);
+
+const jambaBaseDerIdx = nodes.length;
+nodes.push({ name: 'portal_jamba_base_derecha', mesh: jambaBaseMeshIdx, translation: [1.11, 0.11, 0.03] });
+portalChildren.push(jambaBaseDerIdx);
+
+const jambaOroIzqIdx = nodes.length;
+nodes.push({ name: 'portal_jamba_oro_izquierda', mesh: jambaPerfilOroMeshIdx, translation: [-0.96, 1.13, 0.025] });
+portalChildren.push(jambaOroIzqIdx);
+
+const jambaOroDerIdx = nodes.length;
+nodes.push({ name: 'portal_jamba_oro_derecha', mesh: jambaPerfilOroMeshIdx, translation: [0.96, 1.13, 0.025] });
+portalChildren.push(jambaOroDerIdx);
+
 const dintelIdx = nodes.length;
-nodes.push({ name: 'portal_dintel_superior', mesh: dintelMeshIdx, translation: [0.0, 2.38, 0.01] });
+nodes.push({ name: 'portal_dintel_superior', mesh: dintelMeshIdx, translation: [0.0, 2.39, 0.04] });
 portalChildren.push(dintelIdx);
+
+const dintelCornisaIdx = nodes.length;
+nodes.push({ name: 'portal_dintel_cornisa_madera', mesh: dintelCornisaMeshIdx, translation: [0.0, 2.555, 0.05] });
+portalChildren.push(dintelCornisaIdx);
+
+const dintelOroIdx = nodes.length;
+nodes.push({ name: 'portal_dintel_filete_oro', mesh: dintelFileteOroMeshIdx, translation: [0.0, 2.255, 0.045] });
+portalChildren.push(dintelOroIdx);
 
 // 2.2 Puerta doble ceremonial en madera oscura con incrustaciones turquesa y oro
 const { meshIdx: hojaPuertaMeshIdx } = addGeometryMeshToGltf(
@@ -420,7 +476,7 @@ for (const side of [-1, 1]) {
 }
 
 // 2.3 Medallón Circular con la imagen oficial del techo (mat_tatewari_oculo_techo.010)
-const MEDALLON_Y = 3.44;
+const MEDALLON_Y = 3.54; // Borde inferior 2.67m (8cm libre sobre cornisa 2.59m), borde superior 4.41m (51cm bajo cenefa)
 const MEDALLON_R_MADERA = 0.87;
 const MEDALLON_R_ORO = 0.83;
 const MEDALLON_R_ARTE = 0.795;
