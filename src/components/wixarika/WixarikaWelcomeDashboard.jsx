@@ -6,7 +6,64 @@ import { LucideVRIcon } from './LucideVRIcon.jsx';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';
 import { WixarikaVRVideoPlayer } from './WixarikaVRVideoPlayer.jsx';
 import { DEFAULT_WIXARIKA_VIDEOS } from './WixarikaVRVideoPanel.jsx';
+import * as THREE from 'three';
 import { DEFAULT_WIXARIKA_BOOKS } from './WixarikaVRBookPanel.jsx';
+import { fetchRecommendedBooks } from '../../services/bookService.js';
+
+/**
+ * Subcomponente para renderizar la portada del libro con textura segura.
+ * Similar a ArtworkPhoto de WixarikaArtworkModal.
+ */
+function DashboardBookCover({ url, width = 1.88, height = 2.60 }) {
+  const [loadedTexture, setLoadedTexture] = useState(null);
+
+  useEffect(() => {
+    if (!url) {
+      setLoadedTexture(null);
+      return;
+    }
+
+    const cleanUrl = url.startsWith('.') ? url.replace(/^\./, '') : url;
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+    let isMounted = true;
+
+    loader.load(
+      cleanUrl,
+      (tex) => {
+        if (!isMounted) return;
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.generateMipmaps = true;
+        tex.anisotropy = 8;
+        setLoadedTexture(tex);
+      },
+      undefined,
+      (err) => console.warn('Error cargando portada de libro en dashboard:', err)
+    );
+
+    return () => {
+      isMounted = false;
+      if (loadedTexture) loadedTexture.dispose();
+    };
+  }, [url]);
+
+  return (
+    <mesh position={[0, 0, 0.004]}>
+      <planeGeometry args={[width, height]} />
+      {loadedTexture ? (
+        <meshBasicMaterial
+          map={loadedTexture}
+          toneMapped={false}
+          side={THREE.DoubleSide}
+        />
+      ) : (
+        <meshBasicMaterial color="#e7dec8" side={THREE.DoubleSide} />
+      )}
+    </mesh>
+  );
+}
 
 // Color unificado ceremonial para TODOS los iconos del menú principal
 const UNIFIED_ICON_COLOR = '#b45309';
@@ -231,6 +288,33 @@ export function WixarikaWelcomeDashboard({
   const [currentView, setCurrentView] = useState(initialView);
   const [activeStationId, setActiveStationId] = useState(null);
   const [isAudioActive, setIsAudioActive] = useState(false);
+
+  // Estados para sub-vista de libros con datos de Supabase / fallback local
+  const [loadedBooks, setLoadedBooks] = useState(_books || DEFAULT_WIXARIKA_BOOKS);
+  const [bookIndex, setBookIndex] = useState(0);
+
+  useEffect(() => {
+    const abortCtrl = new AbortController();
+    fetchRecommendedBooks(abortCtrl.signal).then((remoteBooks) => {
+      if (remoteBooks && remoteBooks.length > 0) {
+        setLoadedBooks(remoteBooks);
+      }
+    });
+    return () => abortCtrl.abort();
+  }, []);
+
+  const totalBooks = loadedBooks.length;
+  const currentBook = loadedBooks[bookIndex] || loadedBooks[0] || DEFAULT_WIXARIKA_BOOKS[0];
+
+  const handlePrevBook = useCallback(() => {
+    SoundFX.playClick();
+    setBookIndex((prev) => (prev - 1 + totalBooks) % totalBooks);
+  }, [totalBooks]);
+
+  const handleNextBook = useCallback(() => {
+    SoundFX.playClick();
+    setBookIndex((prev) => (prev + 1) % totalBooks);
+  }, [totalBooks]);
 
   // Estados para sub-vista de videos
   const [videoIndex, setVideoIndex] = useState(0);
@@ -663,12 +747,12 @@ export function WixarikaWelcomeDashboard({
       )}
 
       {/* ===================================================================== */}
-      {/* VISTA C: LIBROS RECOMENDADOS (ACTUALMENTE VACÍA)                     */}
+      {/* VISTA C: LIBROS RECOMENDADOS (CON EL NUEVO DISEÑO MONUMENTAL)         */}
       {/* ===================================================================== */}
       {currentView === 'books' && (
         <group position={[0, 0, 0.005]}>
-          {/* Barra Superior con botón Volver al Menú (solo icono de flecha) */}
-          <group position={[0, 1.40, 0]}>
+          {/* Barra Superior con botón Volver al Menú (solo icono de flecha), título y paginador */}
+          <group position={[0, 1.48, 0]}>
             <WixarikaVRButton
               id="btn-books-back-top"
               iconName="arrow-left"
@@ -685,8 +769,8 @@ export function WixarikaWelcomeDashboard({
             />
 
             <Text
-              position={[0, 0.02, 0]}
-              fontSize={0.145}
+              position={[-0.45, 0.02, 0]}
+              fontSize={0.140}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
@@ -694,13 +778,244 @@ export function WixarikaWelcomeDashboard({
               LIBROS RECOMENDADOS · BIBLIOTECA SOLÓN ARGÜELLO
             </Text>
 
+            {/* Contador de libros: X de N (sin botones de navegación en header) */}
+            <group position={[2.40, 0, 0]}>
+              <mesh position={[0, 0, -0.001]}>
+                <planeGeometry args={[1.00, 0.24]} />
+                <meshBasicMaterial color="#f4ebd8" />
+              </mesh>
+              <Text
+                position={[0, 0, 0.001]}
+                fontSize={0.095}
+                color="#1c1917"
+                anchorX="center"
+                anchorY="middle"
+              >
+                {`${bookIndex + 1} de ${totalBooks}`}
+              </Text>
+            </group>
+
+            {/* Línea divisoria superior dorada */}
             <mesh position={[0, -0.16, 0]}>
               <planeGeometry args={[panelWidth * 0.92, 0.006]} />
               <meshBasicMaterial color="#d4af37" />
             </mesh>
           </group>
 
-          {/* Sub-vista de libros recomendados (vacía según especificación) */}
+          {/* Línea divisoria vertical ceremonial de oro entre las dos columnas (1/3 y 2/3) */}
+          <mesh position={[-panelWidth / 2 + panelWidth / 3, -0.12, 0.002]}>
+            <planeGeometry args={[0.008, 2.70]} />
+            <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
+          </mesh>
+
+          {/* ================================================================= */}
+          {/* COLUMNA IZQUIERDA (1/3 DEL PANEL, ~2.13m): PORTADA DEL LIBRO      */}
+          {/* ================================================================= */}
+          <group position={[-panelWidth / 2 + (panelWidth / 3) / 2, -0.12, 0.005]}>
+            {/* Marco de nogal exterior de la portada */}
+            <mesh position={[0, 0.14, 0.001]}>
+              <planeGeometry args={[1.96, 1.96]} />
+              <meshBasicMaterial color="#5c381e" side={THREE.DoubleSide} />
+            </mesh>
+            {/* Marco dorado de la portada */}
+            <mesh position={[0, 0.14, 0.002]}>
+              <planeGeometry args={[1.92, 1.92]} />
+              <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
+            </mesh>
+
+            {/* Portada del libro con textura segura o fondo cantera */}
+            <group position={[0, 0.14, 0]}>
+              <DashboardBookCover
+                url={currentBook?.portadaUrl}
+                width={1.88}
+                height={1.88}
+              />
+            </group>
+
+            {/* Rombos Tsikuri en las esquinas de la portada */}
+            <group position={[0, 0.14, 0.006]}>
+              <TsikuriDiamond
+                size={0.060}
+                position={[-1.88 / 2 + 0.045, 1.88 / 2 - 0.045, 0]}
+                colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
+              />
+              <TsikuriDiamond
+                size={0.060}
+                position={[1.88 / 2 - 0.045, 1.88 / 2 - 0.045, 0]}
+                colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
+              />
+              <TsikuriDiamond
+                size={0.060}
+                position={[-1.88 / 2 + 0.045, -1.88 / 2 + 0.045, 0]}
+                colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
+              />
+              <TsikuriDiamond
+                size={0.060}
+                position={[1.88 / 2 - 0.045, -1.88 / 2 + 0.045, 0]}
+                colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
+              />
+            </group>
+
+            {/* Placa inferior con categoría y disponibilidad del libro */}
+            <group position={[0, -0.98, 0]}>
+              <mesh position={[0, 0, 0.001]}>
+                <planeGeometry args={[1.88, 0.40]} />
+                <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
+              </mesh>
+              <mesh position={[0, 0, 0]}>
+                <planeGeometry args={[1.92, 0.44]} />
+                <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
+              </mesh>
+              <Text
+                position={[0, 0, 0.003]}
+                fontSize={0.078}
+                color="#78350f"
+                anchorX="center"
+                anchorY="middle"
+                letterSpacing={0.01}
+                lineHeight={1.15}
+                maxWidth={1.78}
+                textAlign="center"
+              >
+                {((currentBook?.category || currentBook?.badge || 'ACERVO CULTURAL') + (currentBook?.available ? ' · DISPONIBLE' : '')).toUpperCase()}
+              </Text>
+            </group>
+          </group>
+
+          {/* ================================================================= */}
+          {/* COLUMNA DERECHA (2/3 DEL PANEL, ~4.27m): DATOS, RESEÑA Y METADATOS */}
+
+          <group position={[-panelWidth / 2 + (panelWidth / 3) + (panelWidth * 2 / 3) / 2, -0.05, 0.005]}>
+            {/* 1. Encabezado: Título Monumental y Autor con anchorY='top' y cálculo limpio */}
+            <group position={[0, 1.35, 0]}>
+              <Text
+                position={[0, 0, 0]}
+                fontSize={0.165}
+                color="#1c1917"
+                anchorX="center"
+                anchorY="top"
+                maxWidth={3.85}
+                textAlign="center"
+                lineHeight={1.16}
+              >
+                {currentBook?.title || currentBook?.titulo || 'Libro sin título'}
+              </Text>
+
+              <Text
+                position={[0, -0.42, 0]}
+                fontSize={0.105}
+                color="#78350f"
+                anchorX="center"
+                anchorY="top"
+                maxWidth={3.85}
+                textAlign="center"
+                lineHeight={1.20}
+              >
+                {`Autor: ${currentBook?.author || currentBook?.autor || 'Desconocido'}${currentBook?.year ? ` (${currentBook.year})` : ''}`}
+              </Text>
+
+              {/* Línea divisoria dorada debajo del autor */}
+              <mesh position={[0, -0.60, 0]}>
+                <planeGeometry args={[3.85, 0.006]} />
+                <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
+              </mesh>
+            </group>
+
+            {/* 2. Recuadro de Descripción / Sinopsis (altura 0.82m, centrado en Y=0.48) */}
+            <group position={[0, 0.36, 0]}>
+              <mesh position={[0, 0, -0.001]}>
+                <planeGeometry args={[3.85, 0.82]} />
+                <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
+              </mesh>
+              <mesh position={[0, 0, -0.002]}>
+                <planeGeometry args={[3.88, 0.85]} />
+                <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
+              </mesh>
+
+              <Text
+                position={[-1.80, 0, 0.002]}
+                fontSize={0.108}
+                color="#1c1917"
+                anchorX="left"
+                anchorY="middle"
+                maxWidth={3.60}
+                textAlign="left"
+                lineHeight={1.32}
+              >
+                {currentBook?.synopsis || 'Obra especializada en el acervo patrimonial de la cultura Wixárika, disponible para consulta presencial en la biblioteca.'}
+              </Text>
+            </group>
+
+            {/* 3. Viñetas de Atributos Sagrados (Debajo del recuadro, en Y=-0.22 con espaciado 0.22m) */}
+            <group position={[0, -0.58, 0]}>
+              <Text
+                position={[-1.80, 0.20, 0]}
+                fontSize={0.105}
+                color="#1c1917"
+                anchorX="left"
+                anchorY="middle"
+                maxWidth={3.80}
+              >
+                {`• Código de Biblioteca / ISBN: ${currentBook?.callNumber || currentBook?.code || currentBook?.isbn || '299.72 ECH-2022'}`}
+              </Text>
+
+              <Text
+                position={[-1.80, -0.02, 0]}
+                fontSize={0.105}
+                color="#1c1917"
+                anchorX="left"
+                anchorY="middle"
+                maxWidth={3.80}
+              >
+                {`• Clasificación Cultural: ${currentBook?.category || 'Cosmovisión Wixárika'} · ${currentBook?.badge || 'SALA DE LECTURA'}`}
+              </Text>
+
+              <Text
+                position={[-1.80, -0.24, 0]}
+                fontSize={0.105}
+                color="#1c1917"
+                anchorX="left"
+                anchorY="middle"
+                maxWidth={3.80}
+              >
+                {`• Estatus de Préstamo: ${currentBook?.available !== false ? 'Disponible para Consulta en Sala y Préstamo a Domicilio' : 'En Préstamo (Solicitar reserva en mostrador)'}`}
+              </Text>
+            </group>
+
+            
+            {/* 4. Barra Inferior de Navegación de Libros (Anterior / Siguiente) */}
+            <group position={[0, -1.18, 0]}>
+              <WixarikaVRButton
+                id="btn-books-nav-prev"
+                label="Libro Anterior"
+                iconName="chevron-left"
+                variant="cantera"
+                width={1.65}
+                height={0.28}
+                position={[-1.00, 0, 0]}
+                onClick={handlePrevBook}
+                registerMesh={registerMesh}
+                unregisterMesh={unregisterMesh}
+                hoveredId={hoveredId}
+                fuseProgress={fuseProgress}
+              />
+
+              <WixarikaVRButton
+                id="btn-books-nav-next"
+                label="Libro Siguiente"
+                iconName="chevron-right"
+                variant="cantera"
+                width={1.65}
+                height={0.28}
+                position={[1.00, 0, 0]}
+                onClick={handleNextBook}
+                registerMesh={registerMesh}
+                unregisterMesh={unregisterMesh}
+                hoveredId={hoveredId}
+                fuseProgress={fuseProgress}
+              />
+            </group>
+          </group>
         </group>
       )}
 
