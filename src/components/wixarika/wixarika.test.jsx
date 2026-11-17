@@ -19,6 +19,7 @@ import {
   findArtworkByNodeName,
   calculateArtworkModalTransform
 } from './wixarikaArtworksData.js';
+import { computeShortestYawDelta, STATION_WORLD_DIRECTIONS } from '../../utils/vrNavigation.js';
 
 describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
   describe('Angular Size Calculations (ISO 9241-210 & WebXR)', () => {
@@ -337,6 +338,55 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       const fallback = calculateArtworkModalTransform(null);
       expect(fallback.position).toEqual([0, 2.25, 3.75]);
       expect(fallback.rotation).toEqual([0, Math.PI, 0]);
+    });
+  });
+
+  describe('VR Mobile Station Navigation (CameraRig Shortest Yaw Rotation)', () => {
+    it('rotates horizontal gaze vector accurately from Bienvenida (+Z) to Gastronomía (+X), Fiestas (-X) and Deidades (-Z)', () => {
+      const fromBienvenida = { x: 0, z: 1 };
+      const toGastro = { x: STATION_WORLD_DIRECTIONS.gastronomia[0], z: STATION_WORLD_DIRECTIONS.gastronomia[2] };
+      const toFiestas = { x: STATION_WORLD_DIRECTIONS.fiestas[0], z: STATION_WORLD_DIRECTIONS.fiestas[2] };
+      const toDeidades = { x: STATION_WORLD_DIRECTIONS.deidades[0], z: STATION_WORLD_DIRECTIONS.deidades[2] };
+
+      const dyGastro = computeShortestYawDelta(fromBienvenida, toGastro);
+      const dyFiestas = computeShortestYawDelta(fromBienvenida, toFiestas);
+      const dyDeidades = computeShortestYawDelta(fromBienvenida, toDeidades);
+
+      expect(dyGastro).toBeCloseTo(Math.PI / 2, 4);
+      expect(dyFiestas).toBeCloseTo(-Math.PI / 2, 4);
+      expect(Math.abs(dyDeidades)).toBeCloseTo(Math.PI, 4);
+
+      // Verificar que RotateY(delta) mapea exactamente currentDir -> desiredDir en coordenadas Three.js
+      const applyRotateY = (v, theta) => ({
+        x: v.x * Math.cos(theta) + v.z * Math.sin(theta),
+        z: -v.x * Math.sin(theta) + v.z * Math.cos(theta)
+      });
+
+      const landedGastro = applyRotateY(fromBienvenida, dyGastro);
+      expect(landedGastro.x).toBeCloseTo(1, 4);
+      expect(landedGastro.z).toBeCloseTo(0, 4);
+
+      const landedFiestas = applyRotateY(fromBienvenida, dyFiestas);
+      expect(landedFiestas.x).toBeCloseTo(-1, 4);
+      expect(landedFiestas.z).toBeCloseTo(0, 4);
+
+      const landedDeidades = applyRotateY(fromBienvenida, dyDeidades);
+      expect(landedDeidades.x).toBeCloseTo(0, 4);
+      expect(landedDeidades.z).toBeCloseTo(-1, 4);
+    });
+
+    it('compensates arbitrary tilted head yaw and lands dead-center on target pavilion', () => {
+      // Usuario con la cabeza girada 32° al hacer clic en Gastronomía (+X)
+      const angle = (32 * Math.PI) / 180;
+      const headDir = { x: Math.sin(angle), z: Math.cos(angle) };
+      const target = { x: 1, z: 0 };
+
+      const delta = computeShortestYawDelta(headDir, target);
+      const landedX = headDir.x * Math.cos(delta) + headDir.z * Math.sin(delta);
+      const landedZ = -headDir.x * Math.sin(delta) + headDir.z * Math.cos(delta);
+
+      expect(landedX).toBeCloseTo(1, 4);
+      expect(landedZ).toBeCloseTo(0, 4);
     });
   });
 });

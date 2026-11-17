@@ -14,6 +14,7 @@ import {
   calculateArtworkModalTransform
 } from './wixarika/index.js';
 import { SoundFX } from '../services/audioService.js';
+import { STATION_WORLD_DIRECTIONS, computeShortestYawDelta } from '../utils/vrNavigation.js';
 
 // Estaciones Culturales del Museo Wixarika (HU-03, HU-06 ISO 9241-210)
 // Posicionadas a distancias y alturas ergonómicas (Y=1.35-1.40m a la vista del usuario)
@@ -67,15 +68,16 @@ function LowerToggleButton({
   unregisterMesh
 }) {
   const groupRef = useRef();
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const tempPos = useRef(new THREE.Vector3());
   const tempDir = useRef(new THREE.Vector3());
 
   // Posicionar suavemente abajo en el campo visual del observador (Y ≈ 0.42m)
   useFrame(() => {
     if (!groupRef.current || !camera) return;
-    camera.getWorldPosition(tempPos.current);
-    camera.getWorldDirection(tempDir.current);
+    const activeCamera = gl?.xr?.isPresenting ? gl.xr.getCamera() : camera;
+    activeCamera.getWorldPosition(tempPos.current);
+    activeCamera.getWorldDirection(tempDir.current);
     tempDir.current.y = 0;
     if (tempDir.current.lengthSq() < 0.001) {
       tempDir.current.set(0, 0, -1);
@@ -151,31 +153,75 @@ function StaticMuseum({
   );
 }
 
-// Controlador de cámara para navegación suave hacia las salas en modo computadora (PC)
-function StationCameraController({ targetStation, setTargetStation, orbitRef, vrMode }) {
-  const { camera } = useThree();
+// Controlador de cámara para navegación suave hacia las salas tanto en PC (OrbitControls)
+// como en visor VR móvil (WebXR nativo y modo estereoscópico + giroscopio rotando cameraRigRef)
+function StationCameraController({ targetStation, setTargetStation, orbitRef, cameraRigRef, vrMode }) {
+  const { camera, gl } = useThree();
   const targetCamPos = useRef(null);
   const targetOrbitTarget = useRef(null);
-  const isNavigating = useRef(false);
+  const isNavigatingPC = useRef(false);
+
+  const vrTargetYaw = useRef(null);
+  const isNavigatingVR = useRef(false);
+  const tempDir = useRef(new THREE.Vector3());
+
+  // Inicializar la orientación del rig SOLO al cambiar de modo PC <-> VR
+  // (evitando que re-renders de React reseteen el giro elegido en VR)
+  useEffect(() => {
+    if (!cameraRigRef?.current) return;
+    cameraRigRef.current.rotation.set(0, vrMode ? Math.PI : 0, 0);
+    cameraRigRef.current.updateMatrixWorld(true);
+    isNavigatingVR.current = false;
+    vrTargetYaw.current = null;
+  }, [vrMode, cameraRigRef]);
 
   useEffect(() => {
-    if (vrMode || !targetStation) return;
+    const stationId = typeof targetStation === 'string' ? targetStation : targetStation?.id;
+    if (!stationId) return;
 
+    // 1. MODO VISOR VR (Celular WebXR o Estereoscópico con Giroscopio):
+    //    Calcula el giro mínimo en Y del cameraRig para dejar la sección seleccionada justo al frente.
+    if (vrMode) {
+      const rig = cameraRigRef?.current;
+      const desiredArr = STATION_WORLD_DIRECTIONS[stationId];
+      if (!rig || !desiredArr) return;
+
+      rig.updateMatrixWorld(true);
+      const activeCamera = gl?.xr?.isPresenting ? gl.xr.getCamera() : camera;
+      activeCamera.updateMatrixWorld();
+      activeCamera.getWorldDirection(tempDir.current);
+      tempDir.current.y = 0;
+
+      if (tempDir.current.lengthSq() < 1e-4) {
+        tempDir.current.set(0, 0, 1);
+      } else {
+        tempDir.current.normalize();
+      }
+
+      const desiredDir = new THREE.Vector3(desiredArr[0], 0, desiredArr[2]);
+      const deltaYaw = computeShortestYawDelta(tempDir.current, desiredDir);
+
+      vrTargetYaw.current = rig.rotation.y + deltaYaw;
+      isNavigatingVR.current = true;
+      return;
+    }
+
+    // 2. MODO COMPUTADORA (PC con OrbitControls)
     let pos = null;
     let lookTarget = null;
-    if (targetStation === 'deidades') {
+    if (stationId === 'deidades') {
       // Muro Norte (-Z): la cámara se posiciona al Sur (+Z) mirando al Norte
       pos = new THREE.Vector3(0, 1.65, 2.5);
       lookTarget = new THREE.Vector3(0, 1.85, 0);
-    } else if (targetStation === 'gastronomia') {
+    } else if (stationId === 'gastronomia') {
       // Muro Este (+X): la cámara se posiciona al Oeste (-X) mirando al Este
       pos = new THREE.Vector3(-2.5, 1.60, 0);
       lookTarget = new THREE.Vector3(0, 1.50, 0);
-    } else if (targetStation === 'fiestas') {
+    } else if (stationId === 'fiestas') {
       // Muro Oeste (-X): la cámara se posiciona al Este (+X) mirando al Oeste
       pos = new THREE.Vector3(2.5, 1.65, 0);
       lookTarget = new THREE.Vector3(0, 1.85, 0);
-    } else if (targetStation === 'home' || targetStation === 'bienvenida') {
+    } else if (stationId === 'home' || stationId === 'bienvenida') {
       // Bienvenida / Menú Principal (+Z):
       // Se posiciona en [0, 1.65, -2.5] con target [0, 1.80, 0] para que la mira
       // quede EXACTAMENTE en el espacio neutro entre las dos filas de cards (Y=2.03 en mundo, local Y=-0.275),
@@ -187,14 +233,31 @@ function StationCameraController({ targetStation, setTargetStation, orbitRef, vr
     if (pos && lookTarget) {
       targetCamPos.current = pos;
       targetOrbitTarget.current = lookTarget;
-      isNavigating.current = true;
+      isNavigatingPC.current = true;
     }
-  }, [targetStation, vrMode]);
+  }, [targetStation, vrMode, camera, gl, cameraRigRef]);
 
   useFrame((_, delta) => {
-    if (vrMode || !isNavigating.current || !targetCamPos.current || !targetOrbitTarget.current) return;
+    // Giro suave y ágil del rig en modo VR móvil
+    if (vrMode && isNavigatingVR.current && vrTargetYaw.current !== null && cameraRigRef?.current) {
+      const rig = cameraRigRef.current;
+      const diff = vrTargetYaw.current - rig.rotation.y;
+      if (Math.abs(diff) < 0.004) {
+        rig.rotation.y = vrTargetYaw.current;
+        rig.updateMatrixWorld(true);
+        isNavigatingVR.current = false;
+        vrTargetYaw.current = null;
+        setTargetStation(null);
+      } else {
+        rig.rotation.y = THREE.MathUtils.lerp(rig.rotation.y, vrTargetYaw.current, Math.min(1, delta * 8.5));
+        rig.updateMatrixWorld(true);
+      }
+      return;
+    }
 
-    // Interpolación suave y ágil hacia la posición y target de la estación
+    if (vrMode || !isNavigatingPC.current || !targetCamPos.current || !targetOrbitTarget.current) return;
+
+    // Interpolación suave y ágil hacia la posición y target de la estación en PC
     camera.position.lerp(targetCamPos.current, Math.min(1, delta * 4.5));
     if (orbitRef.current) {
       orbitRef.current.target.lerp(targetOrbitTarget.current, Math.min(1, delta * 4.5));
@@ -210,7 +273,7 @@ function StationCameraController({ targetStation, setTargetStation, orbitRef, vr
         orbitRef.current.target.copy(targetOrbitTarget.current);
         orbitRef.current.update();
       }
-      isNavigating.current = false;
+      isNavigatingPC.current = false;
       targetCamPos.current = null;
       targetOrbitTarget.current = null;
       setTargetStation(null);
@@ -281,10 +344,9 @@ export function MuseumScene({
   );
 
   // Manejador al seleccionar una sala cultural (Deidades, Gastronomía o Fiestas)
-  // En lugar de rotar el museo, orienta la cámara suavemente hacia el muro seleccionado.
-  // El Menú Principal y el Museo permanecen siempre fijos en sus coordenadas originales.
+  // En lugar de rotar el museo, orienta la cámara (PC) o el cameraRig (VR móvil) hacia el muro seleccionado.
   const handleSelectStation = useCallback((stationId) => {
-    setNavTargetStation(stationId);
+    setNavTargetStation({ id: stationId, ts: Date.now() });
     if (stationId === 'home' || stationId === 'bienvenida') {
       setShowButtons(true);
     } else {
@@ -294,7 +356,7 @@ export function MuseumScene({
 
   // Manejador para mostrar el menú y regresar la vista al pabellón de bienvenida (+Z)
   const handleShowMenu = useCallback(() => {
-    setNavTargetStation('home');
+    setNavTargetStation({ id: 'home', ts: Date.now() });
     setShowButtons(true);
   }, [setShowButtons]);
 
@@ -333,7 +395,7 @@ export function MuseumScene({
 
   // Recentrar visor en VR o controles de órbita en computadora
   const handleRecenter = useCallback(() => {
-    setNavTargetStation('home');
+    setNavTargetStation({ id: 'home', ts: Date.now() });
     if (onRecenterRef?.current) {
       onRecenterRef.current();
     } else if (orbitRef.current) {
@@ -362,9 +424,9 @@ export function MuseumScene({
       dpr={[1, typeof window !== 'undefined' ? Math.min(2.5, window.devicePixelRatio || 2) : 2]}
     >
       {/* Rig de camara para modo normal y modo VR:
-          En modo VR se orienta Math.PI para que el visor mire de frente al Menú Principal (+Z).
-          En computadora (escritorio) inicia en [0, 1.65, -2.5] mirando de frente al Menú Principal (+Z). */}
-      <group ref={cameraRigRef} position={[0, 0, 0]} rotation={vrMode ? [0, Math.PI, 0] : [0, 0, 0]}>
+          Su rotación en Y se gestiona imperativamente en StationCameraController para que
+          los re-renders de React nunca reseteen el giro hacia Deidades/Gastronomía/Fiestas en VR. */}
+      <group ref={cameraRigRef} position={[0, 0, 0]}>
         <PerspectiveCamera
           makeDefault
           position={vrMode ? [0, 1.6, 0] : [0, 1.65, -2.5]}
@@ -374,11 +436,12 @@ export function MuseumScene({
         />
       </group>
 
-      {/* Navegador suave de cámara para PC */}
+      {/* Navegador suave de cámara para PC y giro de rig para visor VR móvil */}
       <StationCameraController
         targetStation={navTargetStation}
         setTargetStation={setNavTargetStation}
         orbitRef={orbitRef}
+        cameraRigRef={cameraRigRef}
         vrMode={vrMode}
       />
 
