@@ -8,8 +8,8 @@ import { WIXARIKA_ARTWORKS } from './wixarika/wixarikaArtworksData.js';
 export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   const group = useRef();
   const { gl } = useThree();
-  // Carga del modelo 3D oficial v15 del Museo Wixarika (Paredes a 5.4m y Techo a 7.0m)
-  const { scene } = useGLTF('./museo_wixarika_v15.glb?v=15.2');
+  // Carga del modelo 3D oficial v15 del Museo Wixarika (Paredes 5.4m, Techo 7.0m, Galería 2x3 Gastronomía)
+  const { scene } = useGLTF('./museo_wixarika_v15.glb?v=15.3');
 
   useEffect(() => {
     if (!scene) return;
@@ -160,5 +160,5 @@ export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   );
 }
 
-useGLTF.preload('./museo_wixarika_v15.glb?v=15.2');
+useGLTF.preload('./museo_wixarika_v15.glb?v=15.3');
 export default MuseumModel;
