@@ -270,6 +270,15 @@ export function MuseumScene({
 
   const [activeArtwork, setActiveArtwork] = useState(null);
   const [navTargetStation, setNavTargetStation] = useState(null);
+  const [isWebXRSession, setIsWebXRSession] = useState(false);
+
+  const handleWebXRSessionChange = useCallback(
+    (active) => {
+      setIsWebXRSession(active);
+      setVrMode?.(active);
+    },
+    [setVrMode]
+  );
 
   // Manejador al seleccionar una sala cultural (Deidades, Gastronomía o Fiestas)
   // En lugar de rotar el museo, orienta la cámara suavemente hacia el muro seleccionado.
@@ -421,11 +430,12 @@ export function MuseumScene({
         unregisterMesh={unregisterMesh}
       />
 
-      {/* Reticula Central con Gaze Fuse calibrado a 3.0 segundos */}
+      {/* Reticula Central con Gaze Fuse calibrado a 3.0 segundos + gatillo físico Homido Grab / WebXR */}
       <GazeReticle
         interactiveObjects={getInteractiveObjects}
         distance={1.2}
         enabled={true}
+        vrMode={vrMode}
       />
 
       {/* Controles de orbita activos en modo pantalla normal (giro 360° libre alrededor del centro del museo) */}
@@ -445,13 +455,13 @@ export function MuseumScene({
       />
 
       {/* Gestor Nativo WebXR */}
-      <WebXRManager onSessionChange={setVrMode} onTriggerRef={onWebXRTriggerRef} />
+      <WebXRManager onSessionChange={handleWebXRSessionChange} onTriggerRef={onWebXRTriggerRef} />
 
-      {/* Giroscopio y vista estereo dual cuando no hay WebXR nativo (Modo Visor Homido / Cardboard) */}
-      {vrMode && !navigator.xr && (
+      {/* Giroscopio y vista estereo dual cuando no hay sesion WebXR activa (Modo Visor Homido / Cardboard) */}
+      {vrMode && !isWebXRSession && (
         <VRDeviceOrientation onRecenterRef={onRecenterRef} />
       )}
-      {vrMode && !navigator.xr && <StereoVRManager eyeSep={0.064} />}
+      {vrMode && !isWebXRSession && <StereoVRManager eyeSep={0.064} />}
     </Canvas>
   );
 }

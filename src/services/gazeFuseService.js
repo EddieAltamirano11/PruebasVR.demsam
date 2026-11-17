@@ -78,11 +78,22 @@ export class GazeFuseController {
   /**
    * Gatillo dual inmediato: permite activar la accion instantaneamente
    * si el usuario presiona el boton fisico capacitivo del visor Homido Grab
-   * sin esperar a que transcurran los 1.2 segundos.
+   * (o gatillo WebXR / toque de pantalla) sin esperar a que transcurran los 3.0 segundos.
+   * Permite pulsaciones repetidas sobre el mismo boton (ej. Libro Siguiente, Audio, Ocultar/Mostrar)
+   * mientras mantiene bloqueado el auto-disparo continuo del Gaze Fuse pasivo.
+   * @param {any} [explicitTarget=null] - Objetivo opcional detectado por raycast sincrono al pulsar
    * @returns {boolean} true si se disparo exitosamente una accion
    */
-  triggerImmediate() {
-    if (this.currentTarget !== null && !this.isTriggered) {
+  triggerImmediate(explicitTarget = null) {
+    const target = explicitTarget || this.currentTarget;
+    if (target !== null) {
+      if (this.currentTarget !== target) {
+        if (this.currentTarget !== null) {
+          this.onHoverEnd?.(this.currentTarget);
+        }
+        this.currentTarget = target;
+        this.onHoverStart?.(target);
+      }
       this.isTriggered = true;
       this.timer = this.fuseDuration;
       this.onProgress?.(1.0, this.currentTarget);

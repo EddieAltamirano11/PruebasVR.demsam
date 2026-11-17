@@ -494,14 +494,15 @@ function AppContent() {
         </div>
       )}
 
-      {/* Boton para salir del modo VR manual (solo cuando se activa el fallback estereoscópico) */}
-      {vrMode && !navigator.xr && (
+      {/* Boton para salir del modo VR manual (en esquina superior izquierda, libre del boton capacitivo superior derecho del visor Homido Grab) */}
+      {vrMode && (
         <button
+          data-vr-ui="true"
           onClick={exitVR}
           style={{
             position: 'fixed',
             top: '16px',
-            right: '16px',
+            left: '16px',
             zIndex: 10000,
             padding: '8px 16px',
             fontSize: '13px',

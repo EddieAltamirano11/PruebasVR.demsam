@@ -137,4 +137,31 @@ describe('GazeFuseController - ISO 9241-210 Usability & Interaction Verification
     expect(triggered).toBe(false);
     expect(onTrigger).not.toHaveBeenCalled();
   });
+
+  it('should allow repeated Homido Grab physical presses on the same hovered target without passive gaze flooding', () => {
+    const nextBookBtn = { id: 'btn-books-nav-next' };
+
+    controller.update(nextBookBtn, 0.1);
+    expect(controller.triggerImmediate()).toBe(true);
+    expect(onTrigger).toHaveBeenCalledTimes(1);
+
+    // Passive gaze frames must NOT auto-fire again
+    controller.update(nextBookBtn, 1.0);
+    expect(onTrigger).toHaveBeenCalledTimes(1);
+
+    // Second explicit Homido Grab button press on the same button MUST work
+    expect(controller.triggerImmediate()).toBe(true);
+    expect(onTrigger).toHaveBeenCalledTimes(2);
+    expect(onTrigger).toHaveBeenLastCalledWith(nextBookBtn);
+  });
+
+  it('should trigger immediately when given an explicit live raycast target on Homido Grab press', () => {
+    const freshTarget = { id: 'btn-dash-books' };
+    const triggered = controller.triggerImmediate(freshTarget);
+
+    expect(triggered).toBe(true);
+    expect(onHoverStart).toHaveBeenCalledWith(freshTarget);
+    expect(onTrigger).toHaveBeenCalledTimes(1);
+    expect(onTrigger).toHaveBeenCalledWith(freshTarget);
+  });
 });

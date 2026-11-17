@@ -165,11 +165,12 @@ export function VRPrototypeView({ onBackToDashboard }) {
         </div>
       )}
 
-      {/* Botón flotante para salir de VR en pantalla completa */}
+      {/* Botón flotante para salir de VR en pantalla completa (esquina superior izquierda, libre del botón físico Homido Grab) */}
       {vrMode && (
         <button
+          data-vr-ui="true"
           onClick={exitVR}
-          className="fixed top-4 right-4 z-[99999] px-4 py-2 rounded-full text-xs font-bold text-white bg-rose-600/90 hover:bg-rose-500 shadow-lg cursor-pointer backdrop-blur-md"
+          className="fixed top-4 left-4 z-[99999] px-4 py-2 rounded-full text-xs font-bold text-white bg-rose-600/90 hover:bg-rose-500 shadow-lg cursor-pointer backdrop-blur-md"
         >
           Salir de VR
         </button>
