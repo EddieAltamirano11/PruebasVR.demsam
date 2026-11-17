@@ -8,8 +8,8 @@ import { WIXARIKA_ARTWORKS } from './wixarika/wixarikaArtworksData.js';
 export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   const group = useRef();
   const { gl } = useThree();
-  // Carga del modelo 3D oficial v14 del Museo Wixarika
-  const { scene } = useGLTF('./museo_wixarika_v14.glb');
+  // Carga del modelo 3D oficial v15 del Museo Wixarika
+  const { scene } = useGLTF('./museo_wixarika_v15.glb');
 
   useEffect(() => {
     if (!scene) return;
@@ -160,5 +160,5 @@ export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   );
 }
 
-useGLTF.preload('./museo_wixarika_v14.glb');
+useGLTF.preload('./museo_wixarika_v15.glb');
 export default MuseumModel;
