@@ -494,8 +494,8 @@ const { matIdx: MAT_LOGO_ITT } = embedImageMaterial(
   { alphaMode: 'BLEND', roughnessFactor: 0.85, doubleSided: true }
 );
 
-const ITT_SIZE = 1.12; // 1.12m × 1.12m (36% menor que el medallón de 1.74m anterior)
-const ITT_Y = 3.36;    // Borde inferior 2.80m (21cm libre sobre cornisa 2.59m), borde superior 3.92m
+const ITT_SIZE = 1.32; // 1.32m × 1.32m (más grande que 1.12m, pero más compacto que el medallón de 1.74m)
+const ITT_Y = 3.74;    // Más arriba: borde inferior 3.08m (49cm sobre cornisa 2.59m), borde superior 4.40m (52cm bajo cenefa)
 const { meshIdx: logoIttMeshIdx } = addGeometryMeshToGltf(
   new THREE.PlaneGeometry(ITT_SIZE, ITT_SIZE),
   MAT_LOGO_ITT,
@@ -584,9 +584,9 @@ const { meshIdx: panelCanteraMeshIdx } = addGeometryMeshToGltf(
 );
 
 // Mallas de logos institucionales respetando sus proporciones exactas
-// CECAN: 1024×175 (ratio 5.851) -> 2.60m × 0.444m
-const CECAN_W = 2.60;
-const CECAN_H = CECAN_W / (1024 / 175);
+// CECAN vertical apilado: 1024×995 (ratio 1.0291) -> 1.461m × 1.42m (gran legibilidad sobre el mapa)
+const CECAN_H = 1.42;
+const CECAN_W = CECAN_H * (1024 / 995);
 const { meshIdx: logoCecanMeshIdx } = addGeometryMeshToGltf(
   new THREE.PlaneGeometry(CECAN_W, CECAN_H),
   MAT_LOGO_CECAN,
@@ -594,8 +594,8 @@ const { meshIdx: logoCecanMeshIdx } = addGeometryMeshToGltf(
   { flipVForGltf: true }
 );
 
-// Solón Argüello: 1364×562 (ratio 2.427) -> 1.95m × 0.803m
-const SOLON_W = 1.95;
+// Solón Argüello (+10% respecto a 1.95m): 1364×562 (ratio 2.427) -> 2.145m × 0.884m
+const SOLON_W = 1.95 * 1.10;
 const SOLON_H = SOLON_W / (1364 / 562);
 const { meshIdx: logoSolonMeshIdx } = addGeometryMeshToGltf(
   new THREE.PlaneGeometry(SOLON_W, SOLON_H),
@@ -620,9 +620,9 @@ const CUADRO_Y = 2.28; // Cuadro: 1.45m..3.11m (espacio limpio de 1.81m arriba p
   const cIdx = nodes.length;
   nodes.push({ name: 'lienzo_mapa_nayarit_bienvenida', mesh: mapaLienzoMeshIdx, translation: [0, 0, 0.031] });
 
-  // Logo CECAN centrado arriba del cuadro (world Y = 2.28 + 1.54 = 3.82m -> 3.60m..4.04m)
+  // Logo CECAN apilado centrado arriba del cuadro (world Y = 2.28 + 1.72 = 4.00m -> 3.29m..4.71m)
   const cecanIdx = nodes.length;
-  nodes.push({ name: 'logo_cecan_bienvenida', mesh: logoCecanMeshIdx, translation: [0, 1.54, 0.018] });
+  nodes.push({ name: 'logo_cecan_bienvenida', mesh: logoCecanMeshIdx, translation: [0, 1.72, 0.018] });
 
   const rootIdx = nodes.length;
   nodes.push({
@@ -701,9 +701,9 @@ const CUADRO_Y = 2.28; // Cuadro: 1.45m..3.11m (espacio limpio de 1.81m arriba p
   const t2Idx = nodes.length;
   nodes.push({ name: 'pamparios_texto_fila2', mesh: row2MeshIdx, translation: [0, -0.30, 0.039] });
 
-  // Logo Biblioteca Solón Argüello centrado arriba del cuadro (world Y = 2.28 + 1.58 = 3.86m -> 3.46m..4.26m)
+  // Logo Biblioteca Solón Argüello (+10%) centrado arriba del cuadro (world Y = 2.28 + 1.66 = 3.94m -> 3.50m..4.38m)
   const solonIdx = nodes.length;
-  nodes.push({ name: 'logo_solon_arguello_bienvenida', mesh: logoSolonMeshIdx, translation: [0, 1.58, 0.018] });
+  nodes.push({ name: 'logo_solon_arguello_bienvenida', mesh: logoSolonMeshIdx, translation: [0, 1.66, 0.018] });
 
   const rootIdx = nodes.length;
   nodes.push({
