@@ -183,6 +183,7 @@ function DashboardTile({
       {/* Superficie de cantera clara (colisionador raycaster) */}
       <mesh
         ref={meshRef}
+        onPointerDown={(e) => e.stopPropagation?.()}
         onClick={handleClick}
         onPointerOver={handlePointerOver}
         position={[0, 0, 0]}
@@ -283,6 +284,23 @@ export function WixarikaWelcomeDashboard({
   // Dimensiones monumentales y ergonómicas que aprovechan todo el espacio frontal
   const panelWidth = 6.40;
   const panelHeight = 3.50;
+  const dashboardBgMeshRef = useRef();
+
+  // Registrar el fondo del menú principal como bloqueador de raycast para que
+  // ninguna mirada o pulsación sobre el menú atraviese hacia cuadros detrás.
+  useEffect(() => {
+    const mesh = dashboardBgMeshRef.current;
+    if (mesh) {
+      mesh.userData = {
+        id: 'dashboard-backdrop-blocker',
+        isBlocker: true
+      };
+      registerMesh?.(mesh);
+    }
+    return () => {
+      if (mesh) unregisterMesh?.(mesh);
+    };
+  }, [registerMesh, unregisterMesh]);
 
   // Estado de navegación interna: 'home' | 'deidades' | 'gastronomia' | 'fiestas' | 'videos' | 'books'
   const [currentView, setCurrentView] = useState(initialView);
@@ -366,10 +384,15 @@ export function WixarikaWelcomeDashboard({
         <meshBasicMaterial color="#c69214" />
       </mesh>
 
-      {/* 3. Superficie principal de Cantera Clara / Marfil */}
-      <mesh position={[0, 0, 0]}>
+      {/* 3. Superficie principal de Cantera Clara / Marfil (bloquea raycast y clics hacia cuadros detrás) */}
+      <mesh
+        ref={dashboardBgMeshRef}
+        position={[0, 0, 0]}
+        onPointerDown={(e) => e.stopPropagation?.()}
+        onClick={(e) => e.stopPropagation?.()}
+      >
         <planeGeometry args={[panelWidth, panelHeight]} />
-        <meshBasicMaterial color="#faf6eb" transparent opacity={0.97} />
+        <meshBasicMaterial color="#faf6eb" transparent opacity={0.97} side={THREE.DoubleSide} />
       </mesh>
 
       {/* 4. Rombos protectores Tsikuri en las 4 esquinas del panel monumental */}

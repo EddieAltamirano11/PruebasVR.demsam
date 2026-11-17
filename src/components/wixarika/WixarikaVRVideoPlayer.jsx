@@ -35,6 +35,8 @@ export function WixarikaVRVideoPlayer({
   const lastQualityRef = useRef(quality);
   const pendingMetaCleanupRef = useRef(null);
   const seekBarGroupRef = useRef(null);
+  const videoScreenMeshRef = useRef(null);
+  const overlayPlayMeshRef = useRef(null);
 
   const [videoTexture, setVideoTexture] = useState(null);
   const [posterTexture, setPosterTexture] = useState(null);
@@ -372,7 +374,8 @@ export function WixarikaVRVideoPlayer({
     }
   });
 
-  const handleTogglePlay = useCallback(() => {
+  const handleTogglePlay = useCallback((e) => {
+    e?.stopPropagation?.();
     const el = videoElRef.current;
     if (!el) return;
     SoundFX.playClick();
@@ -384,6 +387,49 @@ export function WixarikaVRVideoPlayer({
       el.pause();
     }
   }, [startSafePlayback]);
+
+  // Registrar la pantalla de video y el botón central "Iniciar documental" en el raycaster VR
+  // para que Gaze Fuse y el botón físico Homido Grab inicien/pausen directamente el video.
+  useEffect(() => {
+    const screenMesh = videoScreenMeshRef.current;
+    if (screenMesh) {
+      screenMesh.userData = {
+        id: 'video-screen-play-toggle',
+        onClick: handleTogglePlay,
+        onSelect: handleTogglePlay
+      };
+      registerMesh?.(screenMesh);
+      onRegister?.('video-screen-play-toggle', screenMesh, handleTogglePlay);
+    }
+    return () => {
+      if (screenMesh) {
+        unregisterMesh?.(screenMesh);
+        onUnregister?.('video-screen-play-toggle');
+      }
+    };
+  }, [handleTogglePlay, registerMesh, unregisterMesh, onRegister, onUnregister]);
+
+  const activeTexture = hasFrame && videoTexture ? videoTexture : posterTexture;
+  const showOverlay = Boolean(errorMsg || isBuffering || statusNote || (!isPlaying && !hasFrame));
+
+  useEffect(() => {
+    const overlayMesh = overlayPlayMeshRef.current;
+    if (showOverlay && overlayMesh) {
+      overlayMesh.userData = {
+        id: 'video-overlay-play-toggle',
+        onClick: handleTogglePlay,
+        onSelect: handleTogglePlay
+      };
+      registerMesh?.(overlayMesh);
+      onRegister?.('video-overlay-play-toggle', overlayMesh, handleTogglePlay);
+    }
+    return () => {
+      if (overlayMesh) {
+        unregisterMesh?.(overlayMesh);
+        onUnregister?.('video-overlay-play-toggle');
+      }
+    };
+  }, [showOverlay, handleTogglePlay, registerMesh, unregisterMesh, onRegister, onUnregister]);
 
   const handleToggleMute = useCallback(() => {
     const el = videoElRef.current;
@@ -436,9 +482,6 @@ export function WixarikaVRVideoPlayer({
     duration > 0 ? formatVideoTime(duration) : video?.duration || '03:22'
   }`;
 
-  const activeTexture = hasFrame && videoTexture ? videoTexture : posterTexture;
-  const showOverlay = Boolean(errorMsg || isBuffering || statusNote || (!isPlaying && !hasFrame));
-
   return (
     <group>
       {/* 1. ÁREA DEL REPRODUCTOR */}
@@ -455,7 +498,12 @@ export function WixarikaVRVideoPlayer({
             <meshBasicMaterial color="#d4af37" />
           </mesh>
 
-          <mesh position={[0, 0, 0]} onClick={handleTogglePlay}>
+          <mesh
+            ref={videoScreenMeshRef}
+            position={[0, 0, 0]}
+            onPointerDown={(e) => e.stopPropagation?.()}
+            onClick={handleTogglePlay}
+          >
             <planeGeometry args={[screenWidth, screenHeight]} />
             {activeTexture ? (
               <meshBasicMaterial map={activeTexture} toneMapped={false} />
@@ -486,7 +534,12 @@ export function WixarikaVRVideoPlayer({
                 <planeGeometry args={[cinemaMode ? 1.84 : 1.54, 0.28]} />
                 <meshBasicMaterial color={errorMsg ? '#dc2626' : '#c69214'} />
               </mesh>
-              <mesh position={[0, 0, 0]}>
+              <mesh
+                ref={overlayPlayMeshRef}
+                position={[0, 0, 0]}
+                onPointerDown={(e) => e.stopPropagation?.()}
+                onClick={handleTogglePlay}
+              >
                 <planeGeometry args={[cinemaMode ? 1.80 : 1.50, 0.25]} />
                 <meshBasicMaterial color="#faf6eb" transparent opacity={0.96} />
               </mesh>

@@ -209,6 +209,7 @@ export function WixarikaArtworkModal({
     if (mesh) {
       mesh.userData = {
         id: 'artwork-modal-backdrop-blocker',
+        isBlocker: true,
         onClick: () => {},
         onSelect: () => {}
       };

@@ -68,16 +68,18 @@ function LowerToggleButton({
   unregisterMesh
 }) {
   const groupRef = useRef();
-  const { camera, gl } = useThree();
+  const { camera } = useThree();
   const tempPos = useRef(new THREE.Vector3());
   const tempDir = useRef(new THREE.Vector3());
 
-  // Posicionar suavemente abajo en el campo visual del observador (Y ≈ 0.42m)
+  // Posicionar suavemente abajo en el campo visual del observador (Y ≈ 0.42m).
+  // Usar siempre `camera` (hija de cameraRigRef) para que en WebXR y EstereoVR
+  // refleje el giro real del rig tras redirigir a Deidades, Gastronomía o Fiestas.
   useFrame(() => {
     if (!groupRef.current || !camera) return;
-    const activeCamera = gl?.xr?.isPresenting ? gl.xr.getCamera() : camera;
-    activeCamera.getWorldPosition(tempPos.current);
-    activeCamera.getWorldDirection(tempDir.current);
+    camera.updateWorldMatrix(true, false);
+    camera.getWorldPosition(tempPos.current);
+    camera.getWorldDirection(tempDir.current);
     tempDir.current.y = 0;
     if (tempDir.current.lengthSq() < 0.001) {
       tempDir.current.set(0, 0, -1);
@@ -156,7 +158,7 @@ function StaticMuseum({
 // Controlador de cámara para navegación suave hacia las salas tanto en PC (OrbitControls)
 // como en visor VR móvil (WebXR nativo y modo estereoscópico + giroscopio rotando cameraRigRef)
 function StationCameraController({ targetStation, setTargetStation, orbitRef, cameraRigRef, vrMode }) {
-  const { camera, gl } = useThree();
+  const { camera } = useThree();
   const targetCamPos = useRef(null);
   const targetOrbitTarget = useRef(null);
   const isNavigatingPC = useRef(false);
@@ -187,9 +189,8 @@ function StationCameraController({ targetStation, setTargetStation, orbitRef, ca
       if (!rig || !desiredArr) return;
 
       rig.updateMatrixWorld(true);
-      const activeCamera = gl?.xr?.isPresenting ? gl.xr.getCamera() : camera;
-      activeCamera.updateMatrixWorld();
-      activeCamera.getWorldDirection(tempDir.current);
+      camera.updateWorldMatrix(true, false);
+      camera.getWorldDirection(tempDir.current);
       tempDir.current.y = 0;
 
       if (tempDir.current.lengthSq() < 1e-4) {
@@ -235,7 +236,7 @@ function StationCameraController({ targetStation, setTargetStation, orbitRef, ca
       targetOrbitTarget.current = lookTarget;
       isNavigatingPC.current = true;
     }
-  }, [targetStation, vrMode, camera, gl, cameraRigRef]);
+  }, [targetStation, vrMode, camera, cameraRigRef]);
 
   useFrame((_, delta) => {
     // Giro suave y ágil del rig en modo VR móvil

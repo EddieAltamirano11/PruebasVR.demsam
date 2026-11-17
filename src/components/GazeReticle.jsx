@@ -87,14 +87,15 @@ export function GazeReticle({
     };
   }, []);
 
-  // Raycast central sincronizado con la pose real de la cámara (WebXR o cámara normal/estéreo)
+  // Raycast central sincronizado con la pose real de la cámara (camera hereda siempre cameraRigRef,
+  // incluso en WebXR donde WebXRManager sincroniza camera con la pose local de la cabeza;
+  // nunca debemos llamar updateMatrixWorld sobre gl.xr.getCamera() porque borraría el rig).
   const performCenterRaycast = useCallback(() => {
     if (!camera) return null;
 
-    const activeCamera = gl?.xr?.isPresenting ? gl.xr.getCamera() : camera;
-    activeCamera.updateMatrixWorld();
-    activeCamera.getWorldPosition(rayOrigin.current);
-    activeCamera.getWorldDirection(rayDir.current);
+    camera.updateWorldMatrix(true, false);
+    camera.getWorldPosition(rayOrigin.current);
+    camera.getWorldDirection(rayDir.current);
     raycaster.current.set(rayOrigin.current, rayDir.current);
 
     const objectsToTest = Array.isArray(interactiveObjects)
@@ -109,11 +110,14 @@ export function GazeReticle({
     for (let i = 0; i < intersects.length; i++) {
       const candidate = intersects[i].object;
       if (!isVisibleInHierarchy(candidate)) continue;
+      // Si el rayo golpea un panel bloqueador sólido (ej. fondo del menú principal o modal),
+      // detener aquí para jamás atravesar el menú hacia cuadros detrás.
+      if (candidate.userData?.isBlocker) return null;
       if (candidate.userData?.disabled) continue;
       return candidate;
     }
     return null;
-  }, [camera, gl, interactiveObjects]);
+  }, [camera, interactiveObjects]);
 
   // Control de estado y lógica del temporizador Gaze Fuse
   const controller = useMemo(() => {

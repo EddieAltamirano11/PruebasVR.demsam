@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import * as THREE from 'three';
 import { Text } from '@react-three/drei';
 import { SoundFX } from '../../services/audioService.js';
 import { WIXARIKA_VARIANTS, calculateAngularSize } from './wixarikaTheme.js';
@@ -121,18 +122,20 @@ export function WixarikaVRButton({
           color={currentBorder}
           transparent
           opacity={isHovered || active ? 0.95 : 0.65}
+          side={THREE.DoubleSide}
         />
       </mesh>
 
       {/* 2. Bisel interior de contraste armónico (libre de negro) */}
       <mesh position={[0, 0, -0.001]}>
         <planeGeometry args={[width + 0.012, height + 0.012]} />
-        <meshBasicMaterial color={isCantera ? '#e7dec8' : theme.borderColor} />
+        <meshBasicMaterial color={isCantera ? '#e7dec8' : theme.borderColor} side={THREE.DoubleSide} />
       </mesh>
 
       {/* 3. Superficie táctil / colisionador principal del raycaster */}
       <mesh
         ref={meshRef}
+        onPointerDown={(e) => e.stopPropagation?.()}
         onClick={handleClick}
         onPointerOver={handlePointerOver}
         position={[0, 0, 0]}
@@ -142,6 +145,7 @@ export function WixarikaVRButton({
           color={currentBg}
           transparent
           opacity={0.94}
+          side={THREE.DoubleSide}
         />
       </mesh>
 

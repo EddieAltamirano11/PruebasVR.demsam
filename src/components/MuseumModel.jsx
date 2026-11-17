@@ -137,7 +137,10 @@ export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   }, [scene, gl, onSelectArtwork, registerMesh, unregisterMesh]);
 
   // Manejador de clics directos del puntero/ratón en modo computadora
-  const handlePointerDown = (e) => {
+  // Usa onClick (en lugar de onPointerDown) y filtra arrastres de OrbitControls para
+  // no interceptar nunca clics sobre botones de menús flotantes situados al frente.
+  const handleArtworkClick = (e) => {
+    if (e.delta > 8) return;
     e.stopPropagation?.();
     let curr = e.object;
     while (curr && curr !== scene) {
@@ -155,7 +158,7 @@ export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
       object={scene}
       position={[0, 0, 0]}
       dispose={null}
-      onPointerDown={handlePointerDown}
+      onClick={handleArtworkClick}
     />
   );
 }
