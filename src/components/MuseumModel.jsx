@@ -8,8 +8,8 @@ import { WIXARIKA_ARTWORKS } from './wixarika/wixarikaArtworksData.js';
 export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   const group = useRef();
   const { gl } = useThree();
-  // Carga del modelo 3D oficial v16 del Museo Wixarika (Bienvenida: Portal Kalihuey + Medallón techo + Mapa Nayarit + Pamparios)
-  const { scene } = useGLTF('./museo_wixarika_v16.glb?v=16.1');
+  // Carga del modelo 3D oficial v16 del Museo Wixarika (Bienvenida: Portal + Logos ITT/CECAN/Solón + Mapa Nayarit + Pamparios)
+  const { scene } = useGLTF('./museo_wixarika_v16.glb?v=16.2');
 
   useEffect(() => {
     if (!scene) return;
@@ -160,5 +160,5 @@ export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   );
 }
 
-useGLTF.preload('./museo_wixarika_v16.glb?v=16.1');
+useGLTF.preload('./museo_wixarika_v16.glb?v=16.2');
 export default MuseumModel;

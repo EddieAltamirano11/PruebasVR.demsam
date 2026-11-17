@@ -12,23 +12,23 @@
  *   • Agrega 2 pilastras simétricas a +75° y +105° (altura completa 5.40m con capitel
  *     turquesa y base de madera) que dividen el cuadrante en 3 vanos arquitectónicos de 30°.
  *
- * 2. Vano Central (+90°): Portal Ceremonial del Kalihuey + Medallón Circular del Techo:
- *   • Marco arquitectónico en cantera clara con dintel escalonado.
+ * 2. Vano Central (+90°): Portal Ceremonial del Kalihuey + Logo Institucional ITT:
+ *   • Marco arquitectónico en cantera labrada con bases, cornisa de madera oscura y filetes dorados.
  *   • Puerta doble ceremonial en madera oscura (mat_madera_oscura.036) con filetes
  *     geométricos en turquesa y oro ceremonial más manijas verticales doradas.
- *   • Encima del dintel: medallón circular con aro de madera oscura y bisel dorado
- *     reutilizando exactamente la textura circular del óculo del techo
- *     (mat_tatewari_oculo_techo.010, orientado derecho hacia el espectador).
+ *   • Encima del dintel: logo oficial del Instituto Tecnológico de Tepic (ITT) a escala compacta.
  *
  * 3. Vano Izquierdo (+60°, izquierda desde el centro mirando a +Z):
+ *   • Logo oficial del CECAN Nayarit en la parte superior del muro.
  *   • Cuadro enmarcado en madera oscura y oro con el mapa ilustrado de Nayarit
- *     (public/texturas/mapa_nayarit_bienvenida.jpg, únicamente con el texto "NAYARIT").
- *   • Placa dorada ceremonial inferior y banca baja de madera oscura junto al zoclo.
+ *     (public/texturas/mapa_nayarit_bienvenida.jpg, únicamente con el texto "NAYARIT")
+ *     y banca baja de madera oscura junto al zoclo (sin placa dorada inferior).
  *
  * 4. Vano Derecho (+120°, derecha desde el centro mirando a +Z):
- *   • Cuadro gemelo de bienvenida en cantera con tipografía 3D extruida en madera oscura:
- *     "PAMPARIOS · BIENVENIDOS" / "BIBLIOTECA SOLÓN ARGÜELLO" con barra dorada y rombo turquesa.
- *   • Placa dorada ceremonial inferior y banca baja de madera oscura simétrica.
+ *   • Logo mejorado sin fondo de la Biblioteca Pública Central Estatal Solón Argüello arriba.
+ *   • Cuadro gemelo en cantera con tipografía 3D grande en dos filas:
+ *     "PAMPARIOS" / barra dorada con rombo turquesa / "BIENVENIDOS",
+ *     y banca baja de madera oscura simétrica (sin placa dorada inferior).
  */
 
 import fs from 'fs';
@@ -45,14 +45,15 @@ const rootDir = path.resolve(__dirname, '..');
 const inputPath = path.resolve(rootDir, 'public', 'museo_wixarika_v15.glb');
 const outputPath = path.resolve(rootDir, 'public', 'museo_wixarika_v16.glb');
 const mapTexturePath = path.resolve(rootDir, 'public', 'texturas', 'mapa_nayarit_bienvenida.jpg');
+const ittLogoPath = path.resolve(rootDir, 'public', 'texturas', 'logo_itt_bienvenida.png');
+const cecanLogoPath = path.resolve(rootDir, 'public', 'texturas', 'logo_cecan_bienvenida.png');
+const solonLogoPath = path.resolve(rootDir, 'public', 'texturas', 'logo_solon_arguello_bienvenida.png');
 
-if (!fs.existsSync(inputPath)) {
-  console.error(`Error: No se encontró el archivo base en ${inputPath}`);
-  process.exit(1);
-}
-if (!fs.existsSync(mapTexturePath)) {
-  console.error(`Error: No se encontró la textura del mapa en ${mapTexturePath}`);
-  process.exit(1);
+for (const reqPath of [inputPath, mapTexturePath, ittLogoPath, cecanLogoPath, solonLogoPath]) {
+  if (!fs.existsSync(reqPath)) {
+    console.error(`Error: No se encontró el archivo requerido en ${reqPath}`);
+    process.exit(1);
+  }
 }
 
 console.log('=== Generando Museo Wixárika v16 (Propuesta 1 en Bienvenida / Kalihuey) ===');
@@ -195,7 +196,13 @@ const addGeometryMeshToGltf = (rawGeom, materialIdx, meshName, { flipVForGltf = 
   return { meshIdx, bb };
 };
 
-const embedImageMaterial = (filePath, mimeType, texName, matName) => {
+const embedImageMaterial = (
+  filePath,
+  mimeType,
+  texName,
+  matName,
+  { alphaMode = null, roughnessFactor = 0.72, doubleSided = false } = {}
+) => {
   const imgBytes = fs.readFileSync(filePath);
   const imgSlice = appendRawBytes(imgBytes);
   const imgBvIdx = gltf.bufferViews.length;
@@ -219,14 +226,17 @@ const embedImageMaterial = (filePath, mimeType, texName, matName) => {
   });
 
   const matIdx = gltf.materials.length;
-  gltf.materials.push({
+  const matDef = {
     name: matName,
     pbrMetallicRoughness: {
       baseColorTexture: { index: texIdx },
-      metallicFactor: 0.05,
-      roughnessFactor: 0.72
+      metallicFactor: alphaMode ? 0.0 : 0.05,
+      roughnessFactor
     }
-  });
+  };
+  if (alphaMode) matDef.alphaMode = alphaMode;
+  if (doubleSided) matDef.doubleSided = true;
+  gltf.materials.push(matDef);
 
   return { matIdx, texIdx, imgIdx };
 };
@@ -475,60 +485,31 @@ for (const side of [-1, 1]) {
   addDoorBar(`portal_filete_oro_h2_${tag}`, side * 0.44, 0.44, side * 0.86, 0.44, 0.018, MAT_MARCO_ORO);
 }
 
-// 2.3 Medallón Circular con la imagen oficial del techo (mat_tatewari_oculo_techo.010)
-const MEDALLON_Y = 3.54; // Borde inferior 2.67m (8cm libre sobre cornisa 2.59m), borde superior 4.41m (51cm bajo cenefa)
-const MEDALLON_R_MADERA = 0.87;
-const MEDALLON_R_ORO = 0.83;
-const MEDALLON_R_ARTE = 0.795;
-
-// Cilindros rotados en X (+90°) para quedar como discos planos mirando hacia +Z local
-const maderaDiscGeom = new THREE.CylinderGeometry(MEDALLON_R_MADERA, MEDALLON_R_MADERA, 0.06, 64);
-maderaDiscGeom.rotateX(Math.PI / 2);
-const { meshIdx: medallonMaderaMeshIdx } = addGeometryMeshToGltf(
-  maderaDiscGeom,
-  MAT_MADERA_OSCURA,
-  'mesh_medallon_bienvenida_marco_madera'
+// 2.3 Logo del Instituto Tecnológico de Tepic (ITT) encima del portal (más compacto que el medallón previo)
+const { matIdx: MAT_LOGO_ITT } = embedImageMaterial(
+  ittLogoPath,
+  'image/png',
+  'tex_logo_itt_bienvenida',
+  'mat_logo_itt_bienvenida',
+  { alphaMode: 'BLEND', roughnessFactor: 0.85, doubleSided: true }
 );
 
-const oroDiscGeom = new THREE.CylinderGeometry(MEDALLON_R_ORO, MEDALLON_R_ORO, 0.068, 64);
-oroDiscGeom.rotateX(Math.PI / 2);
-const { meshIdx: medallonOroMeshIdx } = addGeometryMeshToGltf(
-  oroDiscGeom,
-  MAT_MARCO_ORO,
-  'mesh_medallon_bienvenida_marco_oro'
-);
-
-const fondoDiscGeom = new THREE.CircleGeometry(MEDALLON_R_ARTE, 64);
-const { meshIdx: medallonFondoMeshIdx } = addGeometryMeshToGltf(
-  fondoDiscGeom,
-  MAT_MADERA_PROFUNDA,
-  'mesh_medallon_bienvenida_fondo'
-);
-
-// Disco frontal reutilizando la textura del techo (mat 82) con flipVForGltf para que Tatewari quede derecho
-const oculoDiscGeom = new THREE.CircleGeometry(MEDALLON_R_ARTE, 64);
-const { meshIdx: medallonOculoMeshIdx } = addGeometryMeshToGltf(
-  oculoDiscGeom,
-  MAT_OCULO_TECHO,
-  'mesh_medallon_bienvenida_oculo_techo',
+const ITT_SIZE = 1.12; // 1.12m × 1.12m (36% menor que el medallón de 1.74m anterior)
+const ITT_Y = 3.36;    // Borde inferior 2.80m (21cm libre sobre cornisa 2.59m), borde superior 3.92m
+const { meshIdx: logoIttMeshIdx } = addGeometryMeshToGltf(
+  new THREE.PlaneGeometry(ITT_SIZE, ITT_SIZE),
+  MAT_LOGO_ITT,
+  'mesh_logo_itt_bienvenida',
   { flipVForGltf: true }
 );
 
-const medMaderaIdx = nodes.length;
-nodes.push({ name: 'medallon_bienvenida_madera', mesh: medallonMaderaMeshIdx, translation: [0.0, MEDALLON_Y, 0.0] });
-portalChildren.push(medMaderaIdx);
-
-const medOroIdx = nodes.length;
-nodes.push({ name: 'medallon_bienvenida_oro', mesh: medallonOroMeshIdx, translation: [0.0, MEDALLON_Y, 0.002] });
-portalChildren.push(medOroIdx);
-
-const medFondoIdx = nodes.length;
-nodes.push({ name: 'medallon_bienvenida_fondo', mesh: medallonFondoMeshIdx, translation: [0.0, MEDALLON_Y, 0.038] });
-portalChildren.push(medFondoIdx);
-
-const medArteIdx = nodes.length;
-nodes.push({ name: 'medallon_bienvenida_oculo_techo', mesh: medallonOculoMeshIdx, translation: [0.0, MEDALLON_Y, 0.042] });
-portalChildren.push(medArteIdx);
+const logoIttIdx = nodes.length;
+nodes.push({
+  name: 'logo_itt_portal_bienvenida',
+  mesh: logoIttMeshIdx,
+  translation: [0.0, ITT_Y, 0.03]
+});
+portalChildren.push(logoIttIdx);
 
 const portalRootIdx = nodes.length;
 nodes.push({
@@ -538,46 +519,41 @@ nodes.push({
   children: portalChildren
 });
 nodes[0].children.push(portalRootIdx);
-console.log('✓ Portal Ceremonial y Medallón Circular (textura mat_tatewari_oculo_techo.010) instalados en +90°.');
+console.log('✓ Portal Ceremonial y Logo ITT (1.12m × 1.12m) instalados en +90°.');
 
 // ==========================================================================
-// PARTE 3: CUADROS LATERALES (MAPA DE NAYARIT Y PAMPARIOS · BIENVENIDOS) + BANCAS
+// PARTE 3: CUADROS LATERALES, LOGOS CECAN / SOLÓN ARGÜELLO Y BANCAS
 // ==========================================================================
-console.log('\n[3] Construyendo cuadro de Mapa de Nayarit (+60°), cuadro Pamparios (+120°) y bancas...');
+console.log('\n[3] Construyendo Mapa Nayarit + CECAN (+60°), Pamparios/Bienvenidos + Solón Argüello (+120°) y bancas...');
 
-// Inyectar textura del mapa limpio de Nayarit (únicamente con texto "NAYARIT")
+// Inyectar texturas del mapa de Nayarit y de los logos institucionales (CECAN y Solón Argüello sin fondo)
 const { matIdx: MAT_MAPA_NAYARIT } = embedImageMaterial(
   mapTexturePath,
   'image/jpeg',
   'tex_mapa_nayarit_bienvenida',
   'mat_mapa_nayarit_bienvenida'
 );
+const { matIdx: MAT_LOGO_CECAN } = embedImageMaterial(
+  cecanLogoPath,
+  'image/png',
+  'tex_logo_cecan_bienvenida',
+  'mat_logo_cecan_bienvenida',
+  { alphaMode: 'BLEND', roughnessFactor: 0.85, doubleSided: true }
+);
+const { matIdx: MAT_LOGO_SOLON } = embedImageMaterial(
+  solonLogoPath,
+  'image/png',
+  'tex_logo_solon_arguello_bienvenida',
+  'mat_logo_solon_arguello_bienvenida',
+  { alphaMode: 'BLEND', roughnessFactor: 0.85, doubleSided: true }
+);
 
-// Cargar tipografía helvetiker_bold e inyectar glifos 'Ó' y 'Ü' para "SOLÓN ARGÜELLO"
+// Cargar tipografía helvetiker_bold
 const fontPath = path.resolve(rootDir, 'node_modules/three/examples/fonts/helvetiker_bold.typeface.json');
 const fontData = JSON.parse(fs.readFileSync(fontPath, 'utf8'));
-
-if (!fontData.glyphs['Ó'] && fontData.glyphs['O']) {
-  const baseO = fontData.glyphs['O'];
-  fontData.glyphs['Ó'] = {
-    x_min: baseO.x_min,
-    x_max: baseO.x_max,
-    ha: baseO.ha,
-    o: `${baseO.o}m 520 1120 l 425 1120 l 560 1320 l 680 1320 l 520 1120 `
-  };
-}
-if (!fontData.glyphs['Ü'] && fontData.glyphs['U']) {
-  const baseU = fontData.glyphs['U'];
-  fontData.glyphs['Ü'] = {
-    x_min: baseU.x_min,
-    x_max: baseU.x_max,
-    ha: baseU.ha,
-    o: `${baseU.o}m 230 1140 l 370 1140 l 370 1280 l 230 1280 l 230 1140 m 530 1140 l 670 1140 l 670 1280 l 530 1280 l 530 1140 `
-  };
-}
 const font = new FontLoader().parse(fontData);
 
-// Geometrías compartidas de marcos y placas doradas inferiores
+// Geometrías compartidas de marcos (sin placas doradas inferiores)
 const FRAME_W = 2.46;
 const FRAME_H = 1.66;
 const GOLD_W = 2.34;
@@ -607,23 +583,31 @@ const { meshIdx: panelCanteraMeshIdx } = addGeometryMeshToGltf(
   'mesh_bienvenida_panel_cantera'
 );
 
-// Placa pequeña dorada decorativa debajo de cada cuadro (como en Propuesta 1)
-const { meshIdx: placaChicaMaderaMeshIdx } = addGeometryMeshToGltf(
-  new THREE.BoxGeometry(0.68, 0.24, 0.024),
-  MAT_MADERA_OSCURA,
-  'mesh_bienvenida_placa_chica_madera'
+// Mallas de logos institucionales respetando sus proporciones exactas
+// CECAN: 1024×175 (ratio 5.851) -> 2.60m × 0.444m
+const CECAN_W = 2.60;
+const CECAN_H = CECAN_W / (1024 / 175);
+const { meshIdx: logoCecanMeshIdx } = addGeometryMeshToGltf(
+  new THREE.PlaneGeometry(CECAN_W, CECAN_H),
+  MAT_LOGO_CECAN,
+  'mesh_logo_cecan_bienvenida',
+  { flipVForGltf: true }
 );
-const { meshIdx: placaChicaOroMeshIdx } = addGeometryMeshToGltf(
-  new THREE.BoxGeometry(0.62, 0.18, 0.028),
-  MAT_MARCO_ORO,
-  'mesh_bienvenida_placa_chica_oro'
+
+// Solón Argüello: 1364×562 (ratio 2.427) -> 1.95m × 0.803m
+const SOLON_W = 1.95;
+const SOLON_H = SOLON_W / (1364 / 562);
+const { meshIdx: logoSolonMeshIdx } = addGeometryMeshToGltf(
+  new THREE.PlaneGeometry(SOLON_W, SOLON_H),
+  MAT_LOGO_SOLON,
+  'mesh_logo_solon_arguello_bienvenida',
+  { flipVForGltf: true }
 );
 
 const R_CUADRO = 7.74;
-const CUADRO_Y = 2.52;
-const PLACA_CHICA_LOCAL_Y = -1.08; // World Y = 1.44m
+const CUADRO_Y = 2.28; // Cuadro: 1.45m..3.11m (espacio limpio de 1.81m arriba para logos bajo cenefa 4.925m)
 
-// 3.1 VANO IZQUIERDO (+60° -> +X, +Z): Cuadro Mapa de Nayarit
+// 3.1 VANO IZQUIERDO (+60° -> +X, +Z): Cuadro Mapa de Nayarit + Logo CECAN arriba (sin placa dorada inferior)
 {
   const rad = (60.0 * Math.PI) / 180;
   const x = R_CUADRO * Math.cos(rad);
@@ -636,65 +620,64 @@ const PLACA_CHICA_LOCAL_Y = -1.08; // World Y = 1.44m
   const cIdx = nodes.length;
   nodes.push({ name: 'lienzo_mapa_nayarit_bienvenida', mesh: mapaLienzoMeshIdx, translation: [0, 0, 0.031] });
 
-  const pmIdx = nodes.length;
-  nodes.push({ name: 'placa_mapa_nayarit_madera', mesh: placaChicaMaderaMeshIdx, translation: [0, PLACA_CHICA_LOCAL_Y, 0] });
-  const poIdx = nodes.length;
-  nodes.push({ name: 'placa_mapa_nayarit_oro', mesh: placaChicaOroMeshIdx, translation: [0, PLACA_CHICA_LOCAL_Y, 0] });
+  // Logo CECAN centrado arriba del cuadro (world Y = 2.28 + 1.54 = 3.82m -> 3.60m..4.04m)
+  const cecanIdx = nodes.length;
+  nodes.push({ name: 'logo_cecan_bienvenida', mesh: logoCecanMeshIdx, translation: [0, 1.54, 0.018] });
 
   const rootIdx = nodes.length;
   nodes.push({
     name: 'cuadro_bienvenida_mapa_nayarit',
     translation: [x, CUADRO_Y, z],
     rotation: lookAtOriginQuat(x, CUADRO_Y, z),
-    children: [mIdx, oIdx, cIdx, pmIdx, poIdx]
+    children: [mIdx, oIdx, cIdx, cecanIdx]
   });
   nodes[0].children.push(rootIdx);
-  console.log(`  ✓ Mapa de Nayarit (+60°) pos=(${x.toFixed(2)}, ${CUADRO_Y}, ${z.toFixed(2)})`);
+  console.log(`  ✓ Mapa de Nayarit + Logo CECAN (+60°) pos=(${x.toFixed(2)}, ${CUADRO_Y}, ${z.toFixed(2)})`);
 }
 
-// 3.2 VANO DERECHO (+120° -> -X, +Z): Cuadro "PAMPARIOS · BIENVENIDOS / BIBLIOTECA SOLÓN ARGÜELLO"
+// 3.2 VANO DERECHO (+120° -> -X, +Z): Cuadro "PAMPARIOS" / "BIENVENIDOS" (letra grande en 2 filas) + Logo Solón Argüello arriba
 {
   const rad = (120.0 * Math.PI) / 180;
   const x = R_CUADRO * Math.cos(rad);
   const z = R_CUADRO * Math.sin(rad);
 
-  const titleGeom = new TextGeometry('PAMPARIOS · BIENVENIDOS', {
+  const row1Geom = new TextGeometry('PAMPARIOS', {
     font,
-    size: 0.105,
-    depth: 0.012,
+    size: 0.215,
+    depth: 0.016,
     curveSegments: 3,
     bevelEnabled: false
   });
-  titleGeom.computeVertexNormals();
-  titleGeom.center();
-  const { meshIdx: titleMeshIdx, bb: titleBb } = addGeometryMeshToGltf(
-    titleGeom,
+  row1Geom.computeVertexNormals();
+  row1Geom.center();
+  const { meshIdx: row1MeshIdx, bb: row1Bb } = addGeometryMeshToGltf(
+    row1Geom,
     MAT_MADERA_OSCURA,
-    'mesh_texto_pamparios_bienvenidos'
+    'mesh_texto_pamparios_grande'
   );
 
-  const subtitleGeom = new TextGeometry('BIBLIOTECA SOLÓN ARGÜELLO', {
+  const row2Geom = new TextGeometry('BIENVENIDOS', {
     font,
-    size: 0.080,
-    depth: 0.010,
+    size: 0.195,
+    depth: 0.016,
     curveSegments: 3,
     bevelEnabled: false
   });
-  subtitleGeom.computeVertexNormals();
-  subtitleGeom.center();
-  const { meshIdx: subtitleMeshIdx, bb: subBb } = addGeometryMeshToGltf(
-    subtitleGeom,
+  row2Geom.computeVertexNormals();
+  row2Geom.center();
+  const { meshIdx: row2MeshIdx, bb: row2Bb } = addGeometryMeshToGltf(
+    row2Geom,
     MAT_MADERA_OSCURA,
-    'mesh_texto_biblioteca_solon_arguello'
+    'mesh_texto_bienvenidos_grande'
   );
 
   const { meshIdx: dividerBarMeshIdx } = addGeometryMeshToGltf(
-    new THREE.BoxGeometry(1.62, 0.014, 0.008),
+    new THREE.BoxGeometry(1.74, 0.018, 0.010),
     MAT_MARCO_ORO,
     'mesh_bienvenida_linea_oro'
   );
 
-  const diamondGeom = new THREE.BoxGeometry(0.050, 0.050, 0.012);
+  const diamondGeom = new THREE.BoxGeometry(0.064, 0.064, 0.014);
   diamondGeom.rotateZ(Math.PI / 4);
   const { meshIdx: diamondMeshIdx } = addGeometryMeshToGltf(
     diamondGeom,
@@ -710,30 +693,29 @@ const PLACA_CHICA_LOCAL_Y = -1.08; // World Y = 1.44m
   nodes.push({ name: 'pamparios_fondo_cantera', mesh: panelCanteraMeshIdx, translation: [0, 0, 0.031] });
 
   const t1Idx = nodes.length;
-  nodes.push({ name: 'pamparios_texto_titulo', mesh: titleMeshIdx, translation: [0, 0.16, 0.038] });
+  nodes.push({ name: 'pamparios_texto_fila1', mesh: row1MeshIdx, translation: [0, 0.30, 0.039] });
   const barIdx = nodes.length;
-  nodes.push({ name: 'pamparios_linea_dorada', mesh: dividerBarMeshIdx, translation: [0, 0.01, 0.036] });
+  nodes.push({ name: 'pamparios_linea_dorada', mesh: dividerBarMeshIdx, translation: [0, 0.0, 0.036] });
   const diaIdx = nodes.length;
-  nodes.push({ name: 'pamparios_rombo_central', mesh: diamondMeshIdx, translation: [0, 0.01, 0.039] });
+  nodes.push({ name: 'pamparios_rombo_central', mesh: diamondMeshIdx, translation: [0, 0.0, 0.040] });
   const t2Idx = nodes.length;
-  nodes.push({ name: 'pamparios_texto_subtitulo', mesh: subtitleMeshIdx, translation: [0, -0.15, 0.038] });
+  nodes.push({ name: 'pamparios_texto_fila2', mesh: row2MeshIdx, translation: [0, -0.30, 0.039] });
 
-  const pmIdx = nodes.length;
-  nodes.push({ name: 'placa_pamparios_madera', mesh: placaChicaMaderaMeshIdx, translation: [0, PLACA_CHICA_LOCAL_Y, 0] });
-  const poIdx = nodes.length;
-  nodes.push({ name: 'placa_pamparios_oro', mesh: placaChicaOroMeshIdx, translation: [0, PLACA_CHICA_LOCAL_Y, 0] });
+  // Logo Biblioteca Solón Argüello centrado arriba del cuadro (world Y = 2.28 + 1.58 = 3.86m -> 3.46m..4.26m)
+  const solonIdx = nodes.length;
+  nodes.push({ name: 'logo_solon_arguello_bienvenida', mesh: logoSolonMeshIdx, translation: [0, 1.58, 0.018] });
 
   const rootIdx = nodes.length;
   nodes.push({
     name: 'cuadro_bienvenida_pamparios',
     translation: [x, CUADRO_Y, z],
     rotation: lookAtOriginQuat(x, CUADRO_Y, z),
-    children: [mIdx, oIdx, cIdx, t1Idx, barIdx, diaIdx, t2Idx, pmIdx, poIdx]
+    children: [mIdx, oIdx, cIdx, t1Idx, barIdx, diaIdx, t2Idx, solonIdx]
   });
   nodes[0].children.push(rootIdx);
   console.log(
-    `  ✓ Cuadro Pamparios (+120°) pos=(${x.toFixed(2)}, ${CUADRO_Y}, ${z.toFixed(2)}) | ` +
-    `título=${(titleBb.max.x - titleBb.min.x).toFixed(2)}m, subtítulo=${(subBb.max.x - subBb.min.x).toFixed(2)}m`
+    `  ✓ Cuadro Pamparios/Bienvenidos + Logo Solón Argüello (+120°) pos=(${x.toFixed(2)}, ${CUADRO_Y}, ${z.toFixed(2)}) | ` +
+    `fila1=${(row1Bb.max.x - row1Bb.min.x).toFixed(2)}m, fila2=${(row2Bb.max.x - row2Bb.min.x).toFixed(2)}m`
   );
 }
 
