@@ -253,6 +253,7 @@ const MAT_MARCO_ORO = 1;         // mat_kauyumari_oro.044
 const MAT_MADERA_OSCURA = 3;     // mat_madera_oscura.036
 const MAT_TURQUESA = 4;          // mat_medallon_turquesa.045
 const MAT_CANTERA = 9;           // mat_letrero_cantera.021
+const MAT_TEXTO_ORO_3D = 10;     // mat_texto_oro_3d.021 (color y acabado oro idéntico a las deidades)
 const MAT_OCULO_TECHO = 82;      // mat_tatewari_oculo_techo.010 (imagen circular del techo)
 const MAT_MADERA_PROFUNDA = 84;  // mat_letrero_madera.021
 
@@ -768,6 +769,163 @@ for (const bench of [
   nodes[0].children.push(bRootIdx);
 }
 console.log('✓ Bancas bajas de madera oscura instaladas en ambos vanos laterales.');
+
+// ==========================================================================
+// 3.4 BOTONES 3D INTERACTIVOS ESTILO CUADRO DE DEIDAD ("ACERCA DE" y "MENÚ")
+// ==========================================================================
+console.log('\n[3.4] Construyendo botones 3D estilo cuadro de deidad ("ACERCA DE" y "MENÚ") en los vanos...');
+
+const BTN_W = 1.48;
+const BTN_H = 0.38;
+const BTN_D = 0.040;
+const BTN_ORO_W = 1.42;
+const BTN_ORO_H = 0.32;
+const BTN_ORO_D = 0.045;
+const BTN_CANVAS_W = 1.36;
+const BTN_CANVAS_H = 0.26;
+
+const { meshIdx: btnFrameMaderaMeshIdx } = addGeometryMeshToGltf(
+  new THREE.BoxGeometry(BTN_W, BTN_H, BTN_D),
+  MAT_MADERA_OSCURA,
+  'mesh_boton_bienvenida_marco_madera'
+);
+
+const { meshIdx: btnFrameOroMeshIdx } = addGeometryMeshToGltf(
+  new THREE.BoxGeometry(BTN_ORO_W, BTN_ORO_H, BTN_ORO_D),
+  MAT_MARCO_ORO,
+  'mesh_boton_bienvenida_marco_oro'
+);
+
+const { meshIdx: btnPanelCanteraMeshIdx } = addGeometryMeshToGltf(
+  new THREE.PlaneGeometry(BTN_CANVAS_W, BTN_CANVAS_H),
+  MAT_CANTERA,
+  'mesh_boton_bienvenida_panel_cantera'
+);
+
+const btnDiamondGeom = new THREE.BoxGeometry(0.040, 0.040, 0.012);
+btnDiamondGeom.rotateZ(Math.PI / 4);
+const { meshIdx: btnDiamondTurquesaMeshIdx } = addGeometryMeshToGltf(
+  btnDiamondGeom,
+  MAT_TURQUESA,
+  'mesh_boton_bienvenida_rombo_turquesa'
+);
+
+const btnDiamondOroGeom = new THREE.BoxGeometry(0.048, 0.048, 0.010);
+btnDiamondOroGeom.rotateZ(Math.PI / 4);
+const { meshIdx: btnDiamondOroMeshIdx } = addGeometryMeshToGltf(
+  btnDiamondOroGeom,
+  MAT_MARCO_ORO,
+  'mesh_boton_bienvenida_rombo_oro'
+);
+
+// Texto 3D dorado para "ACERCA DE"
+const acercaTextGeom = new TextGeometry('ACERCA DE', {
+  font,
+  size: 0.110,
+  depth: 0.018,
+  curveSegments: 3,
+  bevelEnabled: false
+});
+acercaTextGeom.computeVertexNormals();
+acercaTextGeom.center();
+const { meshIdx: acercaTextMeshIdx } = addGeometryMeshToGltf(
+  acercaTextGeom,
+  MAT_TEXTO_ORO_3D,
+  'mesh_texto_boton_acerca_de'
+);
+
+// Texto 3D dorado para "MENÚ"
+const menuTextGeom = new TextGeometry('MENÚ', {
+  font,
+  size: 0.125,
+  depth: 0.018,
+  curveSegments: 3,
+  bevelEnabled: false
+});
+menuTextGeom.computeVertexNormals();
+menuTextGeom.center();
+const { meshIdx: menuTextMeshIdx } = addGeometryMeshToGltf(
+  menuTextGeom,
+  MAT_TEXTO_ORO_3D,
+  'mesh_texto_boton_menu'
+);
+
+const BTN_Y = 1.02;
+
+// Función auxiliar para agregar los 4 rombos de esquina
+const createCornerDiamonds = (baseName) => {
+  const cornerIndices = [];
+  const cx = BTN_CANVAS_W / 2 - 0.035;
+  const cy = BTN_CANVAS_H / 2 - 0.035;
+  const corners = [
+    [-cx, cy],
+    [cx, cy],
+    [-cx, -cy],
+    [cx, -cy]
+  ];
+  corners.forEach(([corX, corY], i) => {
+    const dOroIdx = nodes.length;
+    nodes.push({ name: `${baseName}_rombo_oro_${i}`, mesh: btnDiamondOroMeshIdx, translation: [corX, corY, 0.024] });
+    const dTurqIdx = nodes.length;
+    nodes.push({ name: `${baseName}_rombo_turq_${i}`, mesh: btnDiamondTurquesaMeshIdx, translation: [corX, corY, 0.026] });
+    cornerIndices.push(dOroIdx, dTurqIdx);
+  });
+  return cornerIndices;
+};
+
+// 1. Botón "ACERCA DE" en el vano izquierdo (+60°, debajo del mapa de Nayarit)
+{
+  const rad = (60.0 * Math.PI) / 180;
+  const x = R_CUADRO * Math.cos(rad);
+  const z = R_CUADRO * Math.sin(rad);
+
+  const mIdx = nodes.length;
+  nodes.push({ name: 'boton_acerca_de_marco_madera', mesh: btnFrameMaderaMeshIdx, translation: [0, 0, 0] });
+  const oIdx = nodes.length;
+  nodes.push({ name: 'boton_acerca_de_marco_oro', mesh: btnFrameOroMeshIdx, translation: [0, 0, 0] });
+  const cIdx = nodes.length;
+  nodes.push({ name: 'boton_acerca_de_fondo_cantera', mesh: btnPanelCanteraMeshIdx, translation: [0, 0, 0.024] });
+  const tIdx = nodes.length;
+  nodes.push({ name: 'boton_acerca_de_texto_oro', mesh: acercaTextMeshIdx, translation: [0, 0, 0.028] });
+  const diamondIndices = createCornerDiamonds('boton_acerca_de');
+
+  const rootIdx = nodes.length;
+  nodes.push({
+    name: 'boton_bienvenida_acerca_de',
+    translation: [x, BTN_Y, z],
+    rotation: lookAtOriginQuat(x, BTN_Y, z),
+    children: [mIdx, oIdx, cIdx, tIdx, ...diamondIndices]
+  });
+  nodes[0].children.push(rootIdx);
+  console.log(`  ✓ Botón "ACERCA DE" estilo cuadro de deidad (+60°) pos=(${x.toFixed(2)}, ${BTN_Y}, ${z.toFixed(2)})`);
+}
+
+// 2. Botón "MENÚ" en el vano derecho (+120°, debajo de Pamparios/Bienvenidos)
+{
+  const rad = (120.0 * Math.PI) / 180;
+  const x = R_CUADRO * Math.cos(rad);
+  const z = R_CUADRO * Math.sin(rad);
+
+  const mIdx = nodes.length;
+  nodes.push({ name: 'boton_menu_marco_madera', mesh: btnFrameMaderaMeshIdx, translation: [0, 0, 0] });
+  const oIdx = nodes.length;
+  nodes.push({ name: 'boton_menu_marco_oro', mesh: btnFrameOroMeshIdx, translation: [0, 0, 0] });
+  const cIdx = nodes.length;
+  nodes.push({ name: 'boton_menu_fondo_cantera', mesh: btnPanelCanteraMeshIdx, translation: [0, 0, 0.024] });
+  const tIdx = nodes.length;
+  nodes.push({ name: 'boton_menu_texto_oro', mesh: menuTextMeshIdx, translation: [0, 0, 0.028] });
+  const diamondIndices = createCornerDiamonds('boton_menu');
+
+  const rootIdx = nodes.length;
+  nodes.push({
+    name: 'boton_bienvenida_menu',
+    translation: [x, BTN_Y, z],
+    rotation: lookAtOriginQuat(x, BTN_Y, z),
+    children: [mIdx, oIdx, cIdx, tIdx, ...diamondIndices]
+  });
+  nodes[0].children.push(rootIdx);
+  console.log(`  ✓ Botón "MENÚ" estilo cuadro de deidad (+120°) pos=(${x.toFixed(2)}, ${BTN_Y}, ${z.toFixed(2)})`);
+}
 
 // ==========================================================================
 // PARTE 4: EMPAQUETADO FINAL DEL GLB v16

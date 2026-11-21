@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 import {
   WIXARIKA_COLORS,
   WIXARIKA_VARIANTS,
@@ -423,6 +425,36 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(dirMenu.x).toBeGreaterThan(0);
       expect(dirMenu.z).toBeLessThan(0);
       expect(menuRotY).toBeCloseTo(2.618, 2); // +150°
+    });
+
+    it('embeds 3D wall buttons "ACERCA DE" and "MENÚ" in museo_wixarika_v16.glb matching deity plaque materials', () => {
+      const glbPath = path.resolve(process.cwd(), 'public', 'museo_wixarika_v16.glb');
+      expect(fs.existsSync(glbPath)).toBe(true);
+
+      const buf = fs.readFileSync(glbPath);
+      const jsonLen = buf.readUInt32LE(12);
+      const gltf = JSON.parse(buf.toString('utf8', 20, 20 + jsonLen));
+
+      const acercaNode = gltf.nodes.find((n) => n.name === 'boton_bienvenida_acerca_de');
+      const menuNode = gltf.nodes.find((n) => n.name === 'boton_bienvenida_menu');
+
+      expect(acercaNode).toBeDefined();
+      expect(menuNode).toBeDefined();
+
+      // Verificar que ambos botones tienen los 12 elementos de estructura idénticos a los cuadros de deidades
+      const expectedParts = ['marco_madera', 'marco_oro', 'fondo_cantera', 'texto_oro'];
+      expectedParts.forEach((part) => {
+        expect(acercaNode.children.some((ci) => gltf.nodes[ci].name.includes(part))).toBe(true);
+        expect(menuNode.children.some((ci) => gltf.nodes[ci].name.includes(part))).toBe(true);
+      });
+
+      // Verificar que el texto 3D utiliza el material de texto dorado mat_texto_oro_3d.021 de las deidades
+      const acercaTextNode = gltf.nodes.find((n) => n.name === 'boton_acerca_de_texto_oro');
+      expect(acercaTextNode).toBeDefined();
+      const mesh = gltf.meshes[acercaTextNode.mesh];
+      const mat = gltf.materials[mesh.primitives[0].material];
+      expect(mat.name).toBe('mat_texto_oro_3d.021');
+      expect(mat.pbrMetallicRoughness.metallicFactor).toBeCloseTo(0.5, 2);
     });
   });
 });

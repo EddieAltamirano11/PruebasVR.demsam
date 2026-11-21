@@ -378,6 +378,11 @@ export function WixarikaWelcomeDashboard({
     onSelectStation?.('home');
   }, [onSelectStation]);
 
+  const handleReturnToAbout = useCallback(() => {
+    SoundFX.playClick();
+    setCurrentView('about');
+  }, []);
+
   return (
     <group position={position} rotation={rotation}>
       {/* 1. Marco exterior de madera de nogal ceremonial */}
@@ -569,20 +574,19 @@ export function WixarikaWelcomeDashboard({
       )}
 
       {/* ===================================================================== */}
-      {/* VISTA B: INFORMACIÓN INSTITUCIONAL Y CRÉDITOS (ACERCA DE)            */}
+      {/* VISTA B: REFERENCIAS CULTURALES (DEIDADES, GASTRONOMÍA, FIESTAS)       */}
       {/* ===================================================================== */}
       {currentView === 'about' && (
         <group position={[0, 0, 0.005]}>
-          {/* Barra Superior con botón Volver al Menú */}
-          <group position={[0, 1.45, 0]}>
+          {/* Barra Superior con botón Volver al Menú (solo flecha <-) y Título REFERENCIAS */}
+          <group position={[0, 1.48, 0]}>
             <WixarikaVRButton
-              id="btn-about-back-top"
-              label="Volver al Menú"
+              id="btn-ref-back-top"
               iconName="arrow-left"
               variant="cantera"
-              width={1.60}
+              width={0.42}
               height={0.26}
-              position={[-2.20, 0, 0]}
+              position={[-2.75, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -592,212 +596,134 @@ export function WixarikaWelcomeDashboard({
             />
 
             <Text
-              position={[0.20, 0.02, 0]}
-              fontSize={0.145}
+              position={[0, 0.02, 0]}
+              fontSize={0.210}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
-              maxWidth={3.80}
+              maxWidth={panelWidth * 0.70}
+              textAlign="center"
             >
-              ACERCA DEL MUSEO VIRTUAL WIXÁRIKA
+              REFERENCIAS
             </Text>
-
-            {/* Línea divisoria dorada superior */}
-            <mesh position={[0, -0.16, 0]}>
-              <planeGeometry args={[panelWidth * 0.92, 0.006]} />
-              <meshBasicMaterial color="#d4af37" />
-            </mesh>
           </group>
 
-          {/* Tres Tarjetas Institucionales en Columnas */}
-          <group position={[0, 0.05, 0]}>
-            {/* Tarjeta 1: CECAN Nayarit (Izquierda) */}
-            <group position={[-2.00, 0, 0]}>
-              <mesh position={[0, 0, -0.002]}>
-                <planeGeometry args={[1.90, 2.10]} />
-                <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
-              </mesh>
-              <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[1.86, 2.06]} />
-                <meshBasicMaterial color="#fbf7ee" side={THREE.DoubleSide} />
-              </mesh>
-              <LucideVRIcon
-                name="landmark"
-                size={0.28}
-                color={UNIFIED_ICON_COLOR}
-                position={[0, 0.72, 0.002]}
-                strokeWidth={2.4}
-              />
-              <Text
-                position={[0, 0.44, 0.002]}
-                fontSize={0.140}
-                color="#1c1917"
-                anchorX="center"
-                anchorY="middle"
-                maxWidth={1.72}
-                textAlign="center"
-              >
-                CECAN NAYARIT
-              </Text>
-              <Text
-                position={[0, 0.28, 0.002]}
-                fontSize={0.100}
-                color="#78350f"
-                anchorX="center"
-                anchorY="middle"
-                maxWidth={1.72}
-                textAlign="center"
-              >
-                Consejo Estatal para la Cultura
-              </Text>
-              <mesh position={[0, 0.16, 0.002]}>
-                <planeGeometry args={[1.60, 0.004]} />
-                <meshBasicMaterial color="#d4af37" />
-              </mesh>
-              <Text
-                position={[0, -0.32, 0.002]}
-                fontSize={0.115}
-                color="#1c1917"
-                anchorX="center"
-                anchorY="middle"
-                maxWidth={1.66}
-                textAlign="center"
-                lineHeight={1.35}
-              >
-                Preservación, difusión y salvaguarda del patrimonio vivo, tradiciones ceremoniales y cosmovisión sagrada de las comunidades originarias del Gran Nayar.
-              </Text>
-            </group>
-
-            {/* Tarjeta 2: Biblioteca Pública Central Estatal Solón Argüello (Centro) */}
-            <group position={[0, 0, 0]}>
-              <mesh position={[0, 0, -0.002]}>
-                <planeGeometry args={[1.90, 2.10]} />
-                <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
-              </mesh>
-              <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[1.86, 2.06]} />
-                <meshBasicMaterial color="#fbf7ee" side={THREE.DoubleSide} />
-              </mesh>
-              <LucideVRIcon
-                name="book-open"
-                size={0.28}
-                color={UNIFIED_ICON_COLOR}
-                position={[0, 0.72, 0.002]}
-                strokeWidth={2.4}
-              />
-              <Text
-                position={[0, 0.44, 0.002]}
-                fontSize={0.140}
-                color="#1c1917"
-                anchorX="center"
-                anchorY="middle"
-                maxWidth={1.72}
-                textAlign="center"
-              >
-                BIBLIOTECA SOLÓN ARGÜELLO
-              </Text>
-              <Text
-                position={[0, 0.28, 0.002]}
-                fontSize={0.100}
-                color="#78350f"
-                anchorX="center"
-                anchorY="middle"
-                maxWidth={1.72}
-                textAlign="center"
-              >
-                Biblioteca Central del Estado
-              </Text>
-              <mesh position={[0, 0.16, 0.002]}>
-                <planeGeometry args={[1.60, 0.004]} />
-                <meshBasicMaterial color="#d4af37" />
-              </mesh>
-              <Text
-                position={[0, -0.32, 0.002]}
-                fontSize={0.115}
-                color="#1c1917"
-                anchorX="center"
-                anchorY="middle"
-                maxWidth={1.66}
-                textAlign="center"
-                lineHeight={1.35}
-              >
-                Sede física y acervo bibliográfico patrimonial. Ofrece consulta libre, colecciones etnográficas y fomento cultural comunitario en Tepic, Nayarit.
-              </Text>
-            </group>
-
-            {/* Tarjeta 3: Instituto Tecnológico de Tepic (Derecha) */}
-            <group position={[2.00, 0, 0]}>
-              <mesh position={[0, 0, -0.002]}>
-                <planeGeometry args={[1.90, 2.10]} />
-                <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
-              </mesh>
-              <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[1.86, 2.06]} />
-                <meshBasicMaterial color="#fbf7ee" side={THREE.DoubleSide} />
-              </mesh>
-              <LucideVRIcon
-                name="graduation-cap"
-                size={0.28}
-                color={UNIFIED_ICON_COLOR}
-                position={[0, 0.72, 0.002]}
-                strokeWidth={2.4}
-              />
-              <Text
-                position={[0, 0.44, 0.002]}
-                fontSize={0.140}
-                color="#1c1917"
-                anchorX="center"
-                anchorY="middle"
-                maxWidth={1.72}
-                textAlign="center"
-              >
-                INSTITUTO TECNOLÓGICO DE TEPIC
-              </Text>
-              <Text
-                position={[0, 0.28, 0.002]}
-                fontSize={0.100}
-                color="#78350f"
-                anchorX="center"
-                anchorY="middle"
-                maxWidth={1.72}
-                textAlign="center"
-              >
-                Innovación y Realidad Virtual
-              </Text>
-              <mesh position={[0, 0.16, 0.002]}>
-                <planeGeometry args={[1.60, 0.004]} />
-                <meshBasicMaterial color="#d4af37" />
-              </mesh>
-              <Text
-                position={[0, -0.32, 0.002]}
-                fontSize={0.115}
-                color="#1c1917"
-                anchorX="center"
-                anchorY="middle"
-                maxWidth={1.66}
-                textAlign="center"
-                lineHeight={1.35}
-              >
-                Investigación y desarrollo de la experiencia inmersiva WebXR para democratizar la divulgación del arte wixárika mediante tecnologías emergentes.
-              </Text>
-            </group>
-          </group>
-
-          {/* Botón de retorno al pie de página */}
-          <group position={[0, -1.35, 0]}>
-            <WixarikaVRButton
-              id="btn-about-return-bottom"
-              label="Volver al Menú Principal"
-              iconName="arrow-left"
-              variant="cantera"
-              width={2.40}
-              height={0.30}
-              onClick={handleReturnHome}
+          {/* Tres Tarjetas Culturales de Referencias (Deidades, Gastronomía, Fiestas) */}
+          <group position={[0, -0.18, 0]}>
+            <DashboardTile
+              key="btn-ref-deidades"
+              id="btn-ref-deidades"
+              title="Deidades"
+              iconName="sun"
+              accentColor={UNIFIED_ICON_COLOR}
+              width={1.84}
+              height={1.15}
+              iconSize={0.30}
+              titleSize={0.140}
+              position={[-1.98, 0, 0]}
+              onClick={() => setCurrentView('empty')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
               hoveredId={hoveredId}
               fuseProgress={fuseProgress}
             />
+
+            <DashboardTile
+              key="btn-ref-gastronomia"
+              id="btn-ref-gastronomia"
+              title="Gastronomía Tradicional"
+              iconName="utensils"
+              accentColor={UNIFIED_ICON_COLOR}
+              width={1.84}
+              height={1.15}
+              iconSize={0.30}
+              titleSize={0.140}
+              position={[0, 0, 0]}
+              onClick={() => setCurrentView('empty')}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+            />
+
+            <DashboardTile
+              key="btn-ref-fiestas"
+              id="btn-ref-fiestas"
+              title="Fiestas y Ceremonias"
+              iconName="sparkles"
+              accentColor={UNIFIED_ICON_COLOR}
+              width={1.84}
+              height={1.15}
+              iconSize={0.30}
+              titleSize={0.140}
+              position={[1.98, 0, 0]}
+              onClick={() => setCurrentView('empty')}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+            />
+          </group>
+
+          {/* Pie de página con guía de interacción por mirada */}
+          <group position={[0, -1.35, 0]}>
+            <group position={[-2.20, 0, 0]}>
+              <LucideVRIcon
+                name="eye"
+                size={0.135}
+                color={UNIFIED_ICON_COLOR}
+                position={[0, 0, 0.002]}
+                strokeWidth={2.4}
+              />
+            </group>
+            <Text
+              position={[0.12, 0, 0]}
+              fontSize={0.122}
+              color="#78350f"
+              anchorX="center"
+              anchorY="middle"
+              maxWidth={panelWidth * 0.78}
+              textAlign="center"
+            >
+              Fija tu mirada durante 3 segundos o pulsa el botón para interactuar
+            </Text>
+          </group>
+        </group>
+      )}
+
+      {/* ===================================================================== */}
+      {/* VISTA E: PANTALLA VACÍA DE REFERENCIAS (DETALLE VACÍO DE MOMENTO)      */}
+      {/* ===================================================================== */}
+      {currentView === 'empty' && (
+        <group position={[0, 0, 0.005]}>
+          {/* Barra Superior con botón Volver a Referencias (solo flecha <-) y Título REFERENCIAS */}
+          <group position={[0, 1.48, 0]}>
+            <WixarikaVRButton
+              id="btn-empty-back-top"
+              iconName="arrow-left"
+              variant="cantera"
+              width={0.42}
+              height={0.26}
+              position={[-2.75, 0, 0]}
+              onClick={handleReturnToAbout}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
+            />
+
+            <Text
+              position={[0, 0.02, 0]}
+              fontSize={0.210}
+              color="#1c1917"
+              anchorX="center"
+              anchorY="middle"
+              maxWidth={panelWidth * 0.70}
+              textAlign="center"
+            >
+              REFERENCIAS
+            </Text>
           </group>
         </group>
       )}
@@ -860,9 +786,9 @@ export function WixarikaWelcomeDashboard({
               </Text>
             </group>
 
-            {/* Línea divisoria superior dorada */}
+            {/* Línea divisoria superior dorada acotada al centro para no encimarse a botones ni cruz */}
             <mesh position={[0, -0.16, 0]}>
-              <planeGeometry args={[panelWidth * 0.92, 0.006]} />
+              <planeGeometry args={[3.60, 0.006]} />
               <meshBasicMaterial color="#d4af37" />
             </mesh>
           </group>
@@ -1119,8 +1045,9 @@ export function WixarikaWelcomeDashboard({
               SALA AUDIOVISUAL · BIBLIOTECA SOLÓN ARGÜELLO
             </Text>
 
+            {/* Línea divisoria superior dorada acotada al centro para no encimarse a botones ni cruz */}
             <mesh position={[0, -0.15, 0]}>
-              <planeGeometry args={[panelWidth * 0.92, 0.006]} />
+              <planeGeometry args={[3.60, 0.006]} />
               <meshBasicMaterial color="#d4af37" />
             </mesh>
           </group>

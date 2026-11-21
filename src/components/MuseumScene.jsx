@@ -8,7 +8,6 @@ import { VRDeviceOrientation } from './VRDeviceOrientation.jsx';
 import { StereoVRManager } from './StereoVRManager.jsx';
 import { GazeReticle } from './GazeReticle.jsx';
 import {
-  WixarikaVRButton,
   WixarikaWelcomeDashboard,
   WixarikaArtworkModal,
   calculateArtworkModalTransform
@@ -57,59 +56,11 @@ export const CULTURAL_STATIONS = [
   }
 ];
 
-// Botones 3D de activación en los muros de Bienvenida (+Z) debajo del Mapa de Nayarit y Pamparios
-function BienvenidaWallButtons({
-  onOpenMenu,
-  onOpenAbout,
-  registerMesh,
-  unregisterMesh,
-  hoveredId,
-  fuseProgress
-}) {
-  return (
-    <group position={[0, 0, 0]}>
-      {/* Botón "ACERCA DE" debajo del cuadro Mapa de Nayarit (+60° bay, vano izquierdo) */}
-      <WixarikaVRButton
-        id="btn-wall-about"
-        label="ACERCA DE"
-        iconName="info"
-        variant="cantera"
-        width={1.60}
-        height={0.34}
-        position={[3.775, 1.08, 6.538]}
-        rotation={[0, Math.atan2(-3.775, -6.538), 0]}
-        registerMesh={registerMesh}
-        unregisterMesh={unregisterMesh}
-        onClick={onOpenAbout}
-        hoveredId={hoveredId}
-        fuseProgress={fuseProgress}
-        showDiamonds={true}
-      />
-
-      {/* Botón "MENÚ" debajo del cuadro Pamparios / Bienvenidos (+120° bay, vano derecho) */}
-      <WixarikaVRButton
-        id="btn-wall-menu"
-        label="MENÚ"
-        iconName="compass"
-        variant="cantera"
-        width={1.60}
-        height={0.34}
-        position={[-3.775, 1.08, 6.538]}
-        rotation={[0, Math.atan2(3.775, -6.538), 0]}
-        registerMesh={registerMesh}
-        unregisterMesh={unregisterMesh}
-        onClick={onOpenMenu}
-        hoveredId={hoveredId}
-        fuseProgress={fuseProgress}
-        showDiamonds={true}
-      />
-    </group>
-  );
-}
-
 // Pabellón ceremonial del museo con arquitectura e iluminación estática (no gira el museo)
 function StaticMuseum({
   onSelectArtwork,
+  onOpenAbout,
+  onOpenMenu,
   registerMesh,
   unregisterMesh
 }) {
@@ -121,10 +72,12 @@ function StaticMuseum({
       <directionalLight position={[0, 3.5, 4.5]} intensity={0.6} color="#ffffff" />  {/* Bienvenida (+Z) */}
       <directionalLight position={[-4.5, 3.5, 0]} intensity={0.6} color="#ffffff" /> {/* Fiestas (-X) */}
 
-      {/* Modelo 3D del Museo Wixarika v14 con detección e interactividad en los 9 cuadros */}
+      {/* Modelo 3D del Museo Wixarika v16 con detección e interactividad en los 9 cuadros y botones GLB de bienvenida */}
       <Suspense fallback={null}>
         <MuseumModel
           onSelectArtwork={onSelectArtwork}
+          onOpenAbout={onOpenAbout}
+          onOpenMenu={onOpenMenu}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
         />
@@ -391,6 +344,8 @@ export function MuseumScene({
           id.startsWith('btn-books-') ||
           id.startsWith('btn-videos-') ||
           id.startsWith('btn-about-') ||
+          id.startsWith('btn-ref-') ||
+          id.startsWith('btn-empty-') ||
           id.includes('btn-close') ||
           id === 'dashboard-backdrop-blocker'
         );
@@ -463,22 +418,14 @@ export function MuseumScene({
       <pointLight position={[0, 4.5, 0]} intensity={1.0} distance={16} color="#ffe8cc" />
       <hemisphereLight skyColor="#ffffff" groundColor="#332a26" intensity={0.7} />
 
-      {/* Pabellón Ceremonial Estático (el museo nunca gira) */}
+      {/* Pabellón Ceremonial Estático (el museo nunca gira, botones de pared Acerca de y Menú integrados en el GLB) */}
       <StaticMuseum
         onSelectArtwork={handleSelectArtwork}
+        onOpenAbout={handleOpenAbout}
+        onOpenMenu={handleOpenMenu}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
       />
-
-      {/* Botones 3D en muros de Bienvenida (+Z): "ACERCA DE" y "MENÚ" (visibles cuando no hay menú abierto) */}
-      {!showButtons && !activeArtwork && (
-        <BienvenidaWallButtons
-          onOpenMenu={handleOpenMenu}
-          onOpenAbout={handleOpenAbout}
-          registerMesh={registerMesh}
-          unregisterMesh={unregisterMesh}
-        />
-      )}
 
       {/* Menú Principal Flotante ÚNICO del Museo (anclado en Bienvenida +Z) */}
       {showButtons && !activeArtwork && (

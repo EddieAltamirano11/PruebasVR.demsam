@@ -5,11 +5,17 @@ import * as THREE from 'three';
 import { SoundFX } from '../services/audioService.js';
 import { WIXARIKA_ARTWORKS } from './wixarika/wixarikaArtworksData.js';
 
-export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
+export function MuseumModel({
+  onSelectArtwork,
+  onOpenAbout,
+  onOpenMenu,
+  registerMesh,
+  unregisterMesh
+}) {
   const group = useRef();
   const { gl } = useThree();
-  // Carga del modelo 3D oficial v16 del Museo Wixarika (Bienvenida: Portal + Logos ITT/CECAN/Solón + Mapa Nayarit + Pamparios)
-  const { scene } = useGLTF('./museo_wixarika_v16.glb?v=16.3');
+  // Carga del modelo 3D oficial v16 del Museo Wixarika (Bienvenida: Portal + Logos ITT/CECAN/Solón + Botones 3D Acerca de/Menú estilo Deidad)
+  const { scene } = useGLTF('./museo_wixarika_v16.glb?v=16.4');
 
   useEffect(() => {
     if (!scene) return;
@@ -129,12 +135,62 @@ export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
       }
     });
 
+    // 3. Mapeo interactivo de los botones GLB de Bienvenida ("ACERCA DE" y "MENÚ")
+    // Construidos directamente en el GLB con marco de madera, bisel de oro, fondo de cantera y texto 3D oro idéntico a las deidades
+    const btnAcercaObj = scene.getObjectByName('boton_bienvenida_acerca_de');
+    if (btnAcercaObj) {
+      const handleAcercaClick = () => {
+        SoundFX.playClick();
+        onOpenAbout?.();
+      };
+      btnAcercaObj.userData = {
+        id: 'btn-glb-wall-about',
+        onClick: handleAcercaClick,
+        onSelect: handleAcercaClick
+      };
+      btnAcercaObj.traverse((child) => {
+        if (child.isMesh) {
+          child.userData = {
+            id: `btn-glb-wall-about-${child.name}`,
+            onClick: handleAcercaClick,
+            onSelect: handleAcercaClick
+          };
+          registerMesh?.(child);
+          registered.push(child);
+        }
+      });
+    }
+
+    const btnMenuObj = scene.getObjectByName('boton_bienvenida_menu');
+    if (btnMenuObj) {
+      const handleMenuClick = () => {
+        SoundFX.playClick();
+        onOpenMenu?.();
+      };
+      btnMenuObj.userData = {
+        id: 'btn-glb-wall-menu',
+        onClick: handleMenuClick,
+        onSelect: handleMenuClick
+      };
+      btnMenuObj.traverse((child) => {
+        if (child.isMesh) {
+          child.userData = {
+            id: `btn-glb-wall-menu-${child.name}`,
+            onClick: handleMenuClick,
+            onSelect: handleMenuClick
+          };
+          registerMesh?.(child);
+          registered.push(child);
+        }
+      });
+    }
+
     return () => {
       if (unregisterMesh) {
         registered.forEach((mesh) => unregisterMesh(mesh));
       }
     };
-  }, [scene, gl, onSelectArtwork, registerMesh, unregisterMesh]);
+  }, [scene, gl, onSelectArtwork, onOpenAbout, onOpenMenu, registerMesh, unregisterMesh]);
 
   // Manejador de clics directos del puntero/ratón en modo computadora
   // Usa onClick (en lugar de onPointerDown) y filtra arrastres de OrbitControls para
@@ -163,5 +219,5 @@ export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   );
 }
 
-useGLTF.preload('./museo_wixarika_v16.glb?v=16.3');
+useGLTF.preload('./museo_wixarika_v16.glb?v=16.4');
 export default MuseumModel;
