@@ -95,8 +95,9 @@ export function WixarikaArtworkModal({
   hoveredId,
   fuseProgress = 0
 }) {
-  const panelWidth = 6.40;
-  const panelHeight = 3.50;
+  // Dimensiones ajustadas: espacio vertical reducido 15% (2.975m) y horizontal aumentado 10% (7.04m)
+  const panelWidth = 7.04;
+  const panelHeight = 2.975;
   const bgMeshRef = useRef();
 
   // Registro del fondo del modal como bloqueador visual y de raycast
@@ -118,10 +119,15 @@ export function WixarikaArtworkModal({
 
   if (!artwork) return null;
 
-  // Centros de cada una de las columnas (1/3 y 2/3)
-  const leftColX = -panelWidth / 2 + (panelWidth / 3) / 2; // -3.20 + 1.066 = -2.134m
-  const rightColX = -panelWidth / 2 + (panelWidth / 3) + (panelWidth * 2 / 3) / 2; // +1.067m
-  const rightColWidth = (panelWidth * 2 / 3) * 0.92; // ~3.92m
+  // Distribución horizontal: 8% adicional para la imagen (izq) y 2% adicional para el texto (der)
+  // Ancho original izq: 6.40/3 = 2.133m + 8% (0.512m) = 2.645m
+  // Ancho original der: 6.40*2/3 = 4.267m + 2% (0.128m) = 4.395m
+  const leftColWidth = (6.40 / 3) + (6.40 * 0.08); // 2.645m
+  const rightColWidth = (6.40 * 2 / 3) + (6.40 * 0.02); // 4.395m
+
+  const leftColX = -panelWidth / 2 + leftColWidth / 2; // -3.52 + 1.3225 = -2.1975m
+  const dividerX = -panelWidth / 2 + leftColWidth; // -3.52 + 2.645 = -0.875m
+  const rightColX = dividerX + rightColWidth / 2; // -0.875 + 2.1975 = +1.3225m
 
   return (
     <group position={position} rotation={rotation}>
@@ -168,70 +174,46 @@ export function WixarikaArtworkModal({
       </group>
 
       {/* Línea divisoria vertical ceremonial de oro entre columnas */}
-      <mesh position={[-panelWidth / 2 + panelWidth / 3, 0, 0.002]}>
+      <mesh position={[dividerX, 0, 0.002]}>
         <planeGeometry args={[0.008, panelHeight * 0.90]} />
         <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
       </mesh>
 
       {/* ===================================================================== */}
-      {/* COLUMNA IZQUIERDA (1/3 DEL PANEL): FOTOGRAFÍA DE LA OBRA              */}
+      {/* COLUMNA IZQUIERDA: FOTOGRAFÍA DE LA OBRA MAXIMIZADA                   */}
       {/* ===================================================================== */}
       <group position={[leftColX, 0, 0.005]}>
         {/* Marco de nogal para la foto */}
-        <mesh position={[0, 0.14, 0.001]}>
-          <planeGeometry args={[1.96, 2.68]} />
+        <mesh position={[0, 0, 0.001]}>
+          <planeGeometry args={[2.46, 2.46]} />
           <meshBasicMaterial color="#5c381e" side={THREE.DoubleSide} />
         </mesh>
         {/* Marco dorado para la foto */}
-        <mesh position={[0, 0.14, 0.002]}>
-          <planeGeometry args={[1.92, 2.64]} />
+        <mesh position={[0, 0, 0.002]}>
+          <planeGeometry args={[2.42, 2.42]} />
           <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
         </mesh>
 
         {/* Fotografía de la obra con textura oficial del cuadro (orientada al derecho) */}
-        <group position={[0, 0.14, 0]}>
+        <group position={[0, 0, 0]}>
           <ArtworkPhoto
             texture={artwork.texture}
             url={artwork.image}
-            width={1.88}
-            height={2.60}
+            width={2.38}
+            height={2.38}
           />
-        </group>
-
-        {/* Placa inferior con el alias sagrado de la deidad o fiesta */}
-        <group position={[0, -1.35, 0]}>
-          <mesh position={[0, 0, 0.001]}>
-            <planeGeometry args={[1.88, 0.28]} />
-            <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
-          </mesh>
-          <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[1.92, 0.32]} />
-            <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
-          </mesh>
-          <Text
-            position={[0, 0, 0.003]}
-            fontSize={0.115}
-            color="#78350f"
-            anchorX="center"
-            anchorY="middle"
-            letterSpacing={0.03}
-            maxWidth={1.82}
-            textAlign="center"
-          >
-            {(artwork.alias || artwork.category || 'PATRIMONIO CULTURAL').toUpperCase()}
-          </Text>
         </group>
       </group>
 
       {/* ===================================================================== */}
-      {/* COLUMNA DERECHA (2/3 DEL PANEL): INFORMACIÓN Y DESCRIPCIÓN           */}
+      {/* COLUMNA DERECHA: INFORMACIÓN, SUBTÍTULO ALIAS Y DESCRIPCIÓN CONCISA   */}
       {/* ===================================================================== */}
       <group position={[rightColX, 0, 0.005]}>
         {/* Botón Badge de Cierre con cruz 'x' en la esquina superior derecha */}
         <BadgeCloseButton
           id="btn-close-artwork-modal"
           size={0.36}
-          position={[rightColWidth / 2 - 0.20, 1.48, 0]}
+          position={[rightColWidth / 2 - 0.22, panelHeight / 2 - 0.22, 0.01]}
           onClick={onClose}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
@@ -239,83 +221,65 @@ export function WixarikaArtworkModal({
           fuseProgress={fuseProgress}
         />
 
-        {/* 1. Encabezado Superior: Título Monumental y Subtítulo Ceremonial Responsivo */}
+        {/* 1. Encabezado Superior: Título y Subtítulo con el Alias (ej. "HERMANO MAYOR VENADO AZUL") */}
         <group position={[0, 0, 0]}>
           <Text
-            position={[0, 1.48, 0]}
-            fontSize={0.260}
+            position={[0, 1.05, 0]}
+            fontSize={0.270}
             color="#1c1917"
             anchorX="center"
             anchorY="top"
-            maxWidth={rightColWidth * 0.82}
+            maxWidth={rightColWidth * 0.86}
             textAlign="center"
           >
             {artwork.title}
           </Text>
 
-          {/* Subtítulo con anchorY="top" para flujo descendente garantizado sin colisiones */}
+          {/* Subtítulo: Texto del alias que antes iba debajo de la foto */}
           <Text
-            position={[0, 1.15, 0]}
-            fontSize={0.120}
+            position={[0, 0.68, 0]}
+            fontSize={0.145}
             color="#78350f"
             anchorX="center"
             anchorY="top"
             maxWidth={rightColWidth * 0.90}
             textAlign="center"
+            letterSpacing={0.03}
             lineHeight={1.25}
           >
-            {artwork.subtitle}
+            {(artwork.alias || artwork.category || 'PATRIMONIO CULTURAL').toUpperCase()}
           </Text>
 
-          {/* Línea divisoria dorada ceremonial con margen definido debajo del subtítulo */}
-          <mesh position={[0, 0.79, 0]}>
-            <planeGeometry args={[rightColWidth * 0.96, 0.008]} />
+          {/* Línea divisoria dorada ceremonial debajo del subtítulo */}
+          <mesh position={[0, 0.46, 0]}>
+            <planeGeometry args={[rightColWidth * 0.94, 0.008]} />
             <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
           </mesh>
         </group>
 
-        {/* 2. Recuadro de Descripción (Arriba de las viñetas, con margin garantizado de 50cm desde el título) */}
-        <group position={[0, 0.09, 0]}>
+        {/* 2. Recuadro de Descripción (mantiene tamaño del contenedor con letra maximizada de máx 4 líneas) */}
+        <group position={[0, -0.32, 0]}>
           <mesh position={[0, 0, -0.001]}>
-            <planeGeometry args={[rightColWidth * 0.98, 1.24]} />
+            <planeGeometry args={[rightColWidth * 0.94, 1.24]} />
             <meshBasicMaterial color="#f4ebd8" side={THREE.DoubleSide} />
           </mesh>
           <mesh position={[0, 0, -0.002]}>
-            <planeGeometry args={[rightColWidth * 0.98 + 0.03, 1.27]} />
+            <planeGeometry args={[rightColWidth * 0.94 + 0.03, 1.27]} />
             <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
           </mesh>
 
           <Text
-            position={[-rightColWidth * 0.46, 0, 0.002]}
-            fontSize={0.142}
+            position={[-rightColWidth * 0.43, 0, 0.002]}
+            fontSize={0.175}
             color="#1c1917"
             anchorX="left"
             anchorY="middle"
-            maxWidth={rightColWidth * 0.92}
+            maxWidth={rightColWidth * 0.86}
             textAlign="left"
-            lineHeight={1.36}
+            lineHeight={1.40}
           >
             {artwork.description}
           </Text>
-        </group>
-
-        {/* 3. Viñetas de Atributos Sagrados (Debajo del recuadro, con margin de separación) */}
-        <group position={[0, -0.68, 0]}>
-          {(artwork.keywords || []).map((keyword, idx) => (
-            <Text
-              key={idx}
-              position={[-rightColWidth * 0.46, -idx * 0.22, 0]}
-              fontSize={0.130}
-              color="#1c1917"
-              anchorX="left"
-              anchorY="middle"
-              maxWidth={rightColWidth * 0.92}
-              textAlign="left"
-              lineHeight={1.35}
-            >
-              {keyword}
-            </Text>
-          ))}
         </group>
       </group>
     </group>

@@ -66,6 +66,173 @@ function DashboardBookCover({ url, width = 1.88, height = 2.60 }) {
   );
 }
 
+/**
+ * Subcomponente para renderizar la fotografía de referencia en la tarjeta de dos columnas.
+ */
+function ReferenceCardImage({ url, width = 2.40, height = 1.28 }) {
+  const [loadedTexture, setLoadedTexture] = useState(null);
+
+  useEffect(() => {
+    if (!url) {
+      setLoadedTexture(null);
+      return;
+    }
+
+    const cleanUrl = url.startsWith('.') ? url.replace(/^\./, '') : url;
+    const loader = new THREE.TextureLoader();
+    let isMounted = true;
+
+    loader.load(
+      cleanUrl,
+      (tex) => {
+        if (!isMounted) return;
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.generateMipmaps = true;
+        setLoadedTexture(tex);
+      },
+      undefined,
+      (err) => console.warn('Error cargando imagen de referencia:', err)
+    );
+
+    return () => {
+      isMounted = false;
+      if (loadedTexture) loadedTexture.dispose();
+    };
+  }, [url]);
+
+  return (
+    <mesh position={[0, 0, 0.003]}>
+      <planeGeometry args={[width, height]} />
+      {loadedTexture ? (
+        <meshBasicMaterial map={loadedTexture} toneMapped={false} side={THREE.DoubleSide} />
+      ) : (
+        <meshBasicMaterial color="#e7dec8" side={THREE.DoubleSide} />
+      )}
+    </mesh>
+  );
+}
+
+/**
+ * Catálogo oficial de Referencias Etnográficas y Bibliográficas
+ * Mismas imágenes que los cuadros para Deidades y Fiestas;
+ * links genéricos e iconos para Gastronomía según especificación.
+ */
+export const WIXARIKA_REFERENCES = {
+  deidades: [
+    {
+      id: 'ref-deidad-tatewari',
+      title: 'TATEWARI · NUESTRO ABUELO FUEGO',
+      image: '/texturas/tatewari_nierika.png',
+      reference: 'Colección Etnográfica del Museo Nacional de Antropología (INAH). Nierika ceremonial de estambre sobre madera.',
+      link: 'https://www.mna.inah.gob.mx'
+    },
+    {
+      id: 'ref-deidad-tayau',
+      title: 'TAYAU · NUESTRO PADRE SOL',
+      image: '/texturas/tayau_sol_nierika.png',
+      reference: 'Acervo Etnográfico del Centro Cultural de las Huastecas e INAH Nayarit. Cuadro sagrado de Wirikuta.',
+      link: 'https://lugares.inah.gob.mx'
+    },
+    {
+      id: 'ref-deidad-kauyumari',
+      title: 'KAUYUMARI · VENADO AZUL',
+      image: '/texturas/kauyumari_venado_nierika.jpg',
+      reference: 'Archivo Etnográfico INPI. Tabla sagrada de estambre elaborada por Mara\'akames de Santa Catarina Cuexcomatitlán.',
+      link: 'https://www.gob.mx/inpi'
+    },
+    {
+      id: 'ref-deidad-takutsi',
+      title: 'TAKUTSI NAKAWE · ABUELA CRECIMIENTO',
+      image: '/texturas/takutsi_nakawe_nierika.jpg',
+      reference: 'Acervo Etnológico del Museo Regional de Nayarit (INAH). Nierika tradicional de la Madre de la Tierra y la Fertilidad.',
+      link: 'https://inah.gob.mx'
+    },
+    {
+      id: 'ref-deidad-niwetsika',
+      title: 'TATEI NIWETSIKA · MADRE DEL MAÍZ',
+      image: '/texturas/tatei_niwetsika_nierika.jpg',
+      reference: 'Consejo Estatal para la Cultura y las Artes de Nayarit (CECAN) & INAH. Ofrenda ritual del maíz cósmico.',
+      link: 'https://cecan.nayarit.gob.mx'
+    },
+    {
+      id: 'ref-deidad-haramara',
+      title: 'TATEI HARAMARA · NUESTRA MADRE EL OCÉANO',
+      image: '/texturas/tatei_haramara_mar_nierika.jpg',
+      reference: 'Archivo Fotográfico Comunitario del Gran Nayar & Santuario Marino de Waxiewe (San Blas, Nayarit).',
+      link: 'https://lugares.inah.gob.mx'
+    }
+  ],
+  fiestas: [
+    {
+      id: 'ref-fiesta-tambor',
+      title: 'FIESTA DEL TAMBOR · NAMAWITA NEIXA',
+      image: '/texturas/cuadro_fiesta_tambor.jpg',
+      reference: 'Registro Etnográfico de Fiestas y Rituales del Kalihuey (INAH Nayarit). Fototeca Nacional INAH, Fondo Culturas Indígenas.',
+      link: 'https://fototeca.inah.gob.mx'
+    },
+    {
+      id: 'ref-fiesta-tatei',
+      title: 'TATEI NEIXA · PRIMEROS FRUTOS',
+      image: '/texturas/cuadro_fiesta_tatei_neixa.jpg',
+      reference: 'Acervo de Tradiciones Vivas del Gran Nayar (INPI). Documentación ceremonial del Kalihuey en la Sierra Madre Occidental.',
+      link: 'https://www.gob.mx/inpi'
+    },
+    {
+      id: 'ref-fiesta-hikuri',
+      title: 'HIKURI NEIXA · DANZA SAGRADA DEL PEYOTE',
+      image: '/texturas/cuadro_fiesta_hikuri_neixa.jpg',
+      reference: 'Registro Audiovisual y Etnográfico de la Ruta Huicot (CECAN / INAH). Ceremonia comunitaria del retorno de Wirikuta.',
+      link: 'https://cecan.nayarit.gob.mx'
+    }
+  ],
+  gastronomia: [
+    {
+      id: 'ref-gastro-maiz',
+      title: 'MAÍZ CRIOLLO Y TORTILLAS DE COMAL',
+      image: null,
+      reference: 'Tradición culinaria de los coamiles serranos. Cédula etnográfica en recopilación documental de alimentos originarios de Nayarit.',
+      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
+    },
+    {
+      id: 'ref-gastro-tamales',
+      title: 'TAMALES TOTOMOXTLI DE LA SIERRA',
+      image: null,
+      reference: 'Gastronomía ceremonial elaborada con hoja de maíz totomoxtle y masa martajada para fiestas patronales y rituales comunales.',
+      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
+    },
+    {
+      id: 'ref-gastro-caldo',
+      title: 'CALDO DE TORO CEREMONIAL',
+      image: null,
+      reference: 'Platillo ritual de consagración comunitaria preparado exclusivamente durante velaciones y ceremonias del Kalihuey.',
+      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
+    },
+    {
+      id: 'ref-gastro-tejuino',
+      title: 'TEJUINO RITUAL FERMENTADO (NAWÁ)',
+      image: null,
+      reference: 'Bebida sagrada fermentada a base de maíz germinado, ofrendada a Tatewari y compartida en danzas circulares comunitarias.',
+      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
+    },
+    {
+      id: 'ref-gastro-perruri',
+      title: 'PERRURI (SEMILLAS TOSTADAS DE COAMIL)',
+      image: null,
+      reference: 'Alimento tradicional de viaje elaborado con semillas de maíz y calabaza tostadas en comal de barro para los peregrinos.',
+      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
+    },
+    {
+      id: 'ref-gastro-atole',
+      title: 'ATOLE BLANCO Y ESQUITE RITUAL',
+      image: null,
+      reference: 'Preparación ritual matutina para bendecir las cosechas tempranas en las ceremonias agrícolas de Tatei Neixa.',
+      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
+    }
+  ]
+};
+
 // Color unificado ceremonial para TODOS los iconos del menú principal
 const UNIFIED_ICON_COLOR = '#b45309';
 
@@ -383,6 +550,31 @@ export function WixarikaWelcomeDashboard({
     setCurrentView('about');
   }, []);
 
+  // Estados y navegación para la vista de Referencias en 2 columnas verticales con paginación
+  const [activeRefCategory, setActiveRefCategory] = useState('deidades');
+  const [refPageIndex, setRefPageIndex] = useState(0);
+
+  const refItems = WIXARIKA_REFERENCES[activeRefCategory] || [];
+  const totalRefPages = Math.max(1, Math.ceil(refItems.length / 2));
+  const currentRefItems = refItems.slice(refPageIndex * 2, refPageIndex * 2 + 2);
+
+  const handlePrevRefPage = useCallback(() => {
+    SoundFX.playClick();
+    setRefPageIndex((prev) => (prev - 1 + totalRefPages) % totalRefPages);
+  }, [totalRefPages]);
+
+  const handleNextRefPage = useCallback(() => {
+    SoundFX.playClick();
+    setRefPageIndex((prev) => (prev + 1) % totalRefPages);
+  }, [totalRefPages]);
+
+  const handleOpenRefCategory = useCallback((category) => {
+    SoundFX.playClick();
+    setActiveRefCategory(category);
+    setRefPageIndex(0);
+    setCurrentView('references_detail');
+  }, []);
+
   return (
     <group position={position} rotation={rotation}>
       {/* 1. Marco exterior de madera de nogal ceremonial */}
@@ -621,7 +813,7 @@ export function WixarikaWelcomeDashboard({
               iconSize={0.30}
               titleSize={0.140}
               position={[-1.98, 0, 0]}
-              onClick={() => setCurrentView('empty')}
+              onClick={() => handleOpenRefCategory('deidades')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
               hoveredId={hoveredId}
@@ -639,7 +831,7 @@ export function WixarikaWelcomeDashboard({
               iconSize={0.30}
               titleSize={0.140}
               position={[0, 0, 0]}
-              onClick={() => setCurrentView('empty')}
+              onClick={() => handleOpenRefCategory('gastronomia')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
               hoveredId={hoveredId}
@@ -657,7 +849,7 @@ export function WixarikaWelcomeDashboard({
               iconSize={0.30}
               titleSize={0.140}
               position={[1.98, 0, 0]}
-              onClick={() => setCurrentView('empty')}
+              onClick={() => handleOpenRefCategory('fiestas')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
               hoveredId={hoveredId}
@@ -692,14 +884,14 @@ export function WixarikaWelcomeDashboard({
       )}
 
       {/* ===================================================================== */}
-      {/* VISTA E: PANTALLA VACÍA DE REFERENCIAS (DETALLE VACÍO DE MOMENTO)      */}
+      {/* VISTA E: DETALLE DE REFERENCIAS (2 CARDS VERTICALES CON PAGINACIÓN)   */}
       {/* ===================================================================== */}
-      {currentView === 'empty' && (
+      {currentView === 'references_detail' && (
         <group position={[0, 0, 0.005]}>
-          {/* Barra Superior con botón Volver a Referencias (solo flecha <-) y Título REFERENCIAS */}
+          {/* Barra Superior con botón Volver a Referencias (solo flecha <-) y Título de Sección */}
           <group position={[0, 1.48, 0]}>
             <WixarikaVRButton
-              id="btn-empty-back-top"
+              id="btn-ref-detail-back-top"
               iconName="arrow-left"
               variant="cantera"
               width={0.42}
@@ -715,15 +907,228 @@ export function WixarikaWelcomeDashboard({
 
             <Text
               position={[0, 0.02, 0]}
-              fontSize={0.210}
+              fontSize={0.200}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
               maxWidth={panelWidth * 0.70}
               textAlign="center"
             >
-              REFERENCIAS
+              {activeRefCategory === 'deidades'
+                ? 'REFERENCIAS · DEIDADES SAGRADAS'
+                : activeRefCategory === 'gastronomia'
+                ? 'REFERENCIAS · GASTRONOMÍA TRADICIONAL'
+                : 'REFERENCIAS · FIESTAS Y CEREMONIAS'}
             </Text>
+          </group>
+
+          {/* Dos Tarjetas Verticales por Pantalla */}
+          <group position={[0, -0.04, 0]}>
+            {currentRefItems.map((item, idx) => {
+              const cardX = idx === 0 ? (currentRefItems.length === 1 ? 0 : -1.52) : 1.52;
+              const cardWidth = 2.64;
+              const cardHeight = 2.36;
+
+              return (
+                <group key={item.id} position={[cardX, 0, 0]}>
+                  {/* Marco exterior de madera de nogal ceremonial */}
+                  <mesh position={[0, 0, -0.002]}>
+                    <planeGeometry args={[cardWidth + 0.04, cardHeight + 0.04]} />
+                    <meshBasicMaterial color="#5c381e" side={THREE.DoubleSide} />
+                  </mesh>
+
+                  {/* Bisel perimetral de oro bruñido */}
+                  <mesh position={[0, 0, -0.001]}>
+                    <planeGeometry args={[cardWidth, cardHeight]} />
+                    <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
+                  </mesh>
+
+                  {/* Superficie de cantera clara */}
+                  <mesh position={[0, 0, 0]}>
+                    <planeGeometry args={[cardWidth - 0.04, cardHeight - 0.04]} />
+                    <meshBasicMaterial color="#fbf7ee" side={THREE.DoubleSide} />
+                  </mesh>
+
+                  {/* Rombos protectores Tsikuri en las 4 esquinas */}
+                  <group position={[0, 0, 0.004]}>
+                    <TsikuriDiamond
+                      size={0.055}
+                      position={[-cardWidth / 2 + 0.065, cardHeight / 2 - 0.065, 0]}
+                      colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
+                    />
+                    <TsikuriDiamond
+                      size={0.055}
+                      position={[cardWidth / 2 - 0.065, cardHeight / 2 - 0.065, 0]}
+                      colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
+                    />
+                    <TsikuriDiamond
+                      size={0.055}
+                      position={[-cardWidth / 2 + 0.065, -cardHeight / 2 + 0.065, 0]}
+                      colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
+                    />
+                    <TsikuriDiamond
+                      size={0.055}
+                      position={[cardWidth / 2 - 0.065, -cardHeight / 2 + 0.065, 0]}
+                      colors={['#c69214', UNIFIED_ICON_COLOR, '#ffffff']}
+                    />
+                  </group>
+
+                  {/* Área de Imagen Superior (Misma imagen de los cuadros o placeholder para gastronomía) */}
+                  <group position={[0, 0.42, 0.002]}>
+                    {item.image ? (
+                      <ReferenceCardImage url={item.image} width={2.40} height={1.26} />
+                    ) : (
+                      <group position={[0, 0, 0]}>
+                        <mesh position={[0, 0, 0]}>
+                          <planeGeometry args={[2.40, 1.26]} />
+                          <meshBasicMaterial color="#f0e6d2" side={THREE.DoubleSide} />
+                        </mesh>
+                        <LucideVRIcon
+                          name="utensils"
+                          size={0.34}
+                          color={UNIFIED_ICON_COLOR}
+                          position={[0, 0.12, 0.002]}
+                          strokeWidth={2.4}
+                        />
+                        <Text
+                          position={[0, -0.25, 0.002]}
+                          fontSize={0.095}
+                          color="#78350f"
+                          anchorX="center"
+                          anchorY="middle"
+                          letterSpacing={0.02}
+                        >
+                          [Fotografía en proceso de catalogación]
+                        </Text>
+                      </group>
+                    )}
+
+                    {/* Marco dorado delgado para la imagen */}
+                    <mesh position={[0, 0, 0.001]}>
+                      <planeGeometry args={[2.42, 1.28]} />
+                      <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
+                    </mesh>
+                  </group>
+
+                  {/* Línea divisoria dorada bajo la imagen */}
+                  <mesh position={[0, -0.24, 0.003]}>
+                    <planeGeometry args={[2.42, 0.004]} />
+                    <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
+                  </mesh>
+
+                  {/* Título de la obra o platillo */}
+                  <Text
+                    position={[0, -0.34, 0.004]}
+                    fontSize={0.120}
+                    color="#1c1917"
+                    anchorX="center"
+                    anchorY="top"
+                    maxWidth={2.42}
+                    textAlign="center"
+                  >
+                    {item.title}
+                  </Text>
+
+                  {/* Referencia de dónde fue sacado */}
+                  <Text
+                    position={[0, -0.56, 0.004]}
+                    fontSize={0.098}
+                    color="#44403c"
+                    anchorX="center"
+                    anchorY="top"
+                    maxWidth={2.42}
+                    lineHeight={1.28}
+                    textAlign="center"
+                  >
+                    {item.reference}
+                  </Text>
+
+                  {/* Enlace o fuente digital */}
+                  <Text
+                    position={[0, -0.92, 0.004]}
+                    fontSize={0.090}
+                    color="#b45309"
+                    anchorX="center"
+                    anchorY="top"
+                    maxWidth={2.42}
+                    textAlign="center"
+                  >
+                    {item.link}
+                  </Text>
+                </group>
+              );
+            })}
+          </group>
+
+          {/* Barra Inferior de Navegación y Paginador */}
+          <group position={[0, -1.40, 0]}>
+            {totalRefPages > 1 && (
+              <>
+                <WixarikaVRButton
+                  id="btn-ref-nav-prev"
+                  label="Anterior"
+                  iconName="chevron-left"
+                  variant="cantera"
+                  width={1.40}
+                  height={0.28}
+                  position={[-1.50, 0, 0]}
+                  onClick={handlePrevRefPage}
+                  registerMesh={registerMesh}
+                  unregisterMesh={unregisterMesh}
+                  hoveredId={hoveredId}
+                  fuseProgress={fuseProgress}
+                />
+
+                <group position={[0, 0, 0]}>
+                  <mesh position={[0, 0, -0.001]}>
+                    <planeGeometry args={[1.50, 0.26]} />
+                    <meshBasicMaterial color="#f4ebd8" />
+                  </mesh>
+                  <Text
+                    position={[0, 0, 0.001]}
+                    fontSize={0.115}
+                    color="#1c1917"
+                    anchorX="center"
+                    anchorY="middle"
+                  >
+                    {`Página ${refPageIndex + 1} de ${totalRefPages}`}
+                  </Text>
+                </group>
+
+                <WixarikaVRButton
+                  id="btn-ref-nav-next"
+                  label="Siguiente"
+                  iconName="chevron-right"
+                  variant="cantera"
+                  width={1.40}
+                  height={0.28}
+                  position={[1.50, 0, 0]}
+                  onClick={handleNextRefPage}
+                  registerMesh={registerMesh}
+                  unregisterMesh={unregisterMesh}
+                  hoveredId={hoveredId}
+                  fuseProgress={fuseProgress}
+                />
+              </>
+            )}
+
+            {totalRefPages <= 1 && (
+              <group position={[0, 0, 0]}>
+                <mesh position={[0, 0, -0.001]}>
+                  <planeGeometry args={[1.50, 0.26]} />
+                  <meshBasicMaterial color="#f4ebd8" />
+                </mesh>
+                <Text
+                  position={[0, 0, 0.001]}
+                  fontSize={0.115}
+                  color="#1c1917"
+                  anchorX="center"
+                  anchorY="middle"
+                >
+                  Página 1 de 1
+                </Text>
+              </group>
+            )}
           </group>
         </group>
       )}

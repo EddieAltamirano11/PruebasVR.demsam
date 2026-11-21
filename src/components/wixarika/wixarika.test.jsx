@@ -14,7 +14,11 @@ import {
 import { DEFAULT_WIXARIKA_BOOKS } from './WixarikaVRBookPanel.jsx';
 import { DEFAULT_WIXARIKA_VIDEOS, WixarikaVRVideoPanel } from './WixarikaVRVideoPanel.jsx';
 import { WixarikaVRVideoPlayer } from './WixarikaVRVideoPlayer.jsx';
-import { WixarikaWelcomeDashboard, DEFAULT_CULTURAL_STATIONS } from './WixarikaWelcomeDashboard.jsx';
+import {
+  WixarikaWelcomeDashboard,
+  DEFAULT_CULTURAL_STATIONS,
+  WIXARIKA_REFERENCES
+} from './WixarikaWelcomeDashboard.jsx';
 import { BadgeCloseButton } from './BadgeCloseButton.jsx';
 import { LUCIDE_SVG_PATHS, getLucideIconTexture } from './LucideVRIcon.jsx';
 import {
@@ -455,6 +459,70 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       const mat = gltf.materials[mesh.primitives[0].material];
       expect(mat.name).toBe('mat_texto_oro_3d.021');
       expect(mat.pbrMetallicRoughness.metallicFactor).toBeCloseTo(0.5, 2);
+    });
+
+    it('enlarges 3D wall buttons to match deity plaque scale (2.18m x 0.62m) and models acute accent on MENÚ', () => {
+      const glbPath = path.resolve(process.cwd(), 'public', 'museo_wixarika_v16.glb');
+      const buf = fs.readFileSync(glbPath);
+      const jsonLen = buf.readUInt32LE(12);
+      const gltf = JSON.parse(buf.toString('utf8', 20, 20 + jsonLen));
+
+      const acercaTextNode = gltf.nodes.find((n) => n.name === 'boton_acerca_de_texto_oro');
+      const menuTextNode = gltf.nodes.find((n) => n.name === 'boton_menu_texto_oro');
+
+      // Obtener bounding box del texto
+      const getBounds = (meshIdx) => {
+        const prim = gltf.meshes[meshIdx].primitives[0];
+        const acc = gltf.accessors[prim.attributes.POSITION];
+        return { width: acc.max[0] - acc.min[0], height: acc.max[1] - acc.min[1] };
+      };
+
+      const acercaBounds = getBounds(acercaTextNode.mesh);
+      const menuBounds = getBounds(menuTextNode.mesh);
+
+      // El texto debe ser de escala grande (>1.20m para acerca de y >0.60m para menú)
+      expect(acercaBounds.width).toBeGreaterThan(1.20);
+      expect(menuBounds.width).toBeGreaterThan(0.60);
+
+      // El menú debe incluir la tilde modelada en 3D (altura > 0.20m con el acento)
+      expect(menuBounds.height).toBeGreaterThan(0.20);
+    });
+
+    it('contains complete 2-card reference catalogs for deidades, fiestas, and gastronomía', () => {
+      expect(WIXARIKA_REFERENCES.deidades.length).toBe(6);
+      expect(WIXARIKA_REFERENCES.fiestas.length).toBe(3);
+      expect(WIXARIKA_REFERENCES.gastronomia.length).toBe(6);
+
+      // Todas las deidades deben tener las mismas imágenes de los cuadros y referencias
+      WIXARIKA_REFERENCES.deidades.forEach((ref) => {
+        expect(ref.title).toBeTruthy();
+        expect(ref.image).toBeTruthy();
+        expect(ref.reference).toBeTruthy();
+        expect(ref.link).toBeTruthy();
+      });
+
+      // Fiestas tienen imágenes de los cuadros
+      WIXARIKA_REFERENCES.fiestas.forEach((ref) => {
+        expect(ref.title).toBeTruthy();
+        expect(ref.image).toBeTruthy();
+        expect(ref.reference).toBeTruthy();
+        expect(ref.link).toBeTruthy();
+      });
+
+      // Gastronomía no tiene imágenes aún (image: null) y cuenta con links genéricos
+      WIXARIKA_REFERENCES.gastronomia.forEach((ref) => {
+        expect(ref.title).toBeTruthy();
+        expect(ref.image).toBeNull();
+        expect(ref.reference).toBeTruthy();
+        expect(ref.link).toContain('http');
+      });
+    });
+
+    it('constrains artwork descriptions to concise text (max 4 lines, <= 260 chars)', () => {
+      WIXARIKA_ARTWORKS.forEach((art) => {
+        expect(art.description.length).toBeGreaterThan(50);
+        expect(art.description.length).toBeLessThanOrEqual(260);
+      });
     });
   });
 });

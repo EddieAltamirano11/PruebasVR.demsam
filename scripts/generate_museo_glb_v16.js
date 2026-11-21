@@ -37,6 +37,7 @@ import { fileURLToPath } from 'url';
 import * as THREE from 'three';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -775,14 +776,14 @@ console.log('✓ Bancas bajas de madera oscura instaladas en ambos vanos lateral
 // ==========================================================================
 console.log('\n[3.4] Construyendo botones 3D estilo cuadro de deidad ("ACERCA DE" y "MENÚ") en los vanos...');
 
-const BTN_W = 1.48;
-const BTN_H = 0.38;
-const BTN_D = 0.040;
-const BTN_ORO_W = 1.42;
-const BTN_ORO_H = 0.32;
-const BTN_ORO_D = 0.045;
-const BTN_CANVAS_W = 1.36;
-const BTN_CANVAS_H = 0.26;
+const BTN_W = 2.18;
+const BTN_H = 0.62;
+const BTN_D = 0.045;
+const BTN_ORO_W = 2.10;
+const BTN_ORO_H = 0.54;
+const BTN_ORO_D = 0.048;
+const BTN_CANVAS_W = 2.02;
+const BTN_CANVAS_H = 0.46;
 
 const { meshIdx: btnFrameMaderaMeshIdx } = addGeometryMeshToGltf(
   new THREE.BoxGeometry(BTN_W, BTN_H, BTN_D),
@@ -802,7 +803,7 @@ const { meshIdx: btnPanelCanteraMeshIdx } = addGeometryMeshToGltf(
   'mesh_boton_bienvenida_panel_cantera'
 );
 
-const btnDiamondGeom = new THREE.BoxGeometry(0.040, 0.040, 0.012);
+const btnDiamondGeom = new THREE.BoxGeometry(0.060, 0.060, 0.015);
 btnDiamondGeom.rotateZ(Math.PI / 4);
 const { meshIdx: btnDiamondTurquesaMeshIdx } = addGeometryMeshToGltf(
   btnDiamondGeom,
@@ -810,7 +811,7 @@ const { meshIdx: btnDiamondTurquesaMeshIdx } = addGeometryMeshToGltf(
   'mesh_boton_bienvenida_rombo_turquesa'
 );
 
-const btnDiamondOroGeom = new THREE.BoxGeometry(0.048, 0.048, 0.010);
+const btnDiamondOroGeom = new THREE.BoxGeometry(0.072, 0.072, 0.012);
 btnDiamondOroGeom.rotateZ(Math.PI / 4);
 const { meshIdx: btnDiamondOroMeshIdx } = addGeometryMeshToGltf(
   btnDiamondOroGeom,
@@ -818,11 +819,11 @@ const { meshIdx: btnDiamondOroMeshIdx } = addGeometryMeshToGltf(
   'mesh_boton_bienvenida_rombo_oro'
 );
 
-// Texto 3D dorado para "ACERCA DE"
+// Texto 3D dorado para "ACERCA DE" (escala y material idéntico a las placas de las deidades)
 const acercaTextGeom = new TextGeometry('ACERCA DE', {
   font,
-  size: 0.110,
-  depth: 0.018,
+  size: 0.165,
+  depth: 0.024,
   curveSegments: 3,
   bevelEnabled: false
 });
@@ -834,16 +835,23 @@ const { meshIdx: acercaTextMeshIdx } = addGeometryMeshToGltf(
   'mesh_texto_boton_acerca_de'
 );
 
-// Texto 3D dorado para "MENÚ"
-const menuTextGeom = new TextGeometry('MENÚ', {
+// Texto 3D dorado para "MENÚ" con acento agudo real modelado en 3D sobre la U (resuelve la ausencia de glifo Ú en helvetiker)
+const menuBaseGeom = new TextGeometry('MENU', {
   font,
-  size: 0.125,
-  depth: 0.018,
+  size: 0.185,
+  depth: 0.024,
   curveSegments: 3,
   bevelEnabled: false
 });
+menuBaseGeom.center();
+
+const accentBox = new THREE.BoxGeometry(0.045, 0.018, 0.024).toNonIndexed();
+accentBox.rotateZ(Math.PI / 6);
+accentBox.translate(0.265, 0.130, 0);
+
+const menuTextGeom = mergeGeometries([menuBaseGeom, accentBox]);
 menuTextGeom.computeVertexNormals();
-menuTextGeom.center();
+
 const { meshIdx: menuTextMeshIdx } = addGeometryMeshToGltf(
   menuTextGeom,
   MAT_TEXTO_ORO_3D,
@@ -855,8 +863,8 @@ const BTN_Y = 1.02;
 // Función auxiliar para agregar los 4 rombos de esquina
 const createCornerDiamonds = (baseName) => {
   const cornerIndices = [];
-  const cx = BTN_CANVAS_W / 2 - 0.035;
-  const cy = BTN_CANVAS_H / 2 - 0.035;
+  const cx = BTN_CANVAS_W / 2 - 0.055;
+  const cy = BTN_CANVAS_H / 2 - 0.055;
   const corners = [
     [-cx, cy],
     [cx, cy],

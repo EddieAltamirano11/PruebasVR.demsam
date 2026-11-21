@@ -28,7 +28,7 @@ export const WIXARIKA_ARTWORKS = [
       '• Corazón del Kalihuey y Testigo de todos los Rezos',
       '• Primer Maestro y Guía Espiritual del Mara\'akame'
     ],
-    description: 'Tatewari es la deidad primordial más antigua del cosmos wixárika. Como fuego sagrado y ancestro supremo, ilumina el camino ritual de la comunidad. Permanece vivo en el fogón ceremonial del Kalihuey para consagrar las palabras, bendecir a los peregrinos y transmitir los designios divinos.'
+    description: 'Tatewari es el fuego sagrado y ancestro supremo del cosmos wixárika. Permanece vivo en el fogón del Kalihuey para consagrar la palabra, bendecir a los peregrinos y guiar con su luz la visión del Mara\'akame.'
   },
   {
     id: 'deidad_tayau',
@@ -48,7 +48,7 @@ export const WIXARIKA_ARTWORKS = [
       '• Nacimiento Victorioso en el Cerro de Wirikuta',
       '• Energía Vital que Fecunda las Milpas Serranas'
     ],
-    description: 'Tayau personifica el principio solar masculino creador. En los cantos sagrados se relata su ascenso por vez primera en el cerro sagrado de Reunari en Wirikuta, venciendo la oscuridad para regalar la vista y el calor. Da energía a la siembra del maíz y conduce el ciclo del día.'
+    description: 'Tayau personifica el principio solar masculino creador. Tras ascender en el cerro sagrado de Wirikuta y vencer la oscuridad cósmica, derrama su energía vital para fecundar el maíz y guiar los ciclos de la vida.'
   },
   {
     id: 'deidad_kauyumari',
@@ -68,7 +68,7 @@ export const WIXARIKA_ARTWORKS = [
       '• De sus Huellas Sagradas Brota la Medicina del Hikuri',
       '• Protector del Peregrino en el Desierto Sagrado'
     ],
-    description: 'Kauyumari es el espíritu guía por excelencia, mediador entre las divinidades celestiales y los seres humanos. Transformado en venado azul, sus huellas se convirtieron en peyote sagrado (Hikuri). Es el aliado inseparable del Mara\'akame, inspirando sus cantos de sanación y visión.'
+    description: 'Kauyumari es el mensajero divino y guía espiritual entre los dioses y la humanidad. Transformado en venado azul, de sus huellas brotó el peyote sagrado, inspirando la sabiduría y los cantos del Mara\'akame.'
   },
   {
     id: 'deidad_takutsi',
@@ -88,7 +88,7 @@ export const WIXARIKA_ARTWORKS = [
       '• Dueña de la Lluvia Fecunda y las Aguas Terrestres',
       '• Sabiduría Ancestral y Renovación del Mundo'
     ],
-    description: 'Takutsi Nakawe es la gran abuela creadora, asociada al origen de los árboles, los animales y la fertilidad de la tierra. Porta el báculo ceremonial de bambú con el que modeló los valles y cañones de la sierra tras el diluvio primordial, protegiendo las simientes de la comunidad.'
+    description: 'Takutsi Nakawe es la madre primordial de la tierra, la vegetación y la fertilidad. Con su báculo ceremonial modeló los cañones y valles sagrados, protegiendo las aguas y las simientes de la comunidad.'
   },
   {
     id: 'deidad_niwetsika',
@@ -108,7 +108,7 @@ export const WIXARIKA_ARTWORKS = [
       '• Bendición Nutricia de los Coamiles y Trojes',
       '• Alimento Espiritual y Físico del Pueblo Wixárika'
     ],
-    description: 'Tatei Niwetsika personifica el alma misma del maíz criollo en sus cinco colores sagrados: blanco, azul, amarillo, rojo y pinto. Cada ciclo agrícola se le rinde culto fervoroso con ofrendas en el coamil para que las mazorcas maduren abundantes y alimenten a las familias serranas.'
+    description: 'Tatei Niwetsika es el alma nutricia del maíz criollo en sus cinco colores sagrados. Cada ciclo agrícola recibe ofrendas en los coamiles para asegurar cosechas prósperas que alimentan la vida serrana.'
   },
   {
     id: 'deidad_haramara',
@@ -128,7 +128,7 @@ export const WIXARIKA_ARTWORKS = [
       '• Santuario Sagrado de la Roca Blanca en San Blas',
       '• Umbral Sagrado del Descanso de los Espíritus'
     ],
-    description: 'Tatei Haramara es la madre de las aguas oceánicas, cuyo adoratorio sagrado reside en Waxiewe (la Isla del Rey frente a San Blas, Nayarit). De su manto pacífico emergen las nubes que remontan la cordillera para fertilizar los campos, siendo además santuario del descanso del alma.'
+    description: 'Tatei Haramara es la madre primordial del océano y las aguas del poniente. Desde su santuario marino en San Blas engendra las nubes fértiles de lluvia y recibe en paz las almas de los ancestros.'
   },
 
   // =========================================================================
@@ -152,7 +152,7 @@ export const WIXARIKA_ARTWORKS = [
       '• Vuelo Espiritual a Wirikuta guiados por el Mara\'akame',
       '• Sonidos Místicos del Tepu y Bendición de Calabazas'
     ],
-    description: 'Esta entrañable ceremonia otoñal consagra la vida y salud de los niños de la comunidad. Guiados por los toques ininterrumpidos del tambor sagrado (Tepu) y las sonajas del Mara\'akame, los pequeños viajan espiritualmente convertidos en colibríes hacia el oriente de Wirikuta, sellando su pacto con los dioses.'
+    description: 'Namawita Neixa consagra la salud y pureza de los niños serranos. Al compás del tambor sagrado Tepu, los pequeños viajan espiritualmente en vuelo místico hacia Wirikuta para sellar su alianza divina.'
   },
   {
     id: 'fiesta_tatei',
@@ -172,7 +172,7 @@ export const WIXARIKA_ARTWORKS = [
       '• Ofrenda y Gratitud por los Elotes Tiernos',
       '• Consagración Comunitaria con Tejuino Ceremonial'
     ],
-    description: 'Tatei Neixa es la fiesta de acción de gracias en la que se bendicen los primeros frutos del coamil: elotes tiernos, calabazas y frijoles recién cosechados. La comunidad entera participa en danzas circulares alrededor del fuego, compartiendo el tejuino sagrado (nawá) y renovando la hermandad comunal.'
+    description: 'Tatei Neixa es la solemne acción de gracias donde se bendicen los primeros elotes y frutos del coamil. Alrededor del fuego sagrado, la comunidad danza y comparte el tejuino sagrado en hermandad.'
   },
   {
     id: 'fiesta_hikuri',
@@ -192,7 +192,7 @@ export const WIXARIKA_ARTWORKS = [
       '• Comunión Colectiva con el Hikuri Sagrado',
       '• Cantos Epopeyicos de Creación del Universo'
     ],
-    description: 'Celebración solemne que marca el regreso triunfal de los peregrinos (jicareros) desde el desierto de Wirikuta cargando la medicina sagrada. Durante días y noches se entonan cantos cosmogónicos milenarios y se danza sin cesar, consumando la purificación colectiva y asegurando las lluvias venideras.'
+    description: 'Hikuri Neixa conmemora el retorno triunfal de los peregrinos con la medicina sagrada desde Wirikuta. Durante noches de danza incesante y cantos ancestrales, renuevan la armonía del mundo y llaman las lluvias.'
   }
 ];
 
