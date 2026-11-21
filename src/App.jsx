@@ -93,7 +93,7 @@ function AppContent() {
 
   // Estados de la experiencia 3D y VR
   const [vrMode, setVrMode] = useState(false);
-  const [showButtons, setShowButtons] = useState(true);
+  const [showButtons, setShowButtons] = useState(false);
   const [activeStation, setActiveStation] = useState(null);
   const [isBooksOpen, setIsBooksOpen] = useState(false);
   const [autoOpenOnFocus] = useState(false);
@@ -401,57 +401,6 @@ function AppContent() {
             pointerEvents: 'auto'
           }}
         >
-          {/* Boton para Ocultar / Mostrar Botones Abajo */}
-          <button
-            onClick={() => setShowButtons(!showButtons)}
-            style={{
-              padding: '12px 22px',
-              fontSize: '14px',
-              fontWeight: '700',
-              letterSpacing: '0.5px',
-              color: showButtons ? '#fde047' : '#ffffff',
-              background: showButtons
-                ? 'rgba(7, 10, 20, 0.90)'
-                : 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-              border: showButtons ? '2px solid #f59e0b' : '2px solid #fde047',
-              borderRadius: '50px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5), 0 0 12px rgba(245, 158, 11, 0.35)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.2s ease',
-              outline: 'none',
-              backdropFilter: 'blur(6px)'
-            }}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              {showButtons ? (
-                <>
-                  <path d="m2 2 20 20" />
-                  <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                  <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                  <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                </>
-              ) : (
-                <>
-                  <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
-                  <circle cx="12" cy="12" r="3" />
-                </>
-              )}
-            </svg>
-            <span>{showButtons ? 'Ocultar Menús' : 'Mostrar Menús'}</span>
-          </button>
-
           {/* Boton flotante para entrar al modo VR */}
           <button
             onClick={enterVR}

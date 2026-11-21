@@ -13,6 +13,7 @@ import { DEFAULT_WIXARIKA_BOOKS } from './WixarikaVRBookPanel.jsx';
 import { DEFAULT_WIXARIKA_VIDEOS, WixarikaVRVideoPanel } from './WixarikaVRVideoPanel.jsx';
 import { WixarikaVRVideoPlayer } from './WixarikaVRVideoPlayer.jsx';
 import { WixarikaWelcomeDashboard, DEFAULT_CULTURAL_STATIONS } from './WixarikaWelcomeDashboard.jsx';
+import { BadgeCloseButton } from './BadgeCloseButton.jsx';
 import { LUCIDE_SVG_PATHS, getLucideIconTexture } from './LucideVRIcon.jsx';
 import {
   WIXARIKA_ARTWORKS,
@@ -206,10 +207,11 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(CARDINAL_AZIMUTH.fiestas).toBeCloseTo(Math.PI / 2);
     });
 
-    it('WixarikaWelcomeDashboard and WixarikaVRVideoPanel should be valid functional components', () => {
+    it('WixarikaWelcomeDashboard, WixarikaVRVideoPanel and BadgeCloseButton should be valid functional components', () => {
       expect(typeof WixarikaWelcomeDashboard).toBe('function');
       expect(typeof WixarikaVRVideoPanel).toBe('function');
       expect(typeof WixarikaVRVideoPlayer).toBe('function');
+      expect(typeof BadgeCloseButton).toBe('function');
     });
   });
 
@@ -317,13 +319,13 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(findArtworkByNodeName('unknown_mesh')).toBeNull();
     });
 
-    it('calculateArtworkModalTransform accurately positions modal at 2.85m from center facing inward', () => {
+    it('calculateArtworkModalTransform accurately positions modal at 3.28m from center facing inward (+15% distance)', () => {
       const tatewari = WIXARIKA_ARTWORKS[0];
       const transform = calculateArtworkModalTransform(tatewari);
 
-      // Distancia euclídea horizontal desde el centro [0, 0] debe ser 2.85m
+      // Distancia euclídea horizontal desde el centro [0, 0] debe ser 3.28m (15% más alejado del centro)
       const dist = Math.hypot(transform.position[0], transform.position[2]);
-      expect(dist).toBeCloseTo(2.85, 2);
+      expect(dist).toBeCloseTo(3.28, 2);
 
       // Altura ergonómica Y = 2.25m
       expect(transform.position[1]).toBeCloseTo(2.25, 2);
@@ -336,7 +338,7 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
 
     it('calculateArtworkModalTransform provides safe default when artwork is null', () => {
       const fallback = calculateArtworkModalTransform(null);
-      expect(fallback.position).toEqual([0, 2.25, 3.75]);
+      expect(fallback.position).toEqual([0, 2.25, 4.31]);
       expect(fallback.rotation).toEqual([0, Math.PI, 0]);
     });
   });
@@ -387,6 +389,40 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
 
       expect(landedX).toBeCloseTo(1, 4);
       expect(landedZ).toBeCloseTo(0, 4);
+    });
+  });
+
+  describe('Architectural Redesign: Wall Triggers, Single Active Menu, and Modal Distance (+15%)', () => {
+    it('positions all 9 sacred artwork modals (6 deities, 3 feasts) exactly 3.28m from center (+15% distance)', () => {
+      WIXARIKA_ARTWORKS.forEach((artwork) => {
+        const transform = calculateArtworkModalTransform(artwork);
+        const dist = Math.hypot(transform.position[0], transform.position[2]);
+        expect(dist).toBeCloseTo(3.28, 2);
+        expect(transform.position[1]).toBeCloseTo(2.25, 2);
+        // La normal debe mirar hacia el centro: [0, atan2(-x, -z), 0]
+        const expectedAngleY = Math.atan2(-transform.position[0], -transform.position[2]);
+        expect(transform.rotation[1]).toBeCloseTo(expectedAngleY, 3);
+      });
+    });
+
+    it('wall trigger buttons under Nayarit map (+60°) and Pamparios (+120°) face origin [0, 0, 0]', () => {
+      // Botón "ACERCA DE" bajo el mapa (+60°): x = 3.775, z = 6.538
+      const aboutPos = [3.775, 1.08, 6.538];
+      const aboutRotY = Math.atan2(-aboutPos[0], -aboutPos[2]);
+      // Vector dirección desde el botón hacia el origen
+      const dirAbout = { x: Math.sin(aboutRotY), z: Math.cos(aboutRotY) };
+      // Debe apuntar al centro (-x, -z)
+      expect(dirAbout.x).toBeLessThan(0);
+      expect(dirAbout.z).toBeLessThan(0);
+      expect(aboutRotY).toBeCloseTo(-2.618, 2); // -150°
+
+      // Botón "MENÚ" bajo Pamparios (+120°): x = -3.775, z = 6.538
+      const menuPos = [-3.775, 1.08, 6.538];
+      const menuRotY = Math.atan2(-menuPos[0], -menuPos[2]);
+      const dirMenu = { x: Math.sin(menuRotY), z: Math.cos(menuRotY) };
+      expect(dirMenu.x).toBeGreaterThan(0);
+      expect(dirMenu.z).toBeLessThan(0);
+      expect(menuRotY).toBeCloseTo(2.618, 2); // +150°
     });
   });
 });

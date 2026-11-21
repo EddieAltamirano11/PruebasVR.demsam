@@ -57,72 +57,50 @@ export const CULTURAL_STATIONS = [
   }
 ];
 
-// Botón 3D inferior flotante para ocultar/mostrar el menú principal o el cuadro activo
-function LowerToggleButton({
-  showButtons,
-  setShowButtons,
-  activeArtwork,
-  setActiveArtwork,
-  onShowMenu,
+// Botones 3D de activación en los muros de Bienvenida (+Z) debajo del Mapa de Nayarit y Pamparios
+function BienvenidaWallButtons({
+  onOpenMenu,
+  onOpenAbout,
   registerMesh,
-  unregisterMesh
+  unregisterMesh,
+  hoveredId,
+  fuseProgress
 }) {
-  const groupRef = useRef();
-  const { camera } = useThree();
-  const tempPos = useRef(new THREE.Vector3());
-  const tempDir = useRef(new THREE.Vector3());
-
-  // Posicionar suavemente abajo en el campo visual del observador (Y ≈ 0.42m).
-  // Usar siempre `camera` (hija de cameraRigRef) para que en WebXR y EstereoVR
-  // refleje el giro real del rig tras redirigir a Deidades, Gastronomía o Fiestas.
-  useFrame(() => {
-    if (!groupRef.current || !camera) return;
-    camera.updateWorldMatrix(true, false);
-    camera.getWorldPosition(tempPos.current);
-    camera.getWorldDirection(tempDir.current);
-    tempDir.current.y = 0;
-    if (tempDir.current.lengthSq() < 0.001) {
-      tempDir.current.set(0, 0, -1);
-    } else {
-      tempDir.current.normalize();
-    }
-    // 1.50m al frente de la dirección de la mirada, a baja altura (abajo)
-    const targetX = tempPos.current.x + tempDir.current.x * 1.5;
-    const targetZ = tempPos.current.z + tempDir.current.z * 1.5;
-    groupRef.current.position.set(targetX, 0.42, targetZ);
-    // Orientado hacia los ojos del observador
-    groupRef.current.lookAt(tempPos.current.x, 1.45, tempPos.current.z);
-  });
-
-  const isAnyMenuOpen = !!activeArtwork || showButtons;
-
-  const handleToggle = () => {
-    if (activeArtwork) {
-      // Ocultar la ventana del cuadro seleccionado
-      setActiveArtwork(null);
-      setShowButtons(false);
-    } else {
-      // Alternar menú principal
-      const nextShow = !showButtons;
-      setShowButtons(nextShow);
-      if (nextShow && onShowMenu) {
-        onShowMenu();
-      }
-    }
-  };
-
   return (
-    <group ref={groupRef}>
+    <group position={[0, 0, 0]}>
+      {/* Botón "ACERCA DE" debajo del cuadro Mapa de Nayarit (+60° bay, vano izquierdo) */}
       <WixarikaVRButton
-        id="btn-toggle-station-buttons"
-        label={isAnyMenuOpen ? 'Ocultar Menú' : 'Mostrar Menú'}
-        iconName={isAnyMenuOpen ? 'eye-off' : 'eye'}
+        id="btn-wall-about"
+        label="ACERCA DE"
+        iconName="info"
         variant="cantera"
         width={1.60}
-        height={0.28}
+        height={0.34}
+        position={[3.775, 1.08, 6.538]}
+        rotation={[0, Math.atan2(-3.775, -6.538), 0]}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
-        onClick={handleToggle}
+        onClick={onOpenAbout}
+        hoveredId={hoveredId}
+        fuseProgress={fuseProgress}
+        showDiamonds={true}
+      />
+
+      {/* Botón "MENÚ" debajo del cuadro Pamparios / Bienvenidos (+120° bay, vano derecho) */}
+      <WixarikaVRButton
+        id="btn-wall-menu"
+        label="MENÚ"
+        iconName="compass"
+        variant="cantera"
+        width={1.60}
+        height={0.34}
+        position={[-3.775, 1.08, 6.538]}
+        rotation={[0, Math.atan2(3.775, -6.538), 0]}
+        registerMesh={registerMesh}
+        unregisterMesh={unregisterMesh}
+        onClick={onOpenMenu}
+        hoveredId={hoveredId}
+        fuseProgress={fuseProgress}
         showDiamonds={true}
       />
     </group>
@@ -327,12 +305,13 @@ export function MuseumScene({
 }) {
   const orbitRef = useRef();
   const cameraRigRef = useRef();
-  const [internalShowButtons, setInternalShowButtons] = useState(true);
+  const [internalShowButtons, setInternalShowButtons] = useState(false);
   const showButtons =
     externalShowButtons !== undefined ? externalShowButtons : internalShowButtons;
   const setShowButtons = externalSetShowButtons || setInternalShowButtons;
 
   const [activeArtwork, setActiveArtwork] = useState(null);
+  const [dashboardView, setDashboardView] = useState('home');
   const [navTargetStation, setNavTargetStation] = useState(null);
   const [isWebXRSession, setIsWebXRSession] = useState(false);
 
@@ -355,10 +334,26 @@ export function MuseumScene({
     }
   }, [setShowButtons]);
 
-  // Manejador para mostrar el menú y regresar la vista al pabellón de bienvenida (+Z)
-  const handleShowMenu = useCallback(() => {
-    setNavTargetStation({ id: 'home', ts: Date.now() });
+  // Manejador para desplegar el Menú Principal (desde el botón MENÚ del muro)
+  const handleOpenMenu = useCallback(() => {
+    setActiveArtwork(null);
+    setDashboardView('home');
     setShowButtons(true);
+    setNavTargetStation({ id: 'home', ts: Date.now() });
+  }, [setShowButtons]);
+
+  // Manejador para desplegar Información Institucional (desde el botón ACERCA DE del muro)
+  const handleOpenAbout = useCallback(() => {
+    setActiveArtwork(null);
+    setDashboardView('about');
+    setShowButtons(true);
+    setNavTargetStation({ id: 'home', ts: Date.now() });
+  }, [setShowButtons]);
+
+  // Manejador al cerrar el menú principal o acerca de
+  const handleCloseDashboard = useCallback(() => {
+    setShowButtons(false);
+    setDashboardView('home');
   }, [setShowButtons]);
 
   // Registro de objetos interactivos para el raycaster de Gaze Fuse
@@ -376,18 +371,34 @@ export function MuseumScene({
     const all = Array.from(interactiveRegistry.current);
     if (activeArtwork) {
       // Cuando hay un cuadro/deidad abierto, desactivar el gaze fuse de las cosas detrás del menú.
-      // Solo permitir interactuar con el botón badge de cerrar y el botón inferior para no traspasar el menú.
+      // Solo permitir interactuar con el botón badge de cerrar y el bloqueador de fondo.
       return all.filter((mesh) => {
         const id = mesh.userData?.id || '';
         return (
           id.includes('btn-close') ||
           id.includes('close-artwork') ||
-          id.includes('toggle-station-buttons')
+          id === 'artwork-modal-backdrop-blocker'
         );
       });
     }
+    if (showButtons) {
+      // Cuando el menú de bienvenida o acerca de está abierto,
+      // solo permitir interactuar con elementos dentro del dashboard y su botón de cierre
+      return all.filter((mesh) => {
+        const id = mesh.userData?.id || '';
+        return (
+          id.startsWith('btn-dash-') ||
+          id.startsWith('btn-books-') ||
+          id.startsWith('btn-videos-') ||
+          id.startsWith('btn-about-') ||
+          id.includes('btn-close') ||
+          id === 'dashboard-backdrop-blocker'
+        );
+      });
+    }
+    // Cuando no hay ningún menú abierto, interactuar con cuadros y botones de pared
     return all;
-  }, [activeArtwork]);
+  }, [activeArtwork, showButtons]);
 
   // Alternar audio cultural tradicional
   const handleToggleAudio = useCallback(() => {
@@ -415,7 +426,7 @@ export function MuseumScene({
   // Manejador al cerrar el modal de la obra
   const handleCloseArtwork = useCallback(() => {
     setActiveArtwork(null);
-    setShowButtons(true);
+    setShowButtons(false);
   }, [setShowButtons]);
 
   return (
@@ -459,15 +470,27 @@ export function MuseumScene({
         unregisterMesh={unregisterMesh}
       />
 
-      {/* Menú Principal Flotante ÚNICO del Museo (anclado permanentemente en Bienvenida +Z) */}
+      {/* Botones 3D en muros de Bienvenida (+Z): "ACERCA DE" y "MENÚ" (visibles cuando no hay menú abierto) */}
+      {!showButtons && !activeArtwork && (
+        <BienvenidaWallButtons
+          onOpenMenu={handleOpenMenu}
+          onOpenAbout={handleOpenAbout}
+          registerMesh={registerMesh}
+          unregisterMesh={unregisterMesh}
+        />
+      )}
+
+      {/* Menú Principal Flotante ÚNICO del Museo (anclado en Bienvenida +Z) */}
       {showButtons && !activeArtwork && (
         <WixarikaWelcomeDashboard
           position={[0, 2.30, 3.75]}
           rotation={[0, Math.PI, 0]}
+          initialView={dashboardView}
           stations={CULTURAL_STATIONS}
           onToggleAudio={handleToggleAudio}
           onRecenter={handleRecenter}
           onSelectStation={handleSelectStation}
+          onClose={handleCloseDashboard}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
         />
@@ -482,17 +505,6 @@ export function MuseumScene({
           unregisterMesh={unregisterMesh}
         />
       )}
-
-      {/* Botón flotante inferior para Ocultar/Mostrar el Menú Principal o el Cuadro activo */}
-      <LowerToggleButton
-        showButtons={showButtons}
-        setShowButtons={setShowButtons}
-        activeArtwork={activeArtwork}
-        setActiveArtwork={setActiveArtwork}
-        onShowMenu={handleShowMenu}
-        registerMesh={registerMesh}
-        unregisterMesh={unregisterMesh}
-      />
 
       {/* Reticula Central con Gaze Fuse calibrado a 3.0 segundos + gatillo físico Homido Grab / WebXR */}
       <GazeReticle

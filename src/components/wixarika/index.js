@@ -9,4 +9,5 @@ export * from './WixarikaWelcomeDashboard.jsx';
 export * from './WixarikaVRVideoPanel.jsx';
 export * from './WixarikaVRVideoPlayer.jsx';
 export * from './wixarikaArtworksData.js';
+export * from './BadgeCloseButton.jsx';
 export * from './WixarikaArtworkModal.jsx';

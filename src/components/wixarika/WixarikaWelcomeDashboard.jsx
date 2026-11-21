@@ -1,9 +1,10 @@
-import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Text } from '@react-three/drei';
 import { SoundFX } from '../../services/audioService.js';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
 import { LucideVRIcon } from './LucideVRIcon.jsx';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';
+import { BadgeCloseButton } from './BadgeCloseButton.jsx';
 import { WixarikaVRVideoPlayer } from './WixarikaVRVideoPlayer.jsx';
 import { DEFAULT_WIXARIKA_VIDEOS } from './WixarikaVRVideoPanel.jsx';
 import * as THREE from 'three';
@@ -168,9 +169,9 @@ function DashboardTile({
   const currentBg = isHovered ? bgHover : bgIdle;
   const borderColor = isHovered ? accentColor : '#d4af37';
 
-  // Centrado vertical amplio de icono y título
-  const iconY = 0.140;
-  const titleY = -0.175;
+  // Centrado vertical dinámico y proporcionado de icono y título
+  const iconY = height * 0.16;
+  const titleY = -height * 0.22;
 
   return (
     <group position={position}>
@@ -270,12 +271,13 @@ export function WixarikaWelcomeDashboard({
   position = [0, 2.30, 3.75],
   rotation = [0, Math.PI, 0],
   initialView = 'home',
-  stations = DEFAULT_CULTURAL_STATIONS,
+  stations: _stations = DEFAULT_CULTURAL_STATIONS,
   videos = DEFAULT_WIXARIKA_VIDEOS,
   books: _books = DEFAULT_WIXARIKA_BOOKS,
   onToggleAudio,
   onRecenter: _onRecenter,
   onSelectStation,
+  onClose,
   registerMesh,
   unregisterMesh,
   hoveredId,
@@ -302,10 +304,22 @@ export function WixarikaWelcomeDashboard({
     };
   }, [registerMesh, unregisterMesh]);
 
-  // Estado de navegación interna: 'home' | 'deidades' | 'gastronomia' | 'fiestas' | 'videos' | 'books'
+  // Estado de navegación interna: 'home' | 'about' | 'videos' | 'books'
   const [currentView, setCurrentView] = useState(initialView);
-  const [activeStationId, setActiveStationId] = useState(null);
   const [isAudioActive, setIsAudioActive] = useState(false);
+
+  // Sincronizar vista si el componente padre cambia initialView (ej. 'home' vs 'about')
+  useEffect(() => {
+    if (initialView) {
+      setCurrentView(initialView);
+    }
+  }, [initialView]);
+
+  const handleClose = useCallback(() => {
+    SoundFX.playClick();
+    setCurrentView('home');
+    onClose?.();
+  }, [onClose]);
 
   // Estados para sub-vista de libros con datos de Supabase / fallback local
   const [loadedBooks, setLoadedBooks] = useState(_books || DEFAULT_WIXARIKA_BOOKS);
@@ -341,12 +355,6 @@ export function WixarikaWelcomeDashboard({
 
   const currentVideo = videos[videoIndex] || videos[0];
   const totalVideos = videos.length;
-
-  const activeStation = useMemo(() => {
-    return (
-      stations.find((s) => s.id === currentView || s.id === activeStationId) || stations[0]
-    );
-  }, [stations, currentView, activeStationId]);
 
   const handleToggleAudio = useCallback(() => {
     SoundFX.playClick();
@@ -419,24 +427,36 @@ export function WixarikaWelcomeDashboard({
         />
       </group>
 
+      {/* Botón Badge de Cierre con cruz 'x' en la esquina superior derecha */}
+      <BadgeCloseButton
+        id="btn-dash-close-top"
+        size={0.36}
+        position={[panelWidth / 2 - 0.32, panelHeight / 2 - 0.32, 0.01]}
+        onClick={handleClose}
+        registerMesh={registerMesh}
+        unregisterMesh={unregisterMesh}
+        hoveredId={hoveredId}
+        fuseProgress={fuseProgress}
+      />
+
       {/* ===================================================================== */}
-      {/* VISTA A: MENÚ PRINCIPAL DE BIENVENIDA (HOME)                         */}
+      {/* VISTA A: MENÚ PRINCIPAL DE BIENVENIDA (HOME - 3 CARDS CULTURALES)      */}
       {/* ===================================================================== */}
       {currentView === 'home' && (
         <group position={[0, 0, 0.005]}>
           {/* Cabecera Monumental del Dashboard */}
-          <group position={[0, 1.22, 0]}>
+          <group position={[0, 0.98, 0]}>
             <LucideVRIcon
               name="compass"
-              size={0.26}
+              size={0.28}
               color={UNIFIED_ICON_COLOR}
-              position={[0, 0.22, 0]}
+              position={[0, 0.28, 0]}
               strokeWidth={2.6}
             />
 
             <Text
               position={[0, 0.00, 0]}
-              fontSize={0.210}
+              fontSize={0.220}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
@@ -447,8 +467,8 @@ export function WixarikaWelcomeDashboard({
             </Text>
 
             <Text
-              position={[0, -0.24, 0]}
-              fontSize={0.125}
+              position={[0, -0.26, 0]}
+              fontSize={0.130}
               color="#78350f"
               anchorX="center"
               anchorY="middle"
@@ -459,19 +479,25 @@ export function WixarikaWelcomeDashboard({
             </Text>
           </group>
 
-          {/* Fila 1: Servicios y Catálogos Culturales */}
-          <group position={[0, 0.25, 0]}>
+          {/* Línea divisoria dorada ceremonial */}
+          <mesh position={[0, 0.52, 0]}>
+            <planeGeometry args={[panelWidth * 0.88, 0.008]} />
+            <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
+          </mesh>
+
+          {/* Fila Única: Servicios y Catálogos Culturales (3 cards centradas verticalmente) */}
+          <group position={[0, -0.22, 0]}>
             <DashboardTile
               key="btn-dash-books"
               id="btn-dash-books"
               title="Libros Recomendados"
               iconName="book-open"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.80}
-              height={0.84}
-              iconSize={0.25}
-              titleSize={0.125}
-              position={[-1.95, 0, 0]}
+              width={1.84}
+              height={1.15}
+              iconSize={0.30}
+              titleSize={0.140}
+              position={[-1.98, 0, 0]}
               onClick={() => setCurrentView('books')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -485,10 +511,10 @@ export function WixarikaWelcomeDashboard({
               title={isAudioActive ? 'Audio: Activo' : 'Audio Cultural'}
               iconName={isAudioActive ? 'volume-2' : 'volume-x'}
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.80}
-              height={0.84}
-              iconSize={0.25}
-              titleSize={0.125}
+              width={1.84}
+              height={1.15}
+              iconSize={0.30}
+              titleSize={0.140}
               position={[0, 0, 0]}
               onClick={handleToggleAudio}
               registerMesh={registerMesh}
@@ -503,11 +529,11 @@ export function WixarikaWelcomeDashboard({
               title="Videos Culturales"
               iconName="video"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.80}
-              height={0.84}
-              iconSize={0.25}
-              titleSize={0.125}
-              position={[1.95, 0, 0]}
+              width={1.84}
+              height={1.15}
+              iconSize={0.30}
+              titleSize={0.140}
+              position={[1.98, 0, 0]}
               onClick={() => setCurrentView('videos')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -516,74 +542,8 @@ export function WixarikaWelcomeDashboard({
             />
           </group>
 
-          {/* Fila 2: Salas Cardinales (Apertura directa dentro del menú) */}
-          <group position={[0, -0.79, 0]}>
-            <DashboardTile
-              key="btn-dash-deidades"
-              id="btn-dash-deidades"
-              title="Deidades"
-              iconName="sun"
-              accentColor={UNIFIED_ICON_COLOR}
-              width={1.80}
-              height={0.84}
-              iconSize={0.25}
-              titleSize={0.125}
-              position={[-1.95, 0, 0]}
-              onClick={() => {
-                setActiveStationId('deidades');
-                onSelectStation?.('deidades');
-              }}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-            />
-
-            <DashboardTile
-              key="btn-dash-gastronomia"
-              id="btn-dash-gastronomia"
-              title="Gastronomía Tradicional"
-              iconName="utensils"
-              accentColor={UNIFIED_ICON_COLOR}
-              width={1.80}
-              height={0.84}
-              iconSize={0.25}
-              titleSize={0.125}
-              position={[0, 0, 0]}
-              onClick={() => {
-                setActiveStationId('gastronomia');
-                onSelectStation?.('gastronomia');
-              }}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-            />
-
-            <DashboardTile
-              key="btn-dash-fiestas"
-              id="btn-dash-fiestas"
-              title="Fiestas y Ceremonias"
-              iconName="sparkles"
-              accentColor={UNIFIED_ICON_COLOR}
-              width={1.80}
-              height={0.84}
-              iconSize={0.25}
-              titleSize={0.125}
-              position={[1.95, 0, 0]}
-              onClick={() => {
-                setActiveStationId('fiestas');
-                onSelectStation?.('fiestas');
-              }}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-            />
-          </group>
-
           {/* Pie de página con guía de interacción por mirada */}
-          <group position={[0, -1.48, 0]}>
+          <group position={[0, -1.35, 0]}>
             <group position={[-2.20, 0, 0]}>
               <LucideVRIcon
                 name="eye"
@@ -609,16 +569,14 @@ export function WixarikaWelcomeDashboard({
       )}
 
       {/* ===================================================================== */}
-      {/* VISTA B: SALAS CULTURALES (DEIDADES, GASTRONOMÍA, FIESTAS)            */}
+      {/* VISTA B: INFORMACIÓN INSTITUCIONAL Y CRÉDITOS (ACERCA DE)            */}
       {/* ===================================================================== */}
-      {(currentView === 'deidades' ||
-        currentView === 'gastronomia' ||
-        currentView === 'fiestas') && (
+      {currentView === 'about' && (
         <group position={[0, 0, 0.005]}>
-          {/* Barra Superior con botón Volver al Menú y acceso a Libros */}
-          <group position={[0, 1.40, 0]}>
+          {/* Barra Superior con botón Volver al Menú */}
+          <group position={[0, 1.45, 0]}>
             <WixarikaVRButton
-              id="btn-station-back-top"
+              id="btn-about-back-top"
               label="Volver al Menú"
               iconName="arrow-left"
               variant="cantera"
@@ -633,132 +591,207 @@ export function WixarikaWelcomeDashboard({
               showDiamonds={false}
             />
 
-            <WixarikaVRButton
-              id="btn-station-open-books-top"
-              label="Libros de esta Sala"
-              iconName="book-open"
-              variant="cantera"
-              width={1.80}
-              height={0.26}
-              position={[2.10, 0, 0]}
-              onClick={() => setCurrentView('books')}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-              showDiamonds={false}
-            />
-          </group>
-
-          {/* Encabezado del Pabellón Cultural */}
-          <group position={[0, 0.90, 0]}>
-            <LucideVRIcon
-              name={activeStation.iconName || 'sun'}
-              size={0.26}
-              color={UNIFIED_ICON_COLOR}
-              position={[0, 0.18, 0]}
-              strokeWidth={2.6}
-            />
-
             <Text
-              position={[0, -0.02, 0]}
-              fontSize={0.190}
+              position={[0.20, 0.02, 0]}
+              fontSize={0.145}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
-              maxWidth={panelWidth * 0.90}
-              textAlign="center"
+              maxWidth={3.80}
             >
-              {activeStation.name}
+              ACERCA DEL MUSEO VIRTUAL WIXÁRIKA
             </Text>
 
-            <Text
-              position={[0, -0.15, 0]}
-              fontSize={0.108}
-              color="#78350f"
-              anchorX="center"
-              anchorY="middle"
-              maxWidth={panelWidth * 0.90}
-              textAlign="center"
-            >
-              {activeStation.subtitle}
-            </Text>
-
-            <mesh position={[0, -0.25, 0]}>
+            {/* Línea divisoria dorada superior */}
+            <mesh position={[0, -0.16, 0]}>
               <planeGeometry args={[panelWidth * 0.92, 0.006]} />
               <meshBasicMaterial color="#d4af37" />
             </mesh>
           </group>
 
-          {/* Palabras Clave y Contenido en Tipografía Maximizada */}
+          {/* Tres Tarjetas Institucionales en Columnas */}
           <group position={[0, 0.05, 0]}>
-            {(activeStation.bullets || activeStation.description?.split('\n') || []).map(
-              (bullet, idx) => (
-                <Text
-                  key={idx}
-                  position={[0, 0.22 - idx * 0.26, 0]}
-                  fontSize={0.125}
-                  color="#1c1917"
-                  anchorX="center"
-                  anchorY="middle"
-                  maxWidth={panelWidth * 0.88}
-                  textAlign="center"
-                  lineHeight={1.45}
-                >
-                  {bullet}
-                </Text>
-              )
-            )}
+            {/* Tarjeta 1: CECAN Nayarit (Izquierda) */}
+            <group position={[-2.00, 0, 0]}>
+              <mesh position={[0, 0, -0.002]}>
+                <planeGeometry args={[1.90, 2.10]} />
+                <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
+              </mesh>
+              <mesh position={[0, 0, -0.001]}>
+                <planeGeometry args={[1.86, 2.06]} />
+                <meshBasicMaterial color="#fbf7ee" side={THREE.DoubleSide} />
+              </mesh>
+              <LucideVRIcon
+                name="landmark"
+                size={0.28}
+                color={UNIFIED_ICON_COLOR}
+                position={[0, 0.72, 0.002]}
+                strokeWidth={2.4}
+              />
+              <Text
+                position={[0, 0.44, 0.002]}
+                fontSize={0.140}
+                color="#1c1917"
+                anchorX="center"
+                anchorY="middle"
+                maxWidth={1.72}
+                textAlign="center"
+              >
+                CECAN NAYARIT
+              </Text>
+              <Text
+                position={[0, 0.28, 0.002]}
+                fontSize={0.100}
+                color="#78350f"
+                anchorX="center"
+                anchorY="middle"
+                maxWidth={1.72}
+                textAlign="center"
+              >
+                Consejo Estatal para la Cultura
+              </Text>
+              <mesh position={[0, 0.16, 0.002]}>
+                <planeGeometry args={[1.60, 0.004]} />
+                <meshBasicMaterial color="#d4af37" />
+              </mesh>
+              <Text
+                position={[0, -0.32, 0.002]}
+                fontSize={0.115}
+                color="#1c1917"
+                anchorX="center"
+                anchorY="middle"
+                maxWidth={1.66}
+                textAlign="center"
+                lineHeight={1.35}
+              >
+                Preservación, difusión y salvaguarda del patrimonio vivo, tradiciones ceremoniales y cosmovisión sagrada de las comunidades originarias del Gran Nayar.
+              </Text>
+            </group>
+
+            {/* Tarjeta 2: Biblioteca Pública Central Estatal Solón Argüello (Centro) */}
+            <group position={[0, 0, 0]}>
+              <mesh position={[0, 0, -0.002]}>
+                <planeGeometry args={[1.90, 2.10]} />
+                <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
+              </mesh>
+              <mesh position={[0, 0, -0.001]}>
+                <planeGeometry args={[1.86, 2.06]} />
+                <meshBasicMaterial color="#fbf7ee" side={THREE.DoubleSide} />
+              </mesh>
+              <LucideVRIcon
+                name="book-open"
+                size={0.28}
+                color={UNIFIED_ICON_COLOR}
+                position={[0, 0.72, 0.002]}
+                strokeWidth={2.4}
+              />
+              <Text
+                position={[0, 0.44, 0.002]}
+                fontSize={0.140}
+                color="#1c1917"
+                anchorX="center"
+                anchorY="middle"
+                maxWidth={1.72}
+                textAlign="center"
+              >
+                BIBLIOTECA SOLÓN ARGÜELLO
+              </Text>
+              <Text
+                position={[0, 0.28, 0.002]}
+                fontSize={0.100}
+                color="#78350f"
+                anchorX="center"
+                anchorY="middle"
+                maxWidth={1.72}
+                textAlign="center"
+              >
+                Biblioteca Central del Estado
+              </Text>
+              <mesh position={[0, 0.16, 0.002]}>
+                <planeGeometry args={[1.60, 0.004]} />
+                <meshBasicMaterial color="#d4af37" />
+              </mesh>
+              <Text
+                position={[0, -0.32, 0.002]}
+                fontSize={0.115}
+                color="#1c1917"
+                anchorX="center"
+                anchorY="middle"
+                maxWidth={1.66}
+                textAlign="center"
+                lineHeight={1.35}
+              >
+                Sede física y acervo bibliográfico patrimonial. Ofrece consulta libre, colecciones etnográficas y fomento cultural comunitario en Tepic, Nayarit.
+              </Text>
+            </group>
+
+            {/* Tarjeta 3: Instituto Tecnológico de Tepic (Derecha) */}
+            <group position={[2.00, 0, 0]}>
+              <mesh position={[0, 0, -0.002]}>
+                <planeGeometry args={[1.90, 2.10]} />
+                <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
+              </mesh>
+              <mesh position={[0, 0, -0.001]}>
+                <planeGeometry args={[1.86, 2.06]} />
+                <meshBasicMaterial color="#fbf7ee" side={THREE.DoubleSide} />
+              </mesh>
+              <LucideVRIcon
+                name="graduation-cap"
+                size={0.28}
+                color={UNIFIED_ICON_COLOR}
+                position={[0, 0.72, 0.002]}
+                strokeWidth={2.4}
+              />
+              <Text
+                position={[0, 0.44, 0.002]}
+                fontSize={0.140}
+                color="#1c1917"
+                anchorX="center"
+                anchorY="middle"
+                maxWidth={1.72}
+                textAlign="center"
+              >
+                INSTITUTO TECNOLÓGICO DE TEPIC
+              </Text>
+              <Text
+                position={[0, 0.28, 0.002]}
+                fontSize={0.100}
+                color="#78350f"
+                anchorX="center"
+                anchorY="middle"
+                maxWidth={1.72}
+                textAlign="center"
+              >
+                Innovación y Realidad Virtual
+              </Text>
+              <mesh position={[0, 0.16, 0.002]}>
+                <planeGeometry args={[1.60, 0.004]} />
+                <meshBasicMaterial color="#d4af37" />
+              </mesh>
+              <Text
+                position={[0, -0.32, 0.002]}
+                fontSize={0.115}
+                color="#1c1917"
+                anchorX="center"
+                anchorY="middle"
+                maxWidth={1.66}
+                textAlign="center"
+                lineHeight={1.35}
+              >
+                Investigación y desarrollo de la experiencia inmersiva WebXR para democratizar la divulgación del arte wixárika mediante tecnologías emergentes.
+              </Text>
+            </group>
           </group>
 
-          {/* Cédula de Identidad y Sede Cultural */}
-          <group position={[0, -0.72, 0]}>
-            <mesh position={[0, 0, -0.001]}>
-              <planeGeometry args={[4.80, 0.22]} />
-              <meshBasicMaterial color="#f4ebd8" />
-            </mesh>
-            <mesh position={[0, 0, -0.002]}>
-              <planeGeometry args={[4.84, 0.26]} />
-              <meshBasicMaterial color="#c69214" transparent opacity={0.8} />
-            </mesh>
-            <Text
-              position={[0, 0, 0.001]}
-              fontSize={0.096}
-              color="#78350f"
-              anchorX="center"
-              anchorY="middle"
-              maxWidth={4.60}
-              textAlign="center"
-            >
-              Sede: Biblioteca Solón Argüello · Acervo y Tradición Oral Wixárika
-            </Text>
-          </group>
-
-          {/* Botones de Acción al Pie de la Sala */}
-          <group position={[0, -1.30, 0]}>
+          {/* Botón de retorno al pie de página */}
+          <group position={[0, -1.35, 0]}>
             <WixarikaVRButton
-              id="btn-station-books-bottom"
-              label="Ver Libros de la Sala"
-              iconName="book-open"
-              variant="cantera"
-              width={2.25}
-              height={0.30}
-              position={[-1.30, 0, 0]}
-              onClick={() => setCurrentView('books')}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-            />
-
-            <WixarikaVRButton
-              id="btn-station-return-home"
+              id="btn-about-return-bottom"
               label="Volver al Menú Principal"
               iconName="arrow-left"
               variant="cantera"
-              width={2.25}
+              width={2.40}
               height={0.30}
-              position={[1.30, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}

@@ -221,12 +221,12 @@ export function getArtworkById(id) {
 
 /**
  * Calcula la posición y orientación del modal monumental frente al cuadro seleccionado.
- * Lo ubica a 2.85m del centro del museo (acercado aún más al usuario en el centro, máxima inmersión en VR)
+ * Lo ubica a 3.28m del centro del museo (15% más alejado del centro para óptimo campo de visión en VR)
  * a una altura ergonómica de Y = 2.25m, mirando hacia el centro del museo.
  */
 export function calculateArtworkModalTransform(artwork) {
   if (!artwork) {
-    return { position: [0, 2.25, 3.75], rotation: [0, Math.PI, 0] };
+    return { position: [0, 2.25, 4.31], rotation: [0, Math.PI, 0] };
   }
 
   // Coordenadas mundiales del cuadro en el muro
@@ -244,11 +244,11 @@ export function calculateArtworkModalTransform(artwork) {
     dir.normalize();
   }
 
-  // Posicionar a 2.85m del centro del museo (acercado al usuario para máxima legibilidad y escala en visor VR)
+  // Posicionar a 3.28m del centro del museo (15% más alejado del centro: 2.85 * 1.15 = 3.2775m -> 3.28m)
   // a una altura ergonómica en Y = 2.25m
-  const targetX = dir.x * 2.85;
+  const targetX = dir.x * 3.28;
   const targetY = 2.25;
-  const targetZ = dir.z * 2.85;
+  const targetZ = dir.z * 3.28;
 
   // Orientar hacia el centro del museo: la normal frontal (+Z) debe mirar hacia [0, 0, 0]
   // angleY = Math.atan2(-dir.x, -dir.z)
