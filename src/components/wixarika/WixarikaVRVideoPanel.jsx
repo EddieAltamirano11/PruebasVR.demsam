@@ -17,7 +17,7 @@ import {
 export const DEFAULT_WIXARIKA_VIDEOS = [
   {
     id: 'video-tambor',
-    title: 'Nuestras Raíces «Nayarit: Ceremonia Wixarika del tambor»',
+    title: 'Nuestras Raíces "Nayarit: Ceremonia Wixarika del tambor"',
     director: 'Nuestras Raíces (YouTube)',
     category: 'Documental',
     badge: 'REFERENCIA EN VIDEO',
@@ -28,7 +28,7 @@ export const DEFAULT_WIXARIKA_VIDEOS = [
       '480p': './videos/tambor_480p.mp4'
     },
     youtube: 'https://youtu.be/inUzeIlj9P0',
-    synopsis: 'Registro de la ceremonia wixárika del tambor en Nayarit, de la serie «Nuestras Raíces».'
+    synopsis: 'Registro de la ceremonia wixárika del tambor en Nayarit, de la serie "Nuestras Raíces".'
   },
   {
     id: 'video-ojo-de-dios',
@@ -41,6 +41,21 @@ export const DEFAULT_WIXARIKA_VIDEOS = [
     sources: { ...DEFAULT_VIDEO_SOURCES },
     youtube: 'https://youtu.be/zR0z1gkvVHA',
     synopsis: 'Reportaje sobre el pueblo wixárika, sus tradiciones ancestrales y el significado del ojo de Dios (tsikuri).'
+  },
+  {
+    id: 'video-musica-wirikuta',
+    title: 'Música tradicional wixárika | Wixárika | Wirikuta',
+    director: 'YouTube',
+    category: 'Música tradicional',
+    badge: 'REFERENCIA EN VIDEO',
+    duration: '02:34',
+    poster: './videos/musica_poster.jpg',
+    sources: {
+      '720p': './videos/musica_720p.mp4',
+      '480p': './videos/musica_480p.mp4'
+    },
+    youtube: 'https://youtu.be/DahwRdDXiTQ',
+    synopsis: 'Músicos wixárika interpretan música tradicional con kanari y xaweri en Wirikuta.'
   }
 ];
 

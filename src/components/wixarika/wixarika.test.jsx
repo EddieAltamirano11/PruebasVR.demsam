@@ -138,8 +138,10 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
 
   describe('Biblioteca Solón Argüello - Video Catalogue Integrity', () => {
     it('should have a curated list of Wixárika cultural documentaries', () => {
-      // Solo los dos videos proporcionados por el equipo (con su archivo local y su enlace de YouTube)
-      expect(DEFAULT_WIXARIKA_VIDEOS.map((v) => getYouTubeId(v.youtube))).toEqual(['inUzeIlj9P0', 'zR0z1gkvVHA']);
+      // Solo los tres videos proporcionados por el equipo (con su archivo local y su enlace de YouTube)
+      expect(DEFAULT_WIXARIKA_VIDEOS.map((v) => getYouTubeId(v.youtube))).toEqual(['inUzeIlj9P0', 'zR0z1gkvVHA', 'DahwRdDXiTQ']);
+      // Títulos con comillas rectas "" (no «»)
+      DEFAULT_WIXARIKA_VIDEOS.forEach((v) => expect(v.title).not.toMatch(/[«»]/));
 
       DEFAULT_WIXARIKA_VIDEOS.forEach((video) => {
         expect(video.id).toBeDefined();

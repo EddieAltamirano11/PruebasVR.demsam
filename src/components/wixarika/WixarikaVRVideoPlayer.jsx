@@ -119,9 +119,8 @@ export function WixarikaVRVideoPlayer({
       ) {
         el.currentTime = 0;
       }
-      if (!el.muted && SoundFX.ambientPlaying) {
-        SoundFX.toggleAmbient();
-      }
+      // Nunca suenan la música del Audio Cultural y un video al mismo tiempo
+      SoundFX.pauseAmbient();
       await el.play();
     } catch (err) {
       console.warn('Playback attempt 1 (normal) failed:', err);
@@ -198,6 +197,7 @@ export function WixarikaVRVideoPlayer({
     };
 
     const onPlaying = () => {
+      SoundFX.pauseAmbient();
       setIsPlaying(true);
       setIsBuffering(false);
       if (el.readyState >= 2) setHasFrame(true);
@@ -259,7 +259,14 @@ export function WixarikaVRVideoPlayer({
     el.addEventListener('volumechange', onVolumeChange);
     el.addEventListener('error', onError);
 
+    // Si el visitante activa el Audio Cultural mientras corre un video, el video se pausa
+    const onAmbientStart = () => {
+      if (!el.paused) el.pause();
+    };
+    window.addEventListener('wixarika:ambient-start', onAmbientStart);
+
     return () => {
+      window.removeEventListener('wixarika:ambient-start', onAmbientStart);
       if (pendingMetaCleanupRef.current) {
         pendingMetaCleanupRef.current();
         pendingMetaCleanupRef.current = null;
@@ -441,8 +448,8 @@ export function WixarikaVRVideoPlayer({
     el.muted = nextMuted;
     setIsMuted(nextMuted);
     setStatusNote('');
-    if (!nextMuted && SoundFX.ambientPlaying) {
-      SoundFX.toggleAmbient();
+    if (!nextMuted) {
+      SoundFX.pauseAmbient();
     }
   }, []);
 

@@ -2,12 +2,17 @@
  * Audio Service
  * Web Audio API synthesizer for UI interactions and immersive feedback
  */
+/** Pista de "Audio Cultural": música tradicional wixárika (Wirikuta). */
+export const AMBIENT_TRACK_URL = './audio/musica_tradicional_wixarika.mp3';
+
 class AudioService {
   constructor() {
     this.ctx = null;
-    this.ambientOsc = null;
-    this.ambientGain = null;
+    // Audio Cultural: pista de música tradicional wixárika en bucle (HTMLAudioElement)
+    this.ambientEl = null;
     this.ambientPlaying = false;
+    this.ambientUnlocked = false;
+    this.ambientListeners = new Set();
   }
 
   init() {
@@ -25,6 +30,7 @@ class AudioService {
    * Se invoca en el primer touchend/click: reanuda el contexto y reproduce un buffer mudo.
    */
   unlock() {
+    this.primeAmbientForIOS();
     this.init();
     if (!this.ctx) return false;
     try {
@@ -86,41 +92,107 @@ class AudioService {
     }
   }
 
-  toggleAmbient() {
-    try {
-      this.init();
-      if (!this.ctx) return false;
-      if (this.ambientPlaying) {
-        if (this.ambientOsc) {
-          try {
-            this.ambientGain?.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.4);
-            setTimeout(() => {
-              try { this.ambientOsc?.stop(); } catch { /* ignore */ }
-              this.ambientOsc = null;
-            }, 500);
-          } catch { /* ignore */ }
-        }
-        this.ambientPlaying = false;
-        return false;
-      }
+  // ---------------------------------------------------------------------------
+  // AUDIO CULTURAL (música tradicional wixárika)
+  // Un solo estado compartido: el menú se suscribe y los videos lo pausan para que
+  // nunca suenen la música y un video al mismo tiempo.
+  // ---------------------------------------------------------------------------
+  getAmbientElement() {
+    const AudioCtor = globalThis.Audio;
+    if (this.ambientEl || typeof AudioCtor !== 'function') return this.ambientEl;
+    const el = new AudioCtor(AMBIENT_TRACK_URL);
+    el.loop = true;
+    el.preload = 'auto';
+    el.volume = 0.55;
+    el.setAttribute?.('playsinline', '');
+    el.addEventListener?.('pause', () => {
+      if (!this.priming) this.setAmbientState(false);
+    });
+    el.addEventListener?.('play', () => {
+      if (!this.priming) this.setAmbientState(true);
+    });
+    this.ambientEl = el;
+    return el;
+  }
 
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(216, this.ctx.currentTime);
-      gain.gain.setValueAtTime(0.001, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.035, this.ctx.currentTime + 1.2);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start();
-      this.ambientOsc = osc;
-      this.ambientGain = gain;
-      this.ambientPlaying = true;
-      return true;
-    } catch (err) {
-      console.debug('Ambient audio bypassed:', err);
+  setAmbientState(playing) {
+    if (this.ambientPlaying === playing) return;
+    this.ambientPlaying = playing;
+    this.ambientListeners.forEach((fn) => {
+      try {
+        fn(playing);
+      } catch {
+        /* listener best-effort */
+      }
+    });
+  }
+
+  /** Suscribe a cambios de reproducción del Audio Cultural. Devuelve la función para desuscribir. */
+  subscribeAmbient(listener) {
+    this.ambientListeners.add(listener);
+    listener(this.ambientPlaying);
+    return () => this.ambientListeners.delete(listener);
+  }
+
+  /** Inicia la música y emite 'wixarika:ambient-start' para que cualquier video en reproducción se pause. */
+  playAmbient() {
+    const el = this.getAmbientElement();
+    if (!el) return Promise.resolve(false);
+    this.priming = false;
+    const EventCtor = globalThis.CustomEvent;
+    if (typeof window !== 'undefined' && typeof EventCtor === 'function') {
+      window.dispatchEvent(new EventCtor('wixarika:ambient-start'));
+    }
+    this.setAmbientState(true);
+    return Promise.resolve(el.play())
+      .then(() => true)
+      .catch((err) => {
+        console.debug('Audio cultural bloqueado por el navegador:', err?.message);
+        this.setAmbientState(false);
+        return false;
+      });
+  }
+
+  pauseAmbient() {
+    if (this.ambientEl && !this.ambientEl.paused) this.ambientEl.pause();
+    this.setAmbientState(false);
+  }
+
+  toggleAmbient() {
+    if (this.ambientPlaying) {
+      this.pauseAmbient();
       return false;
     }
+    this.playAmbient();
+    return true;
+  }
+
+  /**
+   * iOS: un <audio> solo puede reproducirse sin gesto (p. ej. por mirada en VR) si antes se
+   * reprodujo dentro de un toque real. En el primer toque se reproduce en silencio y se pausa.
+   */
+  primeAmbientForIOS() {
+    if (this.ambientUnlocked || this.ambientPlaying) return;
+    const el = this.getAmbientElement();
+    if (!el) return;
+    this.ambientUnlocked = true;
+    this.priming = true;
+    const wasMuted = el.muted;
+    el.muted = true;
+    Promise.resolve(el.play())
+      .then(() => {
+        if (this.priming) {
+          el.pause();
+          el.currentTime = 0;
+        }
+      })
+      .catch(() => {
+        this.ambientUnlocked = false;
+      })
+      .finally(() => {
+        el.muted = wasMuted;
+        this.priming = false;
+      });
   }
 }
 

@@ -249,14 +249,20 @@ export const WIXARIKA_REFERENCES = {
     {
       id: 'ref-video-tambor',
       title: 'NAYARIT: CEREMONIA WIXARIKA DEL TAMBOR',
-      reference: 'Serie «Nuestras Raíces». «Nayarit: Ceremonia Wixarika del tambor». Video en YouTube.',
+      reference: 'Serie "Nuestras Raíces". "Nayarit: Ceremonia Wixarika del tambor". Video en YouTube.',
       link: 'https://youtu.be/inUzeIlj9P0'
     },
     {
       id: 'ref-video-ojo-de-dios',
       title: 'LOS WIXÁRIKA: ¿QUÉ ES EL OJO DE DIOS?',
-      reference: '«Los Wixárika, un pueblo lleno de magia que conserva tradiciones ancestrales: ¿Qué es el ojo de Dios?». Video en YouTube.',
+      reference: '"Los Wixárika, un pueblo lleno de magia que conserva tradiciones ancestrales: ¿Qué es el ojo de Dios?". Video en YouTube.',
       link: 'https://youtu.be/zR0z1gkvVHA'
+    },
+    {
+      id: 'ref-video-musica-wirikuta',
+      title: 'MÚSICA TRADICIONAL WIXÁRIKA · WIRIKUTA',
+      reference: '"Música tradicional wixárika | Wixárika | Wirikuta". Video en YouTube.',
+      link: 'https://youtu.be/DahwRdDXiTQ'
     }
   ]
 };
@@ -703,10 +709,13 @@ export function WixarikaWelcomeDashboard({
   const currentVideo = videos[videoIndex] || videos[0];
   const totalVideos = videos.length;
 
+  // El estado del botón viene del servicio de audio (un video puede pausar la música)
+  useEffect(() => SoundFX.subscribeAmbient(setIsAudioActive), []);
+
   const handleToggleAudio = useCallback(() => {
     SoundFX.playClick();
-    setIsAudioActive((prev) => !prev);
     if (onToggleAudio) onToggleAudio();
+    else SoundFX.toggleAmbient();
   }, [onToggleAudio]);
 
   const handlePrevVideo = useCallback(() => {
@@ -1656,22 +1665,23 @@ export function WixarikaWelcomeDashboard({
 
             <group position={[0, 0, 0]}>
               <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[3.70, 0.30]} />
+                <planeGeometry args={[3.70, 0.34]} />
                 <meshBasicMaterial color="#f4ebd8" />
               </mesh>
               <AutoFitText
                 key={currentVideo?.id}
                 position={[0, 0, 0.001]}
-                fontSize={0.120}
-                maxHeight={0.17}
-                minScale={0.75}
+                fontSize={0.165}
+                maxHeight={0.30}
+                minScale={0.7}
                 color="#1c1917"
                 anchorX="center"
                 anchorY="middle"
-                maxWidth={3.56}
+                maxWidth={3.58}
                 textAlign="center"
+                lineHeight={1.05}
               >
-                {`${videoIndex + 1}/${totalVideos} · ${currentVideo?.title || ''}`}
+                {currentVideo?.title || ''}
               </AutoFitText>
             </group>
 
