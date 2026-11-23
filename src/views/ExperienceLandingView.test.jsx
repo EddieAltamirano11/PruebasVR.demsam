@@ -2,7 +2,8 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ExperienceLandingView } from './ExperienceLandingView.jsx';
-import { ExperienceSelector, EXPERIENCE_OPTIONS } from '../components/ExperienceSelector.jsx';
+import { ExperienceSelector, EXPERIENCE_OPTIONS, VR_UNSUPPORTED_MESSAGE } from '../components/ExperienceSelector.jsx';
+import { detectVRSupport } from '../utils/vrSupport.js';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -42,7 +43,7 @@ describe('Pantalla de inicio: selector de experiencia', () => {
   it('notifica la experiencia elegida y el clic en iniciar sesión', () => {
     const onSelect = vi.fn();
     const onLogin = vi.fn();
-    render(<ExperienceLandingView onSelectExperience={onSelect} onLogin={onLogin} />);
+    render(<ExperienceLandingView onSelectExperience={onSelect} onLogin={onLogin} vrSupport="webxr" />);
 
     act(() => findButton('Experiencia 2D').click());
     act(() => findButton('Experiencia VR').click());
@@ -60,9 +61,54 @@ describe('Pantalla de inicio: selector de experiencia', () => {
 
   it('la variante compacta (menú lateral del admin) también lanza VR o 2D', () => {
     const onSelect = vi.fn();
-    render(<ExperienceSelector variant="compact" onSelect={onSelect} />);
+    render(<ExperienceSelector variant="compact" onSelect={onSelect} vrSupport="mobile" />);
     act(() => findButton('VR').click());
     act(() => findButton('2D').click());
     expect(onSelect.mock.calls).toEqual([['vr'], ['2d']]);
+  });
+
+  it('si el dispositivo no soporta VR, la tarjeta VR queda opaca, deshabilitada y con el aviso encima', () => {
+    const onSelect = vi.fn();
+    render(<ExperienceLandingView onSelectExperience={onSelect} onLogin={() => {}} vrSupport="unsupported" />);
+    const vrBtn = findButton('Experiencia VR');
+    expect(vrBtn.disabled).toBe(true);
+    expect(vrBtn.className).toContain('opacity-40');
+    expect(container.textContent).toContain(VR_UNSUPPORTED_MESSAGE);
+    act(() => vrBtn.click());
+    act(() => findButton('Experiencia 2D').click());
+    expect(onSelect.mock.calls).toEqual([['2d']]);
+  });
+
+  it('el selector compacto del admin también deshabilita VR si no hay soporte', () => {
+    render(<ExperienceSelector variant="compact" onSelect={() => {}} vrSupport="unsupported" />);
+    expect(findButton('VR').disabled).toBe(true);
+    expect(findButton('2D').disabled).toBe(false);
+  });
+});
+
+describe('detectVRSupport', () => {
+  const fakeWin = ({ xr, mobile }) => ({
+    navigator: { xr, userAgent: mobile ? 'Mozilla/5.0 (Linux; Android 14) Mobile' : 'Mozilla/5.0 (X11; Linux x86_64)' },
+    DeviceOrientationEvent: function DeviceOrientationEvent() {},
+    matchMedia: () => ({ matches: Boolean(mobile) })
+  });
+
+  it('prioriza WebXR inmersivo cuando está disponible', async () => {
+    const xr = { isSessionSupported: vi.fn().mockResolvedValue(true) };
+    expect(await detectVRSupport(fakeWin({ xr }))).toBe('webxr');
+  });
+
+  it('usa el modo visor de celular cuando no hay WebXR pero sí sensores móviles', async () => {
+    expect(await detectVRSupport(fakeWin({ mobile: true }))).toBe('mobile');
+  });
+
+  it('no se queda esperando si isSessionSupported nunca responde', async () => {
+    const xr = { isSessionSupported: () => new Promise(() => {}) };
+    expect(await detectVRSupport(fakeWin({ xr, mobile: false }), 20)).toBe('unsupported');
+  });
+
+  it('marca como no soportado un escritorio sin WebXR', async () => {
+    const xr = { isSessionSupported: vi.fn().mockResolvedValue(false) };
+    expect(await detectVRSupport(fakeWin({ xr, mobile: false }))).toBe('unsupported');
   });
 });

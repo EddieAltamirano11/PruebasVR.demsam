@@ -9,24 +9,17 @@ export function WebXRManager({ onSessionChange, onTriggerRef }) {
     // 1. Habilitar el motor WebXR en Three.js
     gl.xr.enabled = true;
 
-    // 2. Crear y estilizar el boton nativo oficial de WebXR
+    // 2. Crear el botón nativo de WebXR pero SIN mostrarlo: la compatibilidad se comunica en la
+    //    pantalla de inicio (tarjeta "Experiencia VR" opaca con aviso). Three.js reescribe
+    //    style.display del botón, por eso se aloja dentro de un contenedor oculto; click()
+    //    programático sigue funcionando para iniciar la sesión inmersiva.
     const button = VRButton.createButton(gl);
-    button.style.position = 'fixed';
-    button.style.bottom = '20px';
-    button.style.right = '20px';
-    button.style.zIndex = '999999';
-    button.style.borderRadius = '50px';
-    button.style.padding = '12px 20px';
-    button.style.background = 'rgba(15, 23, 42, 0.9)';
-    button.style.border = '2px solid #38bdf8';
-    button.style.color = '#38bdf8';
-    button.style.fontWeight = '700';
-    button.style.boxShadow = '0 0 16px rgba(56, 189, 248, 0.45)';
-    button.style.fontSize = '13px';
-    button.style.letterSpacing = '1px';
-    button.style.textTransform = 'uppercase';
-
-    document.body.appendChild(button);
+    const hiddenHost = document.createElement('div');
+    hiddenHost.setAttribute('aria-hidden', 'true');
+    hiddenHost.dataset.webxrHiddenButton = 'true';
+    hiddenHost.style.display = 'none';
+    hiddenHost.appendChild(button);
+    document.body.appendChild(hiddenHost);
 
     // 3. Vincular ref para que cualquier otro boton pueda disparar el clic nativo
     if (onTriggerRef) {
@@ -63,9 +56,7 @@ export function WebXRManager({ onSessionChange, onTriggerRef }) {
     return () => {
       gl.xr.removeEventListener('sessionstart', onStart);
       gl.xr.removeEventListener('sessionend', onEnd);
-      if (button.parentNode) {
-        button.parentNode.removeChild(button);
-      }
+      hiddenHost.remove();
     };
   }, [gl, onSessionChange, onTriggerRef]);
 

@@ -8,7 +8,7 @@ import { ExperienceSelector } from '../components/ExperienceSelector.jsx';
  * Se muestra siempre al entrar a la app, encima de la escena 3D que se precarga detrás.
  * Arriba a la derecha: acceso al login del panel administrativo.
  */
-export function ExperienceLandingView({ onSelectExperience, onLogin, isAuthenticated = false }) {
+export function ExperienceLandingView({ onSelectExperience, onLogin, isAuthenticated = false, vrSupport }) {
   return (
     <div
       className="fixed inset-0 z-[2000] overflow-y-auto bg-[#0B1A30]/85 backdrop-blur-md font-sans"
@@ -44,7 +44,7 @@ export function ExperienceLandingView({ onSelectExperience, onLogin, isAuthentic
         </p>
 
         <div className="mt-8 sm:mt-10 w-full">
-          <ExperienceSelector variant="cards" onSelect={onSelectExperience} />
+          <ExperienceSelector variant="cards" onSelect={onSelectExperience} vrSupport={vrSupport} />
         </div>
 
         <p className="mt-8 text-xs sm:text-sm text-slate-300 max-w-xl">

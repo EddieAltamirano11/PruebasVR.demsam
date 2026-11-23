@@ -69,27 +69,32 @@ function DashboardBookCover({ url, width = 1.88, height = 2.60 }) {
 /**
  * Subcomponente para renderizar la fotografía de referencia en la tarjeta de dos columnas.
  */
-function ReferenceCardImage({ url, width = 2.40, height = 1.28 }) {
+function ReferenceCardImage({ url, width = 2.40, height = 1.28, frameColor = '#c69214' }) {
   const [loadedTexture, setLoadedTexture] = useState(null);
 
   useEffect(() => {
     if (!url) {
       setLoadedTexture(null);
-      return;
+      return undefined;
     }
 
     const cleanUrl = url.startsWith('.') ? url.replace(/^\./, '') : url;
     const loader = new THREE.TextureLoader();
     let isMounted = true;
+    let current = null;
 
     loader.load(
       cleanUrl,
       (tex) => {
-        if (!isMounted) return;
+        if (!isMounted) {
+          tex.dispose();
+          return;
+        }
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.minFilter = THREE.LinearMipmapLinearFilter;
         tex.magFilter = THREE.LinearFilter;
         tex.generateMipmaps = true;
+        current = tex;
         setLoadedTexture(tex);
       },
       undefined,
@@ -98,19 +103,39 @@ function ReferenceCardImage({ url, width = 2.40, height = 1.28 }) {
 
     return () => {
       isMounted = false;
-      if (loadedTexture) loadedTexture.dispose();
+      current?.dispose();
     };
   }, [url]);
 
+  // Ajuste "contain": respeta la proporción real de la imagen dentro del área disponible
+  const imgW = loadedTexture?.image?.width;
+  const imgH = loadedTexture?.image?.height;
+  let fitW = width;
+  let fitH = height;
+  if (imgW && imgH) {
+    const aspect = imgW / imgH;
+    if (width / height > aspect) {
+      fitW = height * aspect;
+    } else {
+      fitH = width / aspect;
+    }
+  }
+
   return (
-    <mesh position={[0, 0, 0.003]}>
-      <planeGeometry args={[width, height]} />
-      {loadedTexture ? (
-        <meshBasicMaterial map={loadedTexture} toneMapped={false} side={THREE.DoubleSide} />
-      ) : (
-        <meshBasicMaterial color="#e7dec8" side={THREE.DoubleSide} />
-      )}
-    </mesh>
+    <group>
+      <mesh position={[0, 0, 0.001]}>
+        <planeGeometry args={[fitW + 0.024, fitH + 0.024]} />
+        <meshBasicMaterial color={frameColor} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[0, 0, 0.003]}>
+        <planeGeometry args={[fitW, fitH]} />
+        {loadedTexture ? (
+          <meshBasicMaterial map={loadedTexture} toneMapped={false} side={THREE.DoubleSide} />
+        ) : (
+          <meshBasicMaterial color="#e7dec8" side={THREE.DoubleSide} />
+        )}
+      </mesh>
+    </group>
   );
 }
 
@@ -256,9 +281,16 @@ export const formatReferenceLink = (link) => {
  * Mide la altura real de cada bloque (troika onSync) y coloca el siguiente justo debajo,
  * de modo que títulos de 2 líneas o referencias largas nunca se enciman entre sí.
  */
-function ReferenceCardText({ title, reference, link, top = -0.20, width = 2.36 }) {
+function ReferenceCardText({ title, reference, link, top = 0, width = 2.36, maxHeight = 1.10 }) {
   const GAP = 0.05;
-  const [heights, setHeights] = useState({ title: 0.14, reference: 0.24 });
+  // Tamaños base equiparables al resto de menús (títulos de cards 0.14–0.15)
+  const BASE_TITLE = 0.150;
+  const BASE_REFERENCE = 0.118;
+  const BASE_LINK = 0.104;
+  const MIN_SCALE = 0.62;
+
+  const [heights, setHeights] = useState({ title: 0.18, reference: 0.45, link: 0.12 });
+  const [scale, setScale] = useState(1);
 
   const measure = (key) => (mesh) => {
     const bounds = mesh?.textRenderInfo?.blockBounds;
@@ -267,8 +299,14 @@ function ReferenceCardText({ title, reference, link, top = -0.20, width = 2.36 }
     setHeights((prev) => (Math.abs(prev[key] - h) > 0.001 ? { ...prev, [key]: h } : prev));
   };
 
-  // Referencias muy largas (ej. fichas bibliográficas con ISBN) usan un cuerpo de letra menor
-  const referenceFontSize = reference && reference.length > 160 ? 0.074 : 0.086;
+  // Si el bloque completo no cabe en la card, reducir la escala poco a poco hasta que quepa
+  const totalHeight = heights.title + GAP + heights.reference + (link ? GAP + heights.link : 0);
+  useEffect(() => {
+    if (totalHeight > maxHeight && scale > MIN_SCALE) {
+      setScale((s) => Math.max(MIN_SCALE, s * 0.94));
+    }
+  }, [totalHeight, maxHeight, scale]);
+
   const referenceY = top - heights.title - GAP;
   const linkY = referenceY - heights.reference - GAP;
 
@@ -276,8 +314,8 @@ function ReferenceCardText({ title, reference, link, top = -0.20, width = 2.36 }
     <group>
       <Text
         position={[0, top, 0.004]}
-        fontSize={0.108}
-        lineHeight={1.15}
+        fontSize={BASE_TITLE * Math.max(scale, 0.8)}
+        lineHeight={1.12}
         color="#1c1917"
         anchorX="center"
         anchorY="top"
@@ -291,8 +329,8 @@ function ReferenceCardText({ title, reference, link, top = -0.20, width = 2.36 }
 
       <Text
         position={[0, referenceY, 0.004]}
-        fontSize={referenceFontSize}
-        lineHeight={1.25}
+        fontSize={BASE_REFERENCE * scale}
+        lineHeight={1.24}
         color="#44403c"
         anchorX="center"
         anchorY="top"
@@ -307,13 +345,14 @@ function ReferenceCardText({ title, reference, link, top = -0.20, width = 2.36 }
       {link && (
         <Text
           position={[0, linkY, 0.004]}
-          fontSize={0.080}
+          fontSize={BASE_LINK * Math.max(scale, 0.8)}
           color="#b45309"
           anchorX="center"
           anchorY="top"
           maxWidth={width}
           overflowWrap="break-word"
           textAlign="center"
+          onSync={measure('link')}
         >
           {`Fuente: ${formatReferenceLink(link)}`}
         </Text>
@@ -898,7 +937,7 @@ export function WixarikaWelcomeDashboard({
               width={1.28}
               height={1.15}
               iconSize={0.28}
-              titleSize={0.120}
+              titleSize={0.150}
               position={[-2.07, 0, 0]}
               onClick={() => handleOpenRefCategory('deidades')}
               registerMesh={registerMesh}
@@ -916,7 +955,7 @@ export function WixarikaWelcomeDashboard({
               width={1.28}
               height={1.15}
               iconSize={0.28}
-              titleSize={0.120}
+              titleSize={0.150}
               position={[-0.69, 0, 0]}
               onClick={() => handleOpenRefCategory('gastronomia')}
               registerMesh={registerMesh}
@@ -934,7 +973,7 @@ export function WixarikaWelcomeDashboard({
               width={1.28}
               height={1.15}
               iconSize={0.28}
-              titleSize={0.120}
+              titleSize={0.150}
               position={[0.69, 0, 0]}
               onClick={() => handleOpenRefCategory('fiestas')}
               registerMesh={registerMesh}
@@ -952,7 +991,7 @@ export function WixarikaWelcomeDashboard({
               width={1.28}
               height={1.15}
               iconSize={0.28}
-              titleSize={0.120}
+              titleSize={0.150}
               position={[2.07, 0, 0]}
               onClick={() => handleOpenRefCategory('libros')}
               registerMesh={registerMesh}
@@ -1082,17 +1121,13 @@ export function WixarikaWelcomeDashboard({
                   </group>
 
                   {/* Área de Imagen Superior (Misma imagen de los cuadros o portada de libros) */}
-                  <group position={[0, 0.48, 0.002]}>
+                  <group position={[0, 0.58, 0.002]}>
                     {item.image ? (
-                      <ReferenceCardImage
-                        url={item.image}
-                        width={activeRefCategory === 'libros' ? 0.88 : 2.40}
-                        height={1.16}
-                      />
+                      <ReferenceCardImage url={item.image} width={2.40} height={1.00} />
                     ) : (
                       <group position={[0, 0, 0]}>
                         <mesh position={[0, 0, 0]}>
-                          <planeGeometry args={[2.40, 1.16]} />
+                          <planeGeometry args={[2.40, 1.00]} />
                           <meshBasicMaterial color="#f0e6d2" side={THREE.DoubleSide} />
                         </mesh>
                         <LucideVRIcon
@@ -1115,15 +1150,10 @@ export function WixarikaWelcomeDashboard({
                       </group>
                     )}
 
-                    {/* Marco dorado delgado para la imagen */}
-                    <mesh position={[0, 0, 0.001]}>
-                      <planeGeometry args={[activeRefCategory === 'libros' ? 0.92 : 2.42, 1.18]} />
-                      <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
-                    </mesh>
                   </group>
 
                   {/* Línea divisoria dorada bajo la imagen */}
-                  <mesh position={[0, -0.14, 0.003]}>
+                  <mesh position={[0, 0.03, 0.003]}>
                     <planeGeometry args={[2.42, 0.004]} />
                     <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
                   </mesh>
@@ -1133,8 +1163,9 @@ export function WixarikaWelcomeDashboard({
                     title={item.title}
                     reference={item.reference}
                     link={item.link}
-                    top={-0.20}
-                    width={2.36}
+                    top={-0.02}
+                    width={2.40}
+                    maxHeight={1.08}
                   />
                 </group>
               );
