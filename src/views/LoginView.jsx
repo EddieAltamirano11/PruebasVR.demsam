@@ -96,8 +96,8 @@ export function LoginView({ onBypassDemo, onBackToMuseum }) {
           <div className="mb-2 p-2 rounded-2xl bg-[#0B1A30] border border-[#E5A00D]/30 shadow-md">
             <BiblioLogo size={42} />
           </div>
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-rose-950/80 text-rose-300 border border-rose-800/80 mb-2">
-            <ShieldCheck size={12} className="text-rose-400" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#E5A00D] text-[#0B1A30] border border-amber-400 shadow-sm shadow-amber-500/20 mb-2">
+            <ShieldCheck size={12} className="text-[#0B1A30]" />
             <span>Acceso Administrativo Restringido</span>
           </span>
           <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
@@ -317,16 +317,8 @@ export function LoginView({ onBypassDemo, onBackToMuseum }) {
               </div>
             )}
 
-            {/* MODO ACCESO RÁPIDO / DEMO */}
+            {/* Regreso a la pantalla de inicio del museo */}
             <div className="mt-6 pt-4 border-t border-slate-800 flex flex-col items-center gap-2 text-center">
-              <button
-                type="button"
-                onClick={onBypassDemo}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-[#E5A00D] hover:bg-[#0B1A30] border border-slate-700/60 transition-all cursor-pointer"
-              >
-                <ShieldCheck size={14} className="text-[#E5A00D]" />
-                <span>Explorar Panel como Administrador Demo</span>
-              </button>
               {onBackToMuseum && (
                 <button
                   type="button"

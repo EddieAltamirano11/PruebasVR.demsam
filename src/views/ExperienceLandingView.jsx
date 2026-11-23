@@ -76,7 +76,7 @@ export function ExperienceLandingView({
         )}
 
         <p className="mt-8 text-xs sm:text-sm text-slate-300 max-w-xl">
-          Puedes cambiar de experiencia en cualquier momento con el botón «Cambiar experiencia».
+          Puedes cambiar de experiencia en cualquier momento con el botón "Menú principal".
         </p>
       </main>
     </div>

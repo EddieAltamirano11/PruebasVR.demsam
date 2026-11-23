@@ -234,7 +234,7 @@ Mapa de evidencia para la ficha de pruebas cruzadas. Cada ley indica **qué hace
 
 ## 7. Inicio de la App y Compatibilidad iPhone / Android
 
-* **Pantalla de inicio:** la app abre siempre en el selector **Experiencia VR / Experiencia 2D** (`ExperienceLandingView`), con «Iniciar sesión» arriba a la derecha (login de `/admin`). Durante el recorrido, «Cambiar experiencia» (arriba a la derecha) regresa al selector.
+* **Pantalla de inicio:** la app abre siempre en el selector **Experiencia VR / Experiencia 2D** (`ExperienceLandingView`), con «Iniciar sesión» arriba a la derecha (login de `/admin`). Durante el recorrido, el botón «Menú principal» (arriba a la derecha) regresa al selector.
 * **Detección de VR** (`src/utils/vrSupport.js`): `webxr` (WebXR inmersivo), `mobile` (celular con sensores → visor Homido/Cardboard) o `unsupported` (la tarjeta VR se muestra opaca con «No compatible con este dispositivo»). La consulta a `navigator.xr` tiene un límite de 1.2 s porque algunos navegadores nunca responden.
 * **Android (Chrome):** WebXR nativo; pantalla completa y bloqueo horizontal automáticos.
 * **iPhone / iPad (Safari):** no hay WebXR, así que se usa el modo visor propio (giroscopio + estéreo). Ya **no se usa `webxr-polyfill`**: activaba una ruta WebXR que no pedía el permiso de sensores. El flujo queda así:
