@@ -333,7 +333,7 @@ export function LoginView({ onBypassDemo, onBackToMuseum }) {
                   onClick={onBackToMuseum}
                   className="text-xs text-slate-400 hover:text-[#38bdf8] transition-colors underline cursor-pointer"
                 >
-                  ← Volver a la Experiencia 3D del Museo
+                  ← Volver al inicio del museo
                 </button>
               )}
             </div>

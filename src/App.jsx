@@ -7,9 +7,8 @@ import { getRequestedBooks, subscribeRequestedBooks } from './services/counterCh
 import { AdminLayout } from './components/AdminLayout.jsx';
 import { DashboardView } from './views/DashboardView.jsx';
 import { BooksManagementView } from './views/BooksManagementView.jsx';
-import { WireframesView } from './views/WireframesView.jsx';
-import { VRPrototypeView } from './views/VRPrototypeView.jsx';
 import { LoginView } from './views/LoginView.jsx';
+import { ExperienceLandingView } from './views/ExperienceLandingView.jsx';
 
 /**
  * Contenedor principal de la aplicación
@@ -59,7 +58,11 @@ function AppContent() {
   }, []);
 
   const [viewMode, setViewMode] = useState(() => (checkIsAdminEndpoint() ? 'admin' : 'museum'));
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'books' | 'cultures' | 'wireframes' | 'vr'
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'books'
+
+  // Experiencia elegida por el visitante: null (pantalla de selección) | 'vr' | '2d'.
+  // Siempre inicia en null para que la app abra en el selector de experiencia.
+  const [experience, setExperience] = useState(null);
 
   const navigateTo = useCallback((target) => {
     if (target === 'museum' || target === '/') {
@@ -69,6 +72,7 @@ function AppContent() {
         window.location.hash = '';
       }
       setViewMode('museum');
+      setExperience(null); // Al volver al museo siempre se muestra el selector de experiencia
     } else if (target === 'admin' || target === '/admin') {
       window.history.pushState(null, '', '/admin');
       setViewMode('admin');
@@ -80,6 +84,7 @@ function AppContent() {
     const handleUrlSync = () => {
       const isAdmin = checkIsAdminEndpoint();
       setViewMode(isAdmin ? 'admin' : 'museum');
+      if (!isAdmin) setExperience(null);
     };
 
     window.addEventListener('popstate', handleUrlSync);
@@ -185,8 +190,18 @@ function AppContent() {
     }
   }, []);
 
+  // Si una sesión WebXR inmersiva termina desde el visor, regresar también al selector
+  const prevVrModeRef = useRef(vrMode);
+  useEffect(() => {
+    if (prevVrModeRef.current && !vrMode && experience === 'vr') {
+      setExperience(null);
+    }
+    prevVrModeRef.current = vrMode;
+  }, [vrMode, experience]);
+
   const exitVR = useCallback(() => {
     setVrMode(false);
+    setExperience(null); // Al salir de VR se regresa al selector de experiencia
     const efs =
       document.exitFullscreen ||
       document.webkitExitFullscreen ||
@@ -196,6 +211,28 @@ function AppContent() {
       efs.call(document);
     }
   }, []);
+
+  // Selección de experiencia desde la pantalla de inicio o desde el panel admin
+  const handleSelectExperience = useCallback(
+    (mode) => {
+      setExperience(mode);
+      if (mode === 'vr') {
+        enterVR();
+      } else {
+        setVrMode(false);
+      }
+    },
+    [enterVR]
+  );
+
+  // Desde el panel admin: abrir el museo directamente en la experiencia elegida
+  const handleLaunchExperienceFromAdmin = useCallback(
+    (mode) => {
+      navigateTo('/');
+      handleSelectExperience(mode);
+    },
+    [navigateTo, handleSelectExperience]
+  );
 
   // Si el usuario accede al endpoint administrativo (/admin o #/admin):
   if (viewMode === 'admin') {
@@ -215,20 +252,15 @@ function AppContent() {
           setActiveTab(tab);
         }}
         onSignOut={handleSignOut}
+        onLaunchExperience={handleLaunchExperienceFromAdmin}
       >
         {activeTab === 'dashboard' && (
           <DashboardView
-            onNavigate={(tab) => {
-              if (tab === 'vr') setActiveTab('vr');
-              else setActiveTab(tab);
-            }}
+            onNavigate={(tab) => setActiveTab(tab)}
+            onLaunchExperience={handleLaunchExperienceFromAdmin}
           />
         )}
         {activeTab === 'books' && <BooksManagementView />}
-        {activeTab === 'wireframes' && <WireframesView />}
-        {activeTab === 'vr' && (
-          <VRPrototypeView onBackToDashboard={() => setActiveTab('dashboard')} />
-        )}
       </AdminLayout>
     );
   }
@@ -272,8 +304,17 @@ function AppContent() {
         }}
       />
 
+      {/* Pantalla de inicio: selector de experiencia VR / 2D (la escena 3D se precarga detrás) */}
+      {experience === null && !vrMode && (
+        <ExperienceLandingView
+          onSelectExperience={handleSelectExperience}
+          onLogin={() => navigateTo('/admin')}
+          isAuthenticated={isAuthenticated}
+        />
+      )}
+
       {/* Barra de Controles Superior (No VR) */}
-      {!vrMode && (
+      {experience !== null && !vrMode && (
         <div
           style={{
             position: 'fixed',
@@ -384,7 +425,7 @@ function AppContent() {
       )}
 
       {/* Barra de Controles Inferior (Abajo) */}
-      {!vrMode && (
+      {experience !== null && !vrMode && (
         <div
           style={{
             position: 'fixed',
@@ -399,29 +440,29 @@ function AppContent() {
             pointerEvents: 'auto'
           }}
         >
-          {/* Boton flotante para entrar al modo VR */}
+          {/* Botón para regresar al selector de experiencia (VR / 2D) */}
           <button
-            onClick={enterVR}
+            onClick={() => setExperience(null)}
             style={{
               padding: '14px 28px',
               fontSize: '15px',
               fontWeight: '700',
               letterSpacing: '1px',
               textTransform: 'uppercase',
-              color: '#ffffff',
-              background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-              border: '2px solid #38bdf8',
+              color: '#0B1A30',
+              background: 'linear-gradient(135deg, #f5b82e 0%, #E5A00D 100%)',
+              border: '2px solid #fcd34d',
               borderRadius: '50px',
               cursor: 'pointer',
-              boxShadow: '0 4px 20px rgba(56, 189, 248, 0.45)',
+              boxShadow: '0 4px 20px rgba(229, 160, 13, 0.45)',
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
               transition: 'all 0.2s ease',
               outline: 'none'
             }}
+            title="Elegir entre Experiencia VR y Experiencia 2D"
           >
-            {/* Icono de Gafas VR */}
             <svg
               width="22"
               height="22"
@@ -432,11 +473,13 @@ function AppContent() {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4.5l-2-2.5-2 2.5H5a2 2 0 0 1-2-2V7z" />
-              <circle cx="8" cy="12" r="2" />
-              <circle cx="16" cy="12" r="2" />
+              <path d="M16 3h5v5" />
+              <path d="M4 20 21 3" />
+              <path d="M21 16v5h-5" />
+              <path d="m15 15 6 6" />
+              <path d="M4 4l5 5" />
             </svg>
-            Entrar a Modo VR
+            Cambiar experiencia
           </button>
         </div>
       )}

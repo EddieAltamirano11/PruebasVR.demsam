@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 import { BiblioLogo } from './BiblioLogo.jsx';
 import { UserProfileModal } from './UserProfileModal.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { ExperienceSelector } from './ExperienceSelector.jsx';
 import {
   LayoutGrid,
   BookOpen,
-  Ruler,
-  Glasses,
   LogOut,
   Menu,
   X
 } from 'lucide-react';
 
-export function AdminLayout({ activeTab, onSelectTab, children, onSignOut }) {
+export function AdminLayout({ activeTab, onSelectTab, children, onSignOut, onLaunchExperience }) {
   const { user, profile } = useAuth();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -52,16 +51,6 @@ export function AdminLayout({ activeTab, onSelectTab, children, onSignOut }) {
       label: 'Inventario de Libros',
       icon: BookOpen
     },
-    {
-      id: 'wireframes',
-      label: 'Wireframes VR',
-      icon: Ruler
-    },
-    {
-      id: 'vr',
-      label: 'Prototipo VR',
-      icon: Glasses
-    }
   ];
 
   const getPageTitle = (tab) => {
@@ -70,10 +59,6 @@ export function AdminLayout({ activeTab, onSelectTab, children, onSignOut }) {
         return 'Panel de Control General';
       case 'books':
         return 'Inventario de Libros — Culturas Vivas';
-      case 'wireframes':
-        return 'Wireframes del Espacio VR';
-      case 'vr':
-        return 'Prototipo VR del Museo';
       default:
         return 'Panel de Control General';
     }
@@ -130,6 +115,20 @@ export function AdminLayout({ activeTab, onSelectTab, children, onSignOut }) {
               </button>
             );
           })}
+
+          {/* Selector de experiencia del museo (reemplaza al antiguo "Prototipo VR") */}
+          <div className="pt-5 mt-3 border-t border-slate-800/80">
+            <p className="px-1 mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Abrir museo
+            </p>
+            <ExperienceSelector
+              variant="compact"
+              onSelect={(mode) => {
+                setMobileMenuOpen(false);
+                onLaunchExperience?.(mode);
+              }}
+            />
+          </div>
         </nav>
 
         {/* Footer del Sidebar con botón Cerrar Sesión */}

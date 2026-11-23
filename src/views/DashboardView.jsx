@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpRight, BookOpen, Ruler, Glasses } from 'lucide-react';
+import { ArrowUpRight, BookOpen, Glasses } from 'lucide-react';
+import { ExperienceSelector } from '../components/ExperienceSelector.jsx';
 import { getInventoryBooks } from '../services/inventoryService';
 
-export function DashboardView({ onNavigate }) {
+export function DashboardView({ onNavigate, onLaunchExperience }) {
   const [stats, setStats] = useState({
     booksCount: 2,
     recommendationsCount: 2,
@@ -63,7 +64,7 @@ export function DashboardView({ onNavigate }) {
       </div>
 
       {/* Tarjetas de Acceso Rápido / Banners de Navegación del Panel */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
         {/* Tarjeta Azul Marino - Inventario de Libros */}
         <div
           onClick={() => onNavigate?.('books')}
@@ -89,54 +90,20 @@ export function DashboardView({ onNavigate }) {
           <span className="text-[11px] text-[#E5A00D] font-semibold mt-4 block">Gestionar Acervo →</span>
         </div>
 
-        {/* Tarjeta Wireframes VR */}
-        <div
-          onClick={() => onNavigate?.('wireframes')}
-          className="group cursor-pointer bg-white text-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200/90 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md relative overflow-hidden flex flex-col justify-between"
-        >
+        {/* Tarjeta: Abrir el museo en Experiencia VR o 2D */}
+        <div className="bg-white text-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200/90 flex flex-col justify-between">
           <div>
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
-                <Ruler size={20} className="text-[#0B1A30]" />
-                <h3 className="text-base font-bold text-[#0B1A30] group-hover:text-amber-600 transition-colors">
-                  Wireframes del Espacio VR
-                </h3>
-              </div>
-              <ArrowUpRight
-                size={18}
-                className="text-slate-400 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all"
-              />
+            <div className="flex items-center gap-2">
+              <Glasses size={20} className="text-[#0B1A30]" />
+              <h3 className="text-base font-bold text-[#0B1A30]">Abrir el Museo Virtual</h3>
             </div>
             <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-              Diagramas cenitales con FOV 100°, distancias focales de 2.0 m y ergonomía para Homido Grab.
+              Recorre el Museo Wixárika con visor de realidad virtual o directamente en la pantalla.
             </p>
           </div>
-          <span className="text-[11px] text-slate-600 font-semibold mt-4 block">Ver Planos Técnicos →</span>
-        </div>
-
-        {/* Tarjeta Prototipo VR */}
-        <div
-          onClick={() => onNavigate?.('vr')}
-          className="group cursor-pointer bg-white text-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200/90 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md relative overflow-hidden flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
-                <Glasses size={20} className="text-[#0B1A30]" />
-                <h3 className="text-base font-bold text-[#0B1A30] group-hover:text-amber-600 transition-colors">
-                  Prototipo VR del Museo
-                </h3>
-              </div>
-              <ArrowUpRight
-                size={18}
-                className="text-slate-400 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all"
-              />
-            </div>
-            <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-              Simulación interactiva 3D con retículo central Gaze Fuse (1500 ms) y pabellones culturales.
-            </p>
+          <div className="mt-4">
+            <ExperienceSelector variant="compact" tone="light" onSelect={(mode) => onLaunchExperience?.(mode)} />
           </div>
-          <span className="text-[11px] text-[#0B1A30] font-semibold mt-4 block">Explorar Recorrido 3D →</span>
         </div>
       </div>
     </div>
