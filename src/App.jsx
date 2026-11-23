@@ -19,27 +19,11 @@ import { requestMotionPermission, MOTION_PERMISSION_DENIED_MESSAGE } from './uti
  */
 function AppContent() {
   const { user, signOut } = useAuth();
-  const [isDemoMode, setIsDemoMode] = useState(() => {
+  // El panel administrativo solo se abre con una sesión real de Supabase (sin modo demo).
+  // Limpia la bandera del antiguo modo demo para que no quede guardada en navegadores existentes.
+  useEffect(() => {
     try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        return window.sessionStorage.getItem('bibliovr_admin_session') === 'true';
-      }
-    } catch {
-      // ignore
-    }
-    return false;
-  });
-
-  const handleSetDemoMode = useCallback((val) => {
-    setIsDemoMode(val);
-    try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        if (val) {
-          window.sessionStorage.setItem('bibliovr_admin_session', 'true');
-        } else {
-          window.sessionStorage.removeItem('bibliovr_admin_session');
-        }
-      }
+      window.sessionStorage?.removeItem('bibliovr_admin_session');
     } catch {
       // ignore
     }
@@ -139,13 +123,10 @@ function AppContent() {
   const onRecenterRef = useRef(null);
   const onWebXRTriggerRef = useRef(null);
 
-  const isAuthenticated = Boolean(user) || isDemoMode;
+  const isAuthenticated = Boolean(user);
 
   const handleSignOut = async () => {
-    handleSetDemoMode(false);
-    if (!isDemoMode) {
-      await signOut();
-    }
+    await signOut();
     setActiveTab('dashboard');
     navigateTo('/');
   };
@@ -271,10 +252,7 @@ function AppContent() {
   if (viewMode === 'admin') {
     if (!isAuthenticated) {
       return (
-        <LoginView
-          onBypassDemo={() => handleSetDemoMode(true)}
-          onBackToMuseum={() => navigateTo('/')}
-        />
+        <LoginView onBackToMuseum={() => navigateTo('/')} />
       );
     }
 

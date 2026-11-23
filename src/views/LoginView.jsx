@@ -13,7 +13,7 @@ import {
   EyeOff
 } from 'lucide-react';
 
-export function LoginView({ onBypassDemo, onBackToMuseum }) {
+export function LoginView({ onBackToMuseum }) {
   const { signIn, signUp, resetPassword } = useAuth();
 
   const [mode, setMode] = useState('login'); // 'login' | 'register' | 'forgot' | 'email-sent'
@@ -24,28 +24,13 @@ export function LoginView({ onBypassDemo, onBackToMuseum }) {
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [isFetchError, setIsFetchError] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
-    setIsFetchError(false);
     setSuccessMsg('');
     setLoading(true);
-
-    const cleanEmail = email.trim().toLowerCase();
-
-    // 1. Acceso administrativo institucional directo (soporta trabajo offline y local sin Supabase)
-    if (
-      mode === 'login' &&
-      (cleanEmail === 'admin@solon.gob.mx' || cleanEmail === 'admin@bibliovr.gob.mx') &&
-      onBypassDemo
-    ) {
-      onBypassDemo();
-      setLoading(false);
-      return;
-    }
 
     try {
       if (mode === 'login') {
@@ -62,7 +47,6 @@ export function LoginView({ onBypassDemo, onBackToMuseum }) {
     } catch (err) {
       const msg = err.message || '';
       if (msg.includes('Failed to fetch') || msg.includes('fetch') || msg.includes('NetworkError')) {
-        setIsFetchError(true);
         setErrorMsg(
           'No se pudo conectar con el servidor de Supabase (Failed to fetch). Puede deberse a que el servidor de desarrollo Vite necesita reiniciarse para recargar el archivo .env, a bloqueadores de red (Brave Shields/AdBlock) o a falta de conexión.'
         );
@@ -182,16 +166,6 @@ export function LoginView({ onBypassDemo, onBackToMuseum }) {
                   <AlertCircle size={16} className="shrink-0 text-rose-400 mt-0.5" />
                   <span className="leading-relaxed">{errorMsg}</span>
                 </div>
-                {isFetchError && onBypassDemo && (
-                  <button
-                    type="button"
-                    onClick={onBypassDemo}
-                    className="w-full mt-2 py-2 px-3 flex items-center justify-center gap-1.5 font-bold text-[#0B1A30] bg-[#E5A00D] hover:bg-amber-400 rounded-lg transition-all cursor-pointer shadow-sm text-xs"
-                  >
-                    <ShieldCheck size={14} />
-                    <span>Entrar en Modo Administrador Local / Demo</span>
-                  </button>
-                )}
               </div>
             )}
             {successMsg && (
