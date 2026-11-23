@@ -3,12 +3,14 @@ import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { MuseumScene, CULTURAL_STATIONS } from './components/MuseumScene.jsx';
 import { RecommendedBooksPanel } from './components/RecommendedBooksPanel.jsx';
 import { CounterCheckoutModal } from './components/CounterCheckoutModal.jsx';
-import { getRequestedBooks, subscribeRequestedBooks } from './services/counterCheckoutService.js';
 import { AdminLayout } from './components/AdminLayout.jsx';
 import { DashboardView } from './views/DashboardView.jsx';
 import { BooksManagementView } from './views/BooksManagementView.jsx';
 import { LoginView } from './views/LoginView.jsx';
 import { ExperienceLandingView } from './views/ExperienceLandingView.jsx';
+import { RotateDeviceHint } from './components/RotateDeviceHint.jsx';
+import { SoundFX } from './services/audioService.js';
+import { requestMotionPermission, MOTION_PERMISSION_DENIED_MESSAGE } from './utils/vrSupport.js';
 
 /**
  * Contenedor principal de la aplicación
@@ -63,6 +65,23 @@ function AppContent() {
   // Experiencia elegida por el visitante: null (pantalla de selección) | 'vr' | '2d'.
   // Siempre inicia en null para que la app abra en el selector de experiencia.
   const [experience, setExperience] = useState(null);
+  const [landingNotice, setLandingNotice] = useState('');
+
+  // iOS: desbloquear el audio con el primer toque real (los clics por mirada no cuentan como gesto)
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (SoundFX.unlock()) {
+        window.removeEventListener('touchend', unlockAudio, true);
+        window.removeEventListener('click', unlockAudio, true);
+      }
+    };
+    window.addEventListener('touchend', unlockAudio, true);
+    window.addEventListener('click', unlockAudio, true);
+    return () => {
+      window.removeEventListener('touchend', unlockAudio, true);
+      window.removeEventListener('click', unlockAudio, true);
+    };
+  }, []);
 
   const navigateTo = useCallback((target) => {
     if (target === 'museum' || target === '/') {
@@ -102,14 +121,6 @@ function AppContent() {
   const [isBooksOpen, setIsBooksOpen] = useState(false);
   const [autoOpenOnFocus] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [requestedCount, setRequestedCount] = useState(() => getRequestedBooks().length);
-
-  useEffect(() => {
-    const unsub = subscribeRequestedBooks((list) => {
-      setRequestedCount(list.length);
-    });
-    return () => unsub();
-  }, []);
 
   const onRecenterRef = useRef(null);
   const onWebXRTriggerRef = useRef(null);
@@ -145,33 +156,30 @@ function AppContent() {
   }, []);
 
   // Entrar a Modo VR (WebXR nativo o fallback estereoscópico móvil)
+  // Entrar a Modo VR. Devuelve { ok, reason } para poder informar al visitante si algo falla.
   const enterVR = useCallback(async () => {
-    // 1. Si WebXR nativo está disponible y soportado en el navegador:
+    // 1. iOS 13+ (iPhone/iPad): el permiso de movimiento DEBE pedirse dentro del gesto y antes de
+    //    cualquier otro await; sin él no hay seguimiento de cabeza. En Android no aplica.
+    const motion = await requestMotionPermission();
+    if (motion === 'denied') {
+      return { ok: false, reason: 'motion-permission' };
+    }
+
+    // 2. Si WebXR nativo está disponible y soportado en el navegador (Chrome Android, Quest, etc.):
     if (navigator.xr && onWebXRTriggerRef.current) {
       try {
         const supported = await navigator.xr.isSessionSupported('immersive-vr');
         if (supported) {
           onWebXRTriggerRef.current();
-          return;
+          return { ok: true, mode: 'webxr' };
         }
       } catch (e) {
         console.warn('WebXR check:', e);
       }
     }
 
-    // 2. Fallback móvil (Homido Grab / Cardboard): Permisos de sensores en iOS si aplica
-    if (
-      typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission === 'function'
-    ) {
-      try {
-        await DeviceOrientationEvent.requestPermission();
-      } catch (err) {
-        console.warn('Permisos sensor iOS:', err);
-      }
-    }
-
-    // 3. Activar modo pantalla completa + bloqueo horizontal + estereoscopía dual
+    // 3. Modo visor (Homido Grab / Cardboard): pantalla completa + bloqueo horizontal + estéreo dual.
+    //    iPhone no permite pantalla completa ni bloqueo de orientación: se muestra RotateDeviceHint.
     setVrMode(true);
     const el = document.documentElement;
     const rfs =
@@ -188,6 +196,7 @@ function AppContent() {
         })
         .catch(() => {});
     }
+    return { ok: true, mode: 'stereo' };
   }, []);
 
   // Si una sesión WebXR inmersiva termina desde el visor, regresar también al selector
@@ -216,8 +225,18 @@ function AppContent() {
   const handleSelectExperience = useCallback(
     (mode) => {
       setExperience(mode);
+      setLandingNotice('');
       if (mode === 'vr') {
-        enterVR();
+        enterVR().then((result) => {
+          if (!result?.ok) {
+            setExperience(null);
+            setLandingNotice(
+              result?.reason === 'motion-permission'
+                ? MOTION_PERMISSION_DENIED_MESSAGE
+                : 'No se pudo iniciar la Experiencia VR. Inténtalo de nuevo.'
+            );
+          }
+        });
       } else {
         setVrMode(false);
       }
@@ -310,17 +329,21 @@ function AppContent() {
           onSelectExperience={handleSelectExperience}
           onLogin={() => navigateTo('/admin')}
           isAuthenticated={isAuthenticated}
+          notice={landingNotice}
         />
       )}
+
+      {/* Modo visor en celular: pedir girar a horizontal (iPhone no permite bloquear la orientación) */}
+      {vrMode && <RotateDeviceHint />}
 
       {/* Barra de Controles Superior (No VR) */}
       {experience !== null && !vrMode && (
         <div
           style={{
             position: 'fixed',
-            top: '16px',
-            left: '16px',
-            right: '16px',
+            top: 'max(16px, env(safe-area-inset-top))',
+            left: 'max(16px, env(safe-area-inset-left))',
+            right: 'max(16px, env(safe-area-inset-right))',
             zIndex: 1000,
             display: 'flex',
             alignItems: 'center',
@@ -362,124 +385,37 @@ function AppContent() {
             <div />
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', pointerEvents: 'auto' }}>
-            {/* Botón: Pantalla de salida con resumen de libros para pedir en mostrador (Sprint 5) */}
-            <button
-              onClick={() => setIsCheckoutOpen(true)}
-              style={{
-                padding: '9px 16px',
-                fontSize: '13px',
-                fontWeight: '700',
-                color: requestedCount > 0 ? '#0B1A30' : '#f8fafc',
-                background: requestedCount > 0 ? '#E5A00D' : 'rgba(11, 26, 48, 0.85)',
-                border: requestedCount > 0 ? '1px solid #f59e0b' : '1px solid rgba(229, 160, 13, 0.6)',
-                borderRadius: '24px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: requestedCount > 0 ? '0 4px 14px rgba(229, 160, 13, 0.4)' : '0 4px 14px rgba(0, 0, 0, 0.4)',
-                backdropFilter: 'blur(8px)',
-                transition: 'all 0.2s ease'
-              }}
-              title="Abrir resumen de libros para pedir en mostrador"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-                <path d="M6 6h10"/>
-                <path d="M6 10h10"/>
-              </svg>
-              <span>{requestedCount > 0 ? `Mostrador (${requestedCount})` : 'Pedir en Mostrador'}</span>
-            </button>
-
-            {/* Botón de recentrar orientación */}
-            <button
-              onClick={() => onRecenterRef.current?.()}
-              style={{
-                padding: '9px 14px',
-                fontSize: '13px',
-                fontWeight: '600',
-                color: '#cbd5e1',
-                background: 'rgba(15, 23, 42, 0.85)',
-                border: '1px solid rgba(148, 163, 184, 0.3)',
-                borderRadius: '24px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                backdropFilter: 'blur(8px)'
-              }}
-              title="Recentrar orientación"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="22" y1="12" x2="18" y2="12" />
-                <line x1="6" y1="12" x2="2" y2="12" />
-                <line x1="12" y1="6" x2="12" y2="2" />
-                <line x1="12" y1="22" x2="12" y2="18" />
-              </svg>
-              <span>Recentrar</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Barra de Controles Inferior (Abajo) */}
-      {experience !== null && !vrMode && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 1000,
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: '12px',
-            pointerEvents: 'auto'
-          }}
-        >
-          {/* Botón para regresar al selector de experiencia (VR / 2D) */}
+          {/* Botón para regresar al selector de experiencia (VR / 2D), arriba a la derecha */}
           <button
             onClick={() => setExperience(null)}
             style={{
-              padding: '14px 28px',
-              fontSize: '15px',
-              fontWeight: '700',
-              letterSpacing: '1px',
+              padding: '10px 18px',
+              fontSize: '13px',
+              fontWeight: '800',
+              letterSpacing: '0.5px',
               textTransform: 'uppercase',
               color: '#0B1A30',
               background: 'linear-gradient(135deg, #f5b82e 0%, #E5A00D 100%)',
-              border: '2px solid #fcd34d',
-              borderRadius: '50px',
+              border: '1px solid #fcd34d',
+              borderRadius: '24px',
               cursor: 'pointer',
-              boxShadow: '0 4px 20px rgba(229, 160, 13, 0.45)',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
-              transition: 'all 0.2s ease',
-              outline: 'none'
+              gap: '8px',
+              boxShadow: '0 4px 14px rgba(229, 160, 13, 0.4)',
+              pointerEvents: 'auto',
+              transition: 'all 0.2s ease'
             }}
             title="Elegir entre Experiencia VR y Experiencia 2D"
           >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
               <path d="M16 3h5v5" />
               <path d="M4 20 21 3" />
               <path d="M21 16v5h-5" />
               <path d="m15 15 6 6" />
               <path d="M4 4l5 5" />
             </svg>
-            Cambiar experiencia
+            <span>Cambiar experiencia</span>
           </button>
         </div>
       )}
@@ -491,9 +427,9 @@ function AppContent() {
           onClick={exitVR}
           style={{
             position: 'fixed',
-            top: '16px',
-            left: '16px',
-            zIndex: 10000,
+            top: 'max(16px, env(safe-area-inset-top))',
+            left: 'max(16px, env(safe-area-inset-left))',
+            zIndex: 10002,
             padding: '8px 16px',
             fontSize: '13px',
             fontWeight: '600',

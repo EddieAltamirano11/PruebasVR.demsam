@@ -20,6 +20,25 @@ class AudioService {
     }
   }
 
+  /**
+   * iOS Safari solo permite reproducir audio después de un toque real del usuario.
+   * Se invoca en el primer touchend/click: reanuda el contexto y reproduce un buffer mudo.
+   */
+  unlock() {
+    this.init();
+    if (!this.ctx) return false;
+    try {
+      const buffer = this.ctx.createBuffer(1, 1, 22050);
+      const source = this.ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(this.ctx.destination);
+      source.start(0);
+    } catch {
+      // Best-effort
+    }
+    return this.ctx.state === 'running';
+  }
+
   click() {
     this.playClick();
   }

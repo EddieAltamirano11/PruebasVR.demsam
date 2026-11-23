@@ -112,3 +112,45 @@ describe('detectVRSupport', () => {
     expect(await detectVRSupport(fakeWin({ xr, mobile: false }))).toBe('unsupported');
   });
 });
+
+describe('Compatibilidad iPhone (iOS Safari)', () => {
+  it('detecta iPhone e iPadOS (que se anuncia como Macintosh táctil)', async () => {
+    const { isIOSDevice } = await import('../utils/vrSupport.js');
+    expect(isIOSDevice({ navigator: { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X)' } })).toBe(true);
+    expect(isIOSDevice({ navigator: { userAgent: 'Mozilla/5.0 (Macintosh)', platform: 'MacIntel', maxTouchPoints: 5 } })).toBe(true);
+    expect(isIOSDevice({ navigator: { userAgent: 'Mozilla/5.0 (Linux; Android 14)', platform: 'Linux armv8l' } })).toBe(false);
+  });
+
+  it('un iPhone sin WebXR se considera compatible en modo visor (Homido / Cardboard)', async () => {
+    const win = {
+      navigator: { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) Mobile/15E148' },
+      DeviceOrientationEvent: function DeviceOrientationEvent() {},
+      matchMedia: () => ({ matches: true })
+    };
+    expect(await detectVRSupport(win)).toBe('mobile');
+  });
+
+  it('pide el permiso de movimiento de iOS 13+ y reporta el rechazo', async () => {
+    const { requestMotionPermission } = await import('../utils/vrSupport.js');
+    const granted = { DeviceOrientationEvent: { requestPermission: vi.fn().mockResolvedValue('granted') } };
+    const denied = { DeviceOrientationEvent: { requestPermission: vi.fn().mockResolvedValue('denied') } };
+    const android = { DeviceOrientationEvent: function DeviceOrientationEvent() {} };
+    expect(await requestMotionPermission(granted)).toBe('granted');
+    expect(await requestMotionPermission(denied)).toBe('denied');
+    expect(await requestMotionPermission(android)).toBe('not-required');
+  });
+
+  it('muestra el aviso del permiso y el consejo de pantalla de inicio en iPhone', () => {
+    render(
+      <ExperienceLandingView
+        onSelectExperience={() => {}}
+        onLogin={() => {}}
+        vrSupport="mobile"
+        notice="Para la Experiencia VR necesitamos acceso al movimiento del teléfono."
+        showIOSTip
+      />
+    );
+    expect(container.querySelector('[role="alert"]').textContent).toContain('acceso al movimiento');
+    expect(container.textContent).toContain('Agregar a pantalla de inicio');
+  });
+});

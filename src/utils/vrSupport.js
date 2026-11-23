@@ -53,3 +53,37 @@ export function useVRSupport() {
   }, []);
   return status;
 }
+
+/** iPhone / iPod / iPad (incluye iPadOS, que se anuncia como "Macintosh" con pantalla táctil). */
+export const isIOSDevice = (win = globalThis.window) => {
+  const nav = win?.navigator;
+  if (!nav) return false;
+  const ua = nav.userAgent || '';
+  return /iPad|iPhone|iPod/.test(ua) || (nav.platform === 'MacIntel' && (nav.maxTouchPoints || 0) > 1);
+};
+
+/** true si la app se abrió desde el ícono de la pantalla de inicio (sin barras de Safari). */
+export const isStandaloneDisplay = (win = globalThis.window) =>
+  Boolean(
+    win?.navigator?.standalone ||
+      (typeof win?.matchMedia === 'function' && win.matchMedia('(display-mode: standalone)').matches)
+  );
+
+/**
+ * iOS 13+ exige pedir el permiso de movimiento/orientación dentro de un gesto del usuario
+ * (y antes de cualquier await). Devuelve 'granted' | 'denied' | 'not-required'.
+ */
+export async function requestMotionPermission(win = globalThis.window) {
+  const DOE = win?.DeviceOrientationEvent;
+  if (!DOE || typeof DOE.requestPermission !== 'function') return 'not-required';
+  try {
+    const result = await DOE.requestPermission();
+    return result === 'granted' ? 'granted' : 'denied';
+  } catch {
+    return 'denied';
+  }
+}
+
+export const MOTION_PERMISSION_DENIED_MESSAGE =
+  'Para la Experiencia VR necesitamos acceso al movimiento del teléfono. ' +
+  'Si tocaste «No permitir», cierra Safari por completo, vuelve a abrir la página y elige «Permitir».';

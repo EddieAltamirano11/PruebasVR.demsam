@@ -77,3 +77,10 @@ html, body, #root {
   pointer-events: none;
   z-index: 99998;
 }
+
+/* iOS Safari: evitar el zoom por doble toque y el retraso de 300 ms en botones */
+button,
+[role='button'],
+a {
+  touch-action: manipulation;
+}

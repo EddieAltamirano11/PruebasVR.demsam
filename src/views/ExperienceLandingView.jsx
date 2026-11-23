@@ -1,5 +1,6 @@
 import React from 'react';
-import { LogIn, LayoutGrid } from 'lucide-react';
+import { LogIn, LayoutGrid, AlertTriangle, Share } from 'lucide-react';
+import { isIOSDevice, isStandaloneDisplay } from '../utils/vrSupport.js';
 import { BiblioLogo } from '../components/BiblioLogo.jsx';
 import { ExperienceSelector } from '../components/ExperienceSelector.jsx';
 
@@ -8,7 +9,14 @@ import { ExperienceSelector } from '../components/ExperienceSelector.jsx';
  * Se muestra siempre al entrar a la app, encima de la escena 3D que se precarga detrás.
  * Arriba a la derecha: acceso al login del panel administrativo.
  */
-export function ExperienceLandingView({ onSelectExperience, onLogin, isAuthenticated = false, vrSupport }) {
+export function ExperienceLandingView({
+  onSelectExperience,
+  onLogin,
+  isAuthenticated = false,
+  vrSupport,
+  notice = '',
+  showIOSTip = isIOSDevice() && !isStandaloneDisplay()
+}) {
   return (
     <div
       className="fixed inset-0 z-[2000] overflow-y-auto bg-[#0B1A30]/85 backdrop-blur-md font-sans"
@@ -43,9 +51,29 @@ export function ExperienceLandingView({ onSelectExperience, onLogin, isAuthentic
           ¿Cómo quieres recorrer el museo?
         </p>
 
+        {notice && (
+          <div
+            role="alert"
+            className="mt-6 w-full max-w-2xl flex items-start gap-3 text-left px-4 py-3 rounded-xl bg-amber-50 border border-amber-300 text-[#78350f] text-sm leading-relaxed"
+          >
+            <AlertTriangle size={20} className="shrink-0 mt-0.5 text-[#b45309]" />
+            <span>{notice}</span>
+          </div>
+        )}
+
         <div className="mt-8 sm:mt-10 w-full">
           <ExperienceSelector variant="cards" onSelect={onSelectExperience} vrSupport={vrSupport} />
         </div>
+
+        {showIOSTip && (
+          <p className="mt-8 flex items-start gap-2 text-left text-sm text-slate-200 max-w-xl px-4 py-3 rounded-xl bg-white/5 border border-white/10">
+            <Share size={18} className="shrink-0 mt-0.5 text-[#E5A00D]" />
+            <span>
+              <strong className="text-white">En iPhone:</strong> para ver el museo en pantalla completa dentro del visor,
+              toca <strong className="text-white">Compartir</strong> → «Agregar a pantalla de inicio» y ábrelo desde ese ícono.
+            </span>
+          </p>
+        )}
 
         <p className="mt-8 text-xs sm:text-sm text-slate-300 max-w-xl">
           Puedes cambiar de experiencia en cualquier momento con el botón «Cambiar experiencia».

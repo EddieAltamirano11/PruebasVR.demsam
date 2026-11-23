@@ -188,7 +188,7 @@ npm run dev
 ### 5. Suite de Verificación de Calidad (QA)
 Antes de realizar cualquier commit o entrega, ejecuta siempre estos comandos en Linux:
 ```bash
-# 1. Pruebas unitarias completas (91 tests deben pasar)
+# 1. Pruebas unitarias completas (106 tests deben pasar)
 npm test
 
 # 2. Análisis estático de código (0 errores, 0 advertencias)
@@ -232,7 +232,20 @@ Mapa de evidencia para la ficha de pruebas cruzadas. Cada ley indica **qué hace
 
 ---
 
-## 7. Resumen de Decisiones de Diseño para Futuras Modificaciones
+## 7. Inicio de la App y Compatibilidad iPhone / Android
+
+* **Pantalla de inicio:** la app abre siempre en el selector **Experiencia VR / Experiencia 2D** (`ExperienceLandingView`), con «Iniciar sesión» arriba a la derecha (login de `/admin`). Durante el recorrido, «Cambiar experiencia» (arriba a la derecha) regresa al selector.
+* **Detección de VR** (`src/utils/vrSupport.js`): `webxr` (WebXR inmersivo), `mobile` (celular con sensores → visor Homido/Cardboard) o `unsupported` (la tarjeta VR se muestra opaca con «No compatible con este dispositivo»). La consulta a `navigator.xr` tiene un límite de 1.2 s porque algunos navegadores nunca responden.
+* **Android (Chrome):** WebXR nativo; pantalla completa y bloqueo horizontal automáticos.
+* **iPhone / iPad (Safari):** no hay WebXR, así que se usa el modo visor propio (giroscopio + estéreo). Ya **no se usa `webxr-polyfill`**: activaba una ruta WebXR que no pedía el permiso de sensores. El flujo queda así:
+  1. El permiso de movimiento de iOS 13+ (`DeviceOrientationEvent.requestPermission`) se pide dentro del toque y antes de cualquier `await`. Si se rechaza, se vuelve al selector con instrucciones para permitirlo.
+  2. iPhone no permite pantalla completa ni bloquear la orientación, así que `RotateDeviceHint` pide girar el teléfono y la pantalla de inicio sugiere «Agregar a pantalla de inicio» (modo standalone sin barras de Safari).
+  3. El audio se desbloquea con el primer toque real (`SoundFX.unlock()`), los botones fijos respetan el notch (`env(safe-area-inset-*)`) y el render se limita a DPR 2× en iOS.
+* **Requisito:** los sensores de movimiento en iOS **solo funcionan con HTTPS** (producción en Cloudflare). Para probar en un iPhone desde la red local hace falta un túnel HTTPS.
+
+---
+
+## 8. Resumen de Decisiones de Diseño para Futuras Modificaciones
 
 Si necesitas agregar nuevas características en Linux, mantén presentes estas directrices:
 

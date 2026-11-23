@@ -13,6 +13,7 @@ import {
   calculateArtworkModalTransform
 } from './wixarika/index.js';
 import { SoundFX } from '../services/audioService.js';
+import { isIOSDevice } from '../utils/vrSupport.js';
 import { STATION_WORLD_DIRECTIONS, computeShortestYawDelta } from '../utils/vrNavigation.js';
 
 // Estaciones Culturales del Museo Wixarika (HU-03, HU-06 ISO 9241-210)
@@ -243,6 +244,13 @@ function DynamicArtworkModal({
   );
 }
 
+// iPhone tiene DPR 3: renderizar a 2× ahorra ~45% de píxeles (y memoria) en el modo estéreo
+// sin pérdida visible; en el resto se conserva el tope de 2.5×.
+const MAX_DPR =
+  typeof window === 'undefined'
+    ? 2
+    : Math.min(isIOSDevice() ? 2 : 2.5, window.devicePixelRatio || 2);
+
 export function MuseumScene({
   vrMode,
   setVrMode,
@@ -388,7 +396,7 @@ export function MuseumScene({
     <Canvas
       style={{ width: '100%', height: '100%', background: '#0a0f1d' }}
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-      dpr={[1, typeof window !== 'undefined' ? Math.min(2.5, window.devicePixelRatio || 2) : 2]}
+      dpr={[1, MAX_DPR]}
     >
       {/* Rig de camara para modo normal y modo VR:
           Su rotación en Y se gestiona imperativamente en StationCameraController para que
