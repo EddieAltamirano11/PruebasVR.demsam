@@ -3,8 +3,11 @@
  * con fallback offline transparente al catálogo local.
  */
 
+import { isLegacySeed } from './inventoryService.js';
+
+const DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0bXZ6a2xuZ2hmaWJ5dWlnaW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0NTc5OTEsImV4cCI6MjEwODAzMzk5MX0.sOJuMTyTnl-K94yHqTkYhyYV1cui6NyP5B7GsOMcSE0';
 const SUPABASE_URL = import.meta.env?.VITE_SUPABASE_URL || 'https://gtmvzklnghfibyuiginq.supabase.co';
-const SUPABASE_ANON_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY || 'sb_publishable_1qeZBIZO5O5gYR4nD6Cnxw_06kae08F';
+const SUPABASE_ANON_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY || DEFAULT_ANON_KEY;
 
 /**
  * Transforma un registro de Supabase (public.libros + joins opcionales)
@@ -67,7 +70,12 @@ export async function fetchRecommendedBooks(signal) {
       return null;
     }
 
-    return data.map((row, idx) => mapSupabaseBookToVR(row, idx));
+    const nonLegacyData = data.filter((row) => !isLegacySeed(row));
+    if (nonLegacyData.length === 0) {
+      return null;
+    }
+
+    return nonLegacyData.map((row, idx) => mapSupabaseBookToVR(row, idx));
   } catch (error) {
     if (error.name !== 'AbortError') {
       console.warn('[Supabase Books] Error consultando libros:', error.message);

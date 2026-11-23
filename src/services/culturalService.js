@@ -116,16 +116,30 @@ export async function getCultures() {
         const mapped = data.map((row) => ({
           id: row.id,
           nombre: row.nombre,
-          variante: row.variante || row.nombre_comun || '',
-          region: row.region || '',
-          lengua: row.lengua || '',
+          variante: row.variante || row.nombre_comun || (row.nombre.includes('(') ? row.nombre.split('(')[1].replace(')', '').trim() : ''),
+          region: row.region || 'Sierra de Nayarit',
+          lengua: row.lengua || row.lengua_originaria || '',
           descripcion: row.descripcion || '',
           tradiciones: row.tradiciones || row.elementos_sagrados || '',
           activaVR: row.activa_vr ?? row.recomendada_vr ?? true,
           color: row.color || '#E5A00D'
         }));
-        saveLocalCultures(mapped);
-        return mapped;
+
+        // Combinar con las culturas base de Nayarit para asegurar presencia de Wixárika, Náayeri, O'dam y Meshikan
+        const combined = [...mapped];
+        for (const def of DEFAULT_CULTURAS) {
+          const exists = combined.some(
+            (c) => c.id === def.id ||
+                   c.nombre.toLowerCase().includes(def.nombre.toLowerCase()) ||
+                   def.nombre.toLowerCase().includes(c.nombre.toLowerCase())
+          );
+          if (!exists) {
+            combined.push(def);
+          }
+        }
+
+        saveLocalCultures(combined);
+        return combined;
       }
     } catch (err) {
       console.info('[culturalService] Usando almacenamiento local/semilla para culturas:', err?.message);
@@ -157,12 +171,9 @@ export async function addCulture(cultureData) {
       await supabase.from('culturas').insert({
         id: newCulture.id,
         nombre: newCulture.nombre,
-        variante: newCulture.variante,
         region: newCulture.region,
-        lengua: newCulture.lengua,
-        descripcion: newCulture.descripcion,
-        tradiciones: newCulture.tradiciones,
-        activa_vr: newCulture.activaVR
+        lengua_originaria: newCulture.lengua,
+        descripcion: newCulture.descripcion
       });
     } catch (err) {
       console.info('[culturalService] Registro en Supabase diferido a local:', err?.message);
@@ -181,18 +192,15 @@ export async function addCulture(cultureData) {
 export async function updateCulture(id, updatedFields) {
   if (isSupabaseConfigured) {
     try {
-      await supabase
-        .from('culturas')
-        .update({
-          nombre: updatedFields.nombre,
-          variante: updatedFields.variante,
-          region: updatedFields.region,
-          lengua: updatedFields.lengua,
-          descripcion: updatedFields.descripcion,
-          tradiciones: updatedFields.tradiciones,
-          activa_vr: updatedFields.activaVR
-        })
-        .eq('id', id);
+      const payload = {};
+      if (updatedFields.nombre !== undefined) payload.nombre = updatedFields.nombre;
+      if (updatedFields.region !== undefined) payload.region = updatedFields.region;
+      if (updatedFields.lengua !== undefined) payload.lengua_originaria = updatedFields.lengua;
+      if (updatedFields.descripcion !== undefined) payload.descripcion = updatedFields.descripcion;
+
+      if (Object.keys(payload).length > 0) {
+        await supabase.from('culturas').update(payload).eq('id', id);
+      }
     } catch (err) {
       console.info('[culturalService] Actualización en Supabase diferida a local:', err?.message);
     }
