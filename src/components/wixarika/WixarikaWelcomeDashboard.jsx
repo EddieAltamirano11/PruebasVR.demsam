@@ -9,6 +9,7 @@ import { DEFAULT_WIXARIKA_VIDEOS } from './WixarikaVRVideoPanel.jsx';
 import * as THREE from 'three';
 import { DEFAULT_WIXARIKA_BOOKS } from './WixarikaVRBookPanel.jsx';
 import { fetchRecommendedBooks } from '../../services/bookService.js';
+import { WIXARIKA_GASTRONOMY_DISHES } from './wixarikaArtworksData.js';
 
 /**
  * Subcomponente para renderizar la portada del libro con textura segura.
@@ -254,6 +255,174 @@ function DashboardTile({
       >
         {title}
       </Text>
+    </group>
+  );
+}
+
+/**
+ * Tarjeta interactiva 3D de Platillo Tradicional en el Dashboard de Gastronomía
+ */
+function GastronomyDashboardTile({
+  dish,
+  position,
+  width = 1.90,
+  height = 0.56,
+  registerMesh,
+  unregisterMesh,
+  onSelect
+}) {
+  const meshRef = useRef();
+  const [texture, setTexture] = useState(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    if (!dish?.image) return;
+    let isMounted = true;
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+    loader.load(
+      dish.image,
+      (tex) => {
+        if (!isMounted) return;
+        tex.colorSpace = THREE.SRGBColorSpace;
+        setTexture(tex);
+      },
+      undefined,
+      () => {}
+    );
+    return () => {
+      isMounted = false;
+      if (texture) texture.dispose();
+    };
+  }, [dish?.image]);
+
+  useEffect(() => {
+    if (!meshRef.current) return;
+    const obj = meshRef.current;
+    obj.userData = {
+      id: `btn-dash-gastro-${dish.id}`,
+      dish,
+      onClick: () => {
+        SoundFX.playClick();
+        onSelect?.(dish);
+      },
+      onSelect: () => {
+        SoundFX.playClick();
+        onSelect?.(dish);
+      },
+      onPointerEnter: () => setIsHovered(true),
+      onPointerLeave: () => setIsHovered(false)
+    };
+
+    registerMesh?.(obj);
+    return () => {
+      unregisterMesh?.(obj);
+    };
+  }, [dish, onSelect, registerMesh, unregisterMesh]);
+
+  const bgIdle = '#fbf7ee';
+  const bgHover = '#fef3c7';
+  const borderColor = isHovered ? '#b45309' : '#d4af37';
+
+  return (
+    <group position={position}>
+      {/* Marco de cantera/oro */}
+      <mesh position={[0, 0, -0.001]}>
+        <planeGeometry args={[width + 0.024, height + 0.024]} />
+        <meshBasicMaterial color={borderColor} />
+      </mesh>
+
+      {/* Superficie base interactiva */}
+      <mesh
+        ref={meshRef}
+        position={[0, 0, 0]}
+        onClick={() => {
+          SoundFX.playClick();
+          onSelect?.(dish);
+        }}
+        onPointerOver={() => setIsHovered(true)}
+        onPointerOut={() => setIsHovered(false)}
+      >
+        <planeGeometry args={[width, height]} />
+        <meshBasicMaterial color={isHovered ? bgHover : bgIdle} />
+      </mesh>
+
+      {/* Miniatura fotográfica con marco */}
+      <group position={[-width / 2 + 0.36, 0, 0.003]}>
+        <mesh position={[0, 0, -0.001]}>
+          <planeGeometry args={[0.62, 0.46]} />
+          <meshBasicMaterial color="#d4af37" />
+        </mesh>
+        <mesh position={[0, 0, 0.001]}>
+          <planeGeometry args={[0.58, 0.42]} />
+          {texture ? (
+            <meshBasicMaterial map={texture} toneMapped={false} />
+          ) : (
+            <meshBasicMaterial color="#3d2514" />
+          )}
+        </mesh>
+      </group>
+
+      {/* Rombos Tsikuri en esquinas */}
+      <group position={[0, 0, 0.003]}>
+        <TsikuriDiamond
+          size={0.035}
+          position={[-width / 2 + 0.035, height / 2 - 0.035, 0]}
+          colors={['#d4af37', '#b45309', '#ffffff']}
+        />
+        <TsikuriDiamond
+          size={0.035}
+          position={[width / 2 - 0.035, height / 2 - 0.035, 0]}
+          colors={['#d4af37', '#b45309', '#ffffff']}
+        />
+        <TsikuriDiamond
+          size={0.035}
+          position={[-width / 2 + 0.035, -height / 2 + 0.035, 0]}
+          colors={['#d4af37', '#b45309', '#ffffff']}
+        />
+        <TsikuriDiamond
+          size={0.035}
+          position={[width / 2 - 0.035, -height / 2 + 0.035, 0]}
+          colors={['#d4af37', '#b45309', '#ffffff']}
+        />
+      </group>
+
+      {/* Textos informativos a la derecha */}
+      <group position={[-width / 2 + 0.72, 0, 0.004]}>
+        <Text
+          position={[0, 0.16, 0]}
+          fontSize={0.058}
+          color="#1c1917"
+          anchorX="left"
+          anchorY="middle"
+          maxWidth={width - 0.78}
+        >
+          {dish.title}
+        </Text>
+
+        <Text
+          position={[0, 0.06, 0]}
+          fontSize={0.044}
+          color="#b45309"
+          anchorX="left"
+          anchorY="middle"
+          maxWidth={width - 0.78}
+        >
+          {dish.nativeName}
+        </Text>
+
+        <Text
+          position={[0, -0.09, 0]}
+          fontSize={0.034}
+          color="#44403c"
+          anchorX="left"
+          anchorY="middle"
+          maxWidth={width - 0.78}
+          lineHeight={1.25}
+        >
+          {dish.description?.slice(0, 95) + '...'}
+        </Text>
+      </group>
     </group>
   );
 }
@@ -667,26 +836,58 @@ export function WixarikaWelcomeDashboard({
             </mesh>
           </group>
 
-          {/* Palabras Clave y Contenido en Tipografía Maximizada */}
-          <group position={[0, 0.05, 0]}>
-            {(activeStation.bullets || activeStation.description?.split('\n') || []).map(
-              (bullet, idx) => (
-                <Text
-                  key={idx}
-                  position={[0, 0.22 - idx * 0.26, 0]}
-                  fontSize={0.125}
-                  color="#1c1917"
-                  anchorX="center"
-                  anchorY="middle"
-                  maxWidth={panelWidth * 0.88}
-                  textAlign="center"
-                  lineHeight={1.45}
-                >
-                  {bullet}
-                </Text>
-              )
-            )}
-          </group>
+          {/* Palabras Clave y Contenido Cultural */}
+          {currentView === 'gastronomia' ? (
+            <group position={[0, 0.05, 0]}>
+              <Text
+                position={[0, 0.46, 0]}
+                fontSize={0.075}
+                color="#78350f"
+                anchorX="center"
+                anchorY="middle"
+              >
+                MUESTRA DE ALIMENTOS SAGRADOS Y TRADICIONALES DE NAYARIT
+              </Text>
+              {WIXARIKA_GASTRONOMY_DISHES.map((dish, idx) => {
+                const col = idx % 3;
+                const row = Math.floor(idx / 3);
+                const posX = -1.98 + col * 1.98;
+                const posY = 0.14 - row * 0.58;
+                return (
+                  <GastronomyDashboardTile
+                    key={dish.id}
+                    dish={dish}
+                    position={[posX, posY, 0]}
+                    width={1.90}
+                    height={0.52}
+                    registerMesh={registerMesh}
+                    unregisterMesh={unregisterMesh}
+                    onSelect={() => {}}
+                  />
+                );
+              })}
+            </group>
+          ) : (
+            <group position={[0, 0.05, 0]}>
+              {(activeStation.bullets || activeStation.description?.split('\n') || []).map(
+                (bullet, idx) => (
+                  <Text
+                    key={idx}
+                    position={[0, 0.22 - idx * 0.26, 0]}
+                    fontSize={0.125}
+                    color="#1c1917"
+                    anchorX="center"
+                    anchorY="middle"
+                    maxWidth={panelWidth * 0.88}
+                    textAlign="center"
+                    lineHeight={1.45}
+                  >
+                    {bullet}
+                  </Text>
+                )
+              )}
+            </group>
+          )}
 
           {/* Cédula de Identidad y Sede Cultural */}
           <group position={[0, -0.72, 0]}>

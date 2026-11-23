@@ -196,6 +196,155 @@ export const WIXARIKA_ARTWORKS = [
   }
 ];
 
+// =========================================================================
+// 3. GASTRONOMÍA TRADICIONAL Y ALIMENTOS SAGRADOS DE NAYARIT
+// =========================================================================
+export const WIXARIKA_GASTRONOMY_DISHES = [
+  {
+    id: 'gastro_tortillas',
+    order: 1,
+    stationName: 'estacion_gastro_1_tortillas',
+    canvasNodeName: 'lienzo_gastro_tortillas',
+    stationPosition: [6.80, 2.30, -1.80],
+    category: 'Gastronomía Tradicional',
+    alias: 'Sustento Sagrado de Maíz',
+    title: 'TORTILLAS DE MAÍZ CRIOLLO',
+    nativeName: '«Mewi» · Tortillas Ceremoniales de Comal',
+    subtitle: 'NIXTAMALIZACIÓN ANCESTRAL Y BASE DEL KALITÜEY',
+    image: '/texturas/cuadro_gastro_tortillas.jpg',
+    cedulaImage: '/texturas/cedula_gastro_tortillas.png',
+    letreroImage: '/texturas/letrero_gastro_tortillas.png',
+    discoImage: '/texturas/disco_food_tortillas.png',
+    matcher: (name) => name.includes('tortilla'),
+    keywords: [
+      '• Maíz Criollo de Cinco Colores Nixtamalizado en Comal',
+      '• Base Nutricia y Espiritual de la Comunidad Serrana',
+      '• Elaboración Femenina con Metate y Fuego Sagrado'
+    ],
+    description: 'Las tortillas de maíz criollo son la base alimenticia y ritual de las comunidades originarias de Nayarit. Hechas a mano sobre comales de barro y cocidas con leña de roble, representan la comunión diaria entre el esfuerzo humano, el agua y el don fecundo de Tatei Niwetsika.'
+  },
+  {
+    id: 'gastro_caldo_toro',
+    order: 2,
+    stationName: 'estacion_gastro_2_caldo_toro',
+    canvasNodeName: 'lienzo_gastro_caldo_toro',
+    stationPosition: [7.20, 2.30, -0.60],
+    category: 'Gastronomía Tradicional',
+    alias: 'Platillo Ritual Comunitario',
+    title: 'CALDO DE TORO CEREMONIAL',
+    nativeName: '«Caldo de Toro» · Comida de Grandes Fiestas',
+    subtitle: 'PREPARACIÓN COLECTIVA EN FOGONES COMUNALES',
+    image: '/texturas/cuadro_gastro_caldo_toro.jpg',
+    cedulaImage: '/texturas/cedula_gastro_caldo_toro.png',
+    letreroImage: '/texturas/letrero_gastro_caldo_toro.png',
+    discoImage: '/texturas/disco_food_caldo.png',
+    matcher: (name) => name.includes('caldo') || name.includes('toro'),
+    keywords: [
+      '• Alimento Comunitario para Peregrinos y Jicareros',
+      '• Cocción Lenta en Grandes Ollas de Barro con Hierbas Serranas',
+      '• Consagración Ritual durante el Tatei Neixa'
+    ],
+    description: 'El caldo de toro ceremonial es un guiso colectivo reservado para las solemnidades más trascendentes. Preparado en ollas monumentales al calor de leña viva con chiles secos y quelites serranos, nutre a toda la comunidad tras extenuantes jornadas de rezo y danza sagrada.'
+  },
+  {
+    id: 'gastro_tamales',
+    order: 3,
+    stationName: 'estacion_gastro_3_tamales',
+    canvasNodeName: 'lienzo_gastro_tamales',
+    stationPosition: [7.20, 2.30, 0.60],
+    category: 'Gastronomía Tradicional',
+    alias: 'Envueltos de Mazorca',
+    title: 'TAMALES DE TOTOMOXLE',
+    nativeName: '«Tamales Tradicionales» de Maíz Serrano',
+    subtitle: 'COCCIÓN AL VAPOR EN HOJA DE MAZORCA SECA',
+    image: '/texturas/cuadro_gastro_tamales.jpg',
+    cedulaImage: '/texturas/cedula_gastro_tamales.png',
+    letreroImage: '/texturas/letrero_gastro_tamales.png',
+    discoImage: '/texturas/disco_food_tamales.png',
+    matcher: (name) => name.includes('tamal'),
+    keywords: [
+      '• Envoltura Sagrada en Hoja de Totomoxtle',
+      '• Masa de Maíz Morado, Ceniza y Manteca Tradicional',
+      '• Ofrenda Imprescindible para Deidades y Ancestros'
+    ],
+    description: 'Elaborados con masa sazonada envuelta cuidadosamente en hojas secas de totomoxtle. En la cosmovisión serrana, los tamales representan la protección del germen de la vida; son ofrendados en jícaras ceremoniales a los bultos sagrados antes de ser degustados en comunidad.'
+  },
+  {
+    id: 'gastro_atole_tejuino',
+    order: 4,
+    stationName: 'estacion_gastro_4_atole_tejuino',
+    canvasNodeName: 'lienzo_gastro_atole_tejuino',
+    stationPosition: [6.80, 2.30, 1.80],
+    category: 'Gastronomía Tradicional',
+    alias: 'Bebida Sagrada de Nawá',
+    title: 'TEJUINO Y ATOLE DE MAÍZ',
+    nativeName: '«Nawá» · Tejuino Ceremonial Fermentado',
+    subtitle: 'ENERGÍA ESPIRITUAL Y BEBIDA DE HERMANDAD',
+    image: '/texturas/cuadro_gastro_atole_tejuino.jpg',
+    cedulaImage: '/texturas/cedula_gastro_atole_tejuino.png',
+    letreroImage: '/texturas/letrero_gastro_atole.png',
+    discoImage: '/texturas/disco_food_atole.png',
+    matcher: (name) => name.includes('tejuino') || name.includes('atole') || name.includes('nawa'),
+    keywords: [
+      '• Maíz Germinado y Fermentado en Ollas de Barro',
+      '• Vigor Espiritual que Acompaña los Cantos del Mara\'akame',
+      '• Símbolo de Unión Colectiva e Identidad Indígena'
+    ],
+    description: 'El tejuino tradicional (nawá) y los atoles calientes son bebidas de profunda raíz ceremonial. Su fermentación natural a base de maíz nacido proporciona la vitalidad necesaria para soportar los ayunos y vigilias nocturnas del ciclo ceremonial en la sierra de Nayarit.'
+  },
+  {
+    id: 'gastro_perruri',
+    order: 5,
+    stationName: 'estacion_gastro_5_perruri',
+    canvasNodeName: 'lienzo_gastro_perruri',
+    stationPosition: [6.00, 2.30, 2.60],
+    category: 'Gastronomía Tradicional',
+    alias: 'Golosina y Ofrenda Ancestral',
+    title: 'PERRURI DE SEMILLAS',
+    nativeName: '«Perruri» · Maíz Tostado y Pepita Dulce',
+    subtitle: 'CONFITERÍA TRADICIONAL Y ENERGÍA NATURAL',
+    image: '/texturas/cuadro_gastro_perruri.jpg',
+    cedulaImage: '/texturas/cedula_gastro_perruri.png',
+    letreroImage: '/texturas/letrero_gastro_perruri.png',
+    discoImage: '/texturas/disco_food_perruri.png',
+    matcher: (name) => name.includes('perruri'),
+    keywords: [
+      '• Harina de Maíz Tostado Mezclada con Pepitas de Calabaza',
+      '• Endulzado Natural con Piloncillo de Molienda Serrana',
+      '• Alimento Energético de Alta Durabilidad'
+    ],
+    description: 'El perruri es una de las preparaciones más representativas del ingenio culinario indígena. Combina el grano de maíz tostado con pepitas molidas y miel o piloncillo en una pasta compacta y energética que deleita tanto a niños como a ancianos en días festivos.'
+  },
+  {
+    id: 'gastro_maiz_tostado',
+    order: 6,
+    stationName: 'estacion_gastro_6_maiz_tostado',
+    canvasNodeName: 'lienzo_gastro_maiz_tostado',
+    stationPosition: [6.00, 2.30, -2.60],
+    category: 'Gastronomía Tradicional',
+    alias: 'Provisión del Peregrino',
+    title: 'MAÍZ TOSTADO Y PINOLE',
+    nativeName: '«Haute» · Maíz Tostado al Comal',
+    subtitle: 'ALIMENTO DE TRAVESÍA HACIA WIRIKUTA',
+    image: '/texturas/cuadro_gastro_maiz_tostado.jpg',
+    cedulaImage: '/texturas/cedula_gastro_maiz_tostado.png',
+    letreroImage: '/texturas/letrero_gastro_maiz_tostado.png',
+    discoImage: '/texturas/disco_food_maiz_tostado.png',
+    matcher: (name) => name.includes('tostado') || name.includes('pinole'),
+    keywords: [
+      '• Grano Sagrado Expandido al Fuego Vivo del Comal',
+      '• Provisión Ligera y Nutricia para la Larga Marcha',
+      '• Testigo de la Ruta Hacia los Santuarios del Desierto'
+    ],
+    description: 'Los granos de maíz tostados en comal constituyen el bastimento fundamental del caminante. Ligeros y resistentes al tiempo, son llevados en morrales de estambre por los jicareros durante su cruce por los cañones de Nayarit rumbo a Wirikuta.'
+  }
+];
+
+export const ALL_WIXARIKA_EXHIBITION_ITEMS = [
+  ...WIXARIKA_ARTWORKS,
+  ...WIXARIKA_GASTRONOMY_DISHES
+];
+
 /**
  * Busca y retorna la obra correspondiente al nombre de una estación, lienzo o identificador
  */
@@ -203,11 +352,11 @@ export function findArtworkByNodeName(nodeName) {
   if (!nodeName) return null;
   const lower = nodeName.toLowerCase();
   return (
-    WIXARIKA_ARTWORKS.find(
+    ALL_WIXARIKA_EXHIBITION_ITEMS.find(
       (art) =>
         art.stationName.toLowerCase() === lower ||
         art.canvasNodeName.toLowerCase() === lower ||
-        art.matcher(lower)
+        (art.matcher && art.matcher(lower))
     ) || null
   );
 }
@@ -216,7 +365,7 @@ export function findArtworkByNodeName(nodeName) {
  * Obtiene una obra por su ID único
  */
 export function getArtworkById(id) {
-  return WIXARIKA_ARTWORKS.find((art) => art.id === id) || null;
+  return ALL_WIXARIKA_EXHIBITION_ITEMS.find((art) => art.id === id) || null;
 }
 
 /**

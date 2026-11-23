@@ -11,6 +11,7 @@ import {
   WixarikaVRButton,
   WixarikaWelcomeDashboard,
   WixarikaArtworkModal,
+  WixarikaGastronomyExhibition,
   calculateArtworkModalTransform
 } from './wixarika/index.js';
 import { SoundFX } from '../services/audioService.js';
@@ -142,6 +143,15 @@ function StaticMuseum({
       {/* Modelo 3D del Museo Wixarika v14 con detección e interactividad en los 9 cuadros */}
       <Suspense fallback={null}>
         <MuseumModel
+          onSelectArtwork={onSelectArtwork}
+          registerMesh={registerMesh}
+          unregisterMesh={unregisterMesh}
+        />
+      </Suspense>
+
+      {/* Exhibición 3D del Pabellón Gastronómico con las 6 fotografías tradicionales de Nayarit */}
+      <Suspense fallback={null}>
+        <WixarikaGastronomyExhibition
           onSelectArtwork={onSelectArtwork}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}

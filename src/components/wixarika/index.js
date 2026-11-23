@@ -10,3 +10,4 @@ export * from './WixarikaVRVideoPanel.jsx';
 export * from './WixarikaVRVideoPlayer.jsx';
 export * from './wixarikaArtworksData.js';
 export * from './WixarikaArtworkModal.jsx';
+export * from './WixarikaGastronomyExhibition.jsx';

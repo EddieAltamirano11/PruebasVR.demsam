@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext.jsx';
 import {
   LayoutGrid,
   BookOpen,
-  Landmark,
   Ruler,
   Glasses,
   LogOut,
@@ -54,11 +53,6 @@ export function AdminLayout({ activeTab, onSelectTab, children, onSignOut }) {
       icon: BookOpen
     },
     {
-      id: 'cultures',
-      label: 'Gestión de Culturas',
-      icon: Landmark
-    },
-    {
       id: 'wireframes',
       label: 'Wireframes VR',
       icon: Ruler
@@ -76,8 +70,6 @@ export function AdminLayout({ activeTab, onSelectTab, children, onSignOut }) {
         return 'Panel de Control General';
       case 'books':
         return 'Inventario de Libros — Culturas Vivas';
-      case 'cultures':
-        return 'Gestión de Culturas Vivas de Nayarit';
       case 'wireframes':
         return 'Wireframes del Espacio VR';
       case 'vr':

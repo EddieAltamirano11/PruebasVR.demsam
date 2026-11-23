@@ -23,69 +23,90 @@ import {
   Library,
   Eye,
   SlidersHorizontal,
-  Bell
+  Bell,
+  Utensils
 } from 'lucide-react';
 
 /**
- * Libros de demostración precargados para cuando se active la vista previa
- * mientras se alimenta la base de datos real en Supabase.
+ * Libros del fondo oficial de la Biblioteca Solón Argüello
  */
 const MOCK_RECOMMENDED_BOOKS = [
   {
-    id: 'b1',
+    id: 'relatos-huicholes',
     stationId: 'deidades',
-    titulo: "El Fuego Sagrado y los Cantos del Mara'akame",
-    autor: 'Ramón Medina Silva',
-    editorial: 'Fondo Editorial Indígena de Nayarit',
-    anio: 2021,
-    isbn: '978-607-00-1122-1',
-    stock: 3,
-    disponible: true,
-    cultura: 'Wixárika (Huichol)',
-    seccion: 'Sala de Culturas Vivas & VR (SEC-VR-01)',
-    descripcionCorta: 'Estudio antropológico sobre los cantos rituales a Tatewari y la cosmovisión sagrada de Wirikuta.'
-  },
-  {
-    id: 'b2',
-    stationId: 'gastronomia',
-    titulo: 'Sabores del Nayar: Etnobotánica y Cocina Tradicional',
-    autor: 'Dra. Luisa Gómez Tagle',
-    editorial: 'Ediciones INAH / Universidad Autónoma de Nayarit',
-    anio: 2019,
-    isbn: '978-607-16-4455-2',
-    stock: 2,
-    disponible: true,
-    cultura: 'Wixárika y Cora (Náayeri)',
-    seccion: 'Acervo de Patrimonio (SEC-PAT-02)',
-    descripcionCorta: 'Recopilación de recetas ceremoniales, tamales de maíz morado y atoles ancestrales de la sierra.'
-  },
-  {
-    id: 'b3',
-    stationId: 'fiestas',
-    titulo: 'Fiestas Sagradas de la Sierra Wixárika: El Ciclo del Maíz y el Hikuri',
-    autor: 'Miguel León-Portilla & Colaboradores',
-    editorial: 'El Colegio Nacional / Secretaría de Cultura',
-    anio: 2020,
-    isbn: '978-968-16-0331-5',
+    titulo: 'Relatos Huicholes',
+    autor: 'Lucila Mondragón, Jacqueline Tello y Argelia Valdez (Compiladoras)',
+    editorial: 'Consejo Nacional para la Cultura y las Artes (CONACULTA)',
+    anio: 1996,
+    isbn: '968-29-8518-8',
+    codigo: '968-29-8518-8',
     stock: 4,
     disponible: true,
-    cultura: 'Wixárika (Huichol)',
-    seccion: 'Sala de Lectura General (SEC-LEC-03)',
-    descripcionCorta: 'Documentación fotográfica y relatos de la Fiesta del Tambor (Tepu) y la peregrinación sagrada.'
+    cultura: 'Wixárika',
+    seccion: 'Sala de Culturas Vivas & VR (SEC-VR-01)',
+    portadaUrl: '/portadas/portada_relatos_huicholes.jpg',
+    descripcionCorta: 'Recopilación bilingüe de la tradición oral, mitos del origen del sol y la luna, el fuego de Tatewari y el maíz sagrado.'
   },
   {
-    id: 'b4',
-    stationId: 'biblioteca',
-    titulo: 'Manual de Mediación Cultural y Fomento Lector en Bibliotecas',
-    autor: 'Mtra. Elena Rivas',
-    editorial: 'Biblioteca Pública Solón Argüello',
-    anio: 2023,
-    isbn: '978-607-99-8877-0',
-    stock: 5,
+    id: 'cultura-wixarika-desafios',
+    stationId: 'fiestas',
+    titulo: 'La cultura wixárika ante los desafíos del mundo actual',
+    autor: 'Sarah Corona Berkin & Rozenn Le Mûr (Coordinadoras)',
+    editorial: 'Consejo Nacional para la Cultura y las Artes (CONACULTA)',
+    anio: 2015,
+    isbn: '978-607-8423-62-0',
+    codigo: '978-607-8423-62-0',
+    stock: 3,
     disponible: true,
-    cultura: 'General / Intercultural',
-    seccion: 'Kiosco Lector (SEC-VR-01)',
-    descripcionCorta: 'Estrategias de vinculación entre experiencias inmersivas 3D y la literatura física.'
+    cultura: 'Wixárika',
+    seccion: 'Sala de Culturas Vivas & VR (SEC-VR-01)',
+    portadaUrl: '/portadas/portada_cultura_wixarika_desafios.jpg',
+    descripcionCorta: 'Análisis antropológico sobre la identidad, comunicación intercultural y negociación del pueblo wixárika frente a la sociedad contemporánea.'
+  }
+];
+
+export const GASTRONOMY_DISHES_PREVIEW = [
+  {
+    id: 'gastro-tortillas',
+    title: 'Tortillas de Maíz Criollo',
+    nativeName: '«Mewi» · Tortillas Ceremoniales',
+    image: '/texturas/cuadro_gastro_tortillas.jpg',
+    desc: 'Maíz criollo nixtamalizado y cocido a mano sobre comal con leña de roble.'
+  },
+  {
+    id: 'gastro-caldo',
+    title: 'Caldo de Toro Ceremonial',
+    nativeName: '«Caldo de Toro» de Grandes Fiestas',
+    image: '/texturas/cuadro_gastro_caldo_toro.jpg',
+    desc: 'Preparado en ollas de barro comunitarias para alimentar a los jicareros.'
+  },
+  {
+    id: 'gastro-tamales',
+    title: 'Tamales de Totomoxtle',
+    nativeName: '«Tamales Tradicionales» de Maíz',
+    image: '/texturas/cuadro_gastro_tamales.jpg',
+    desc: 'Cocción al vapor en hoja de totomoxtle, ofrenda a deidades y ancestros.'
+  },
+  {
+    id: 'gastro-tejuino',
+    title: 'Tejuino y Atole de Maíz',
+    nativeName: '«Nawá» · Tejuino Ceremonial Fermentado',
+    image: '/texturas/cuadro_gastro_atole_tejuino.jpg',
+    desc: 'Bebida sagrada fermentada que brinda vitalidad en los cantos del Mara\'akame.'
+  },
+  {
+    id: 'gastro-perruri',
+    title: 'Perruri de Semillas',
+    nativeName: '«Perruri» · Maíz Tostado y Pepita Dulce',
+    image: '/texturas/cuadro_gastro_perruri.jpg',
+    desc: 'Pasta tradicional dulce de maíz tostado con pepitas molidas y miel serrana.'
+  },
+  {
+    id: 'gastro-tostado',
+    title: 'Maíz Tostado y Pinole',
+    nativeName: '«Haute» · Bastimento del Caminante',
+    image: '/texturas/cuadro_gastro_maiz_tostado.jpg',
+    desc: 'Provisión sagrada ligera y nutritiva transportada en morrales hacia Wirikuta.'
   }
 ];
 
@@ -403,6 +424,43 @@ export function RecommendedBooksPanel({
 
       {/* 4. CONTENIDO PRINCIPAL: LISTADO O ESTADO VACÍO PREPARADO */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
+        {/* SECCIÓN ESPECIAL: MUESTRA FOTOGRÁFICA DE GASTRONOMÍA TRADICIONAL */}
+        {(activeStation?.id === 'gastronomia' || selectedStationFilter === 'gastronomia') && (
+          <div className="p-3.5 rounded-xl bg-gradient-to-b from-[#1c130b] to-[#0f172a] border border-amber-500/40 shadow-sm space-y-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-amber-600/30">
+              <Utensils size={15} className="text-[#E5A00D]" />
+              <h4 className="text-xs font-bold text-amber-200">
+                Fotogalería del Acervo Gastronómico de Nayarit
+              </h4>
+            </div>
+            <p className="text-[11px] text-amber-100/70 leading-relaxed">
+              Fotografías en alta resolución y cédulas antropológicas de los 6 alimentos sagrados documentados en la sala 3D:
+            </p>
+            <div className="grid grid-cols-2 gap-2.5">
+              {GASTRONOMY_DISHES_PREVIEW.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-lg bg-slate-900/90 border border-amber-900/40 p-2 flex flex-col gap-1.5 hover:border-[#E5A00D]/60 transition-colors shadow-xs"
+                >
+                  <div className="relative aspect-4/3 w-full rounded overflow-hidden bg-black/50 border border-amber-700/40">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[11px] font-bold text-amber-100 line-clamp-1">{item.title}</p>
+                    <p className="text-[10px] text-amber-400 font-medium italic line-clamp-1">{item.nativeName}</p>
+                    <p className="text-[9px] text-slate-300 line-clamp-2 leading-tight">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {filteredBooks.length > 0 ? (
           <>
             <div className="flex items-center justify-between text-xs text-slate-400 px-1">
@@ -417,41 +475,62 @@ export function RecommendedBooksPanel({
             </div>
 
             {filteredBooks.map((book) => {
+              const coverImg =
+                book.portada_url ||
+                book.portadaUrl ||
+                (book.isbn === '968-29-8518-8'
+                  ? '/portadas/portada_relatos_huicholes.jpg'
+                  : book.isbn === '978-607-8423-62-0'
+                  ? '/portadas/portada_cultura_wixarika_desafios.jpg'
+                  : null);
+
               return (
                 <article
                   key={book.id}
                   className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-[#E5A00D]/50 hover:bg-slate-900 transition-all shadow-sm flex flex-col justify-between gap-3"
                 >
-                  <div className="space-y-1.5">
-                    {/* Título del libro */}
-                    <h4 className="text-sm sm:text-base font-bold text-white leading-snug">
-                      {book.titulo || book.title}
-                    </h4>
+                  <div className="flex gap-3.5 items-start">
+                    {coverImg && (
+                      <div className="w-16 h-22 shrink-0 rounded-lg overflow-hidden border border-amber-600/40 bg-black/50 shadow-md">
+                        <img
+                          src={coverImg}
+                          alt={book.titulo || book.title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      {/* Título del libro */}
+                      <h4 className="text-sm sm:text-base font-bold text-white leading-snug">
+                        {book.titulo || book.title}
+                      </h4>
 
-                    {/* Autor */}
-                    <p className="text-xs text-amber-300 font-medium">
-                      Autor: <span className="text-slate-200">{book.autor || book.author}</span>
-                    </p>
+                      {/* Autor */}
+                      <p className="text-xs text-amber-300 font-medium">
+                        Autor: <span className="text-slate-200">{book.autor || book.author}</span>
+                      </p>
 
-                    {/* Metadatos: Cultura, Código y Existencias */}
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                      {book.cultura && (
-                        <span className="px-2 py-0.5 rounded-md bg-[#0B1A30] border border-amber-500/40 text-[11px] font-semibold text-amber-300">
-                          {book.cultura}
+                      {/* Metadatos: Cultura, Código y Existencias */}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                        {book.cultura && (
+                          <span className="px-2 py-0.5 rounded-md bg-[#0B1A30] border border-amber-500/40 text-[11px] font-semibold text-amber-300">
+                            {book.cultura}
+                          </span>
+                        )}
+                        <span className="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-[11px] font-mono text-slate-300">
+                          {book.codigo || book.isbn || book.callNumber || 'SEC-VR-01'}
                         </span>
-                      )}
-                      <span className="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-[11px] font-mono text-slate-300">
-                        {book.codigo || book.isbn || book.callNumber || 'SEC-VR-01'}
-                      </span>
-                      {typeof book.stock === 'number' && (
-                        <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
-                          book.stock > 0
-                            ? 'bg-emerald-950/70 border border-emerald-800/80 text-emerald-400'
-                            : 'bg-rose-950/70 border border-rose-800/80 text-rose-400'
-                        }`}>
-                          {book.stock > 0 ? `${book.stock} en sala` : 'En préstamo'}
-                        </span>
-                      )}
+                        {typeof book.stock === 'number' && (
+                          <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                            book.stock > 0
+                              ? 'bg-emerald-950/70 border border-emerald-800/80 text-emerald-400'
+                              : 'bg-rose-950/70 border border-rose-800/80 text-rose-400'
+                          }`}>
+                            {book.stock > 0 ? `${book.stock} en sala` : 'En préstamo'}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 

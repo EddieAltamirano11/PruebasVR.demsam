@@ -7,7 +7,6 @@ import { getRequestedBooks, subscribeRequestedBooks } from './services/counterCh
 import { AdminLayout } from './components/AdminLayout.jsx';
 import { DashboardView } from './views/DashboardView.jsx';
 import { BooksManagementView } from './views/BooksManagementView.jsx';
-import { CulturesManagementView } from './views/CulturesManagementView.jsx';
 import { WireframesView } from './views/WireframesView.jsx';
 import { VRPrototypeView } from './views/VRPrototypeView.jsx';
 import { LoginView } from './views/LoginView.jsx';
@@ -226,7 +225,6 @@ function AppContent() {
           />
         )}
         {activeTab === 'books' && <BooksManagementView />}
-        {activeTab === 'cultures' && <CulturesManagementView />}
         {activeTab === 'wireframes' && <WireframesView />}
         {activeTab === 'vr' && (
           <VRPrototypeView onBackToDashboard={() => setActiveTab('dashboard')} />

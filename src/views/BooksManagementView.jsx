@@ -408,8 +408,18 @@ export function BooksManagementView() {
                 </tr>
               ) : filteredBooks.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center py-12 text-slate-400">
-                    No se encontraron libros que coincidan con los filtros seleccionados.
+                  <td colSpan="6" className="text-center py-14 text-slate-400">
+                    <div className="flex flex-col items-center justify-center gap-2.5 max-w-md mx-auto">
+                      <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[#E5A00D]">
+                        <BookOpen size={24} />
+                      </div>
+                      <p className="font-bold text-slate-700 text-sm">
+                        Inventario vacío en espera del catálogo oficial
+                      </p>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Se han retirado los registros de prueba. Utiliza el botón <strong>«+ Agregar Libro»</strong> para ingresar los libros definitivos de las Culturas Vivas de Nayarit.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -420,16 +430,40 @@ export function BooksManagementView() {
                       key={book.id}
                       className="hover:bg-slate-50/80 transition-colors"
                     >
-                      {/* Título, Autor e ISBN */}
+                      {/* Título, Portada, Autor e ISBN */}
                       <td className="py-4 px-6">
-                        <div className="font-bold text-sm text-[#0B1A30]">
-                          {book.titulo}
-                        </div>
-                        <div className="text-slate-600 font-medium mt-0.5">
-                          {book.autor} {book.anio ? `(${book.anio})` : ''}
-                        </div>
-                        <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                          {book.isbn || book.codigo || 'S/N'} · {book.editorial || 'Fondo Nayarit'}
+                        <div className="flex items-center gap-3">
+                          {(book.portada_url ||
+                            book.portadaUrl ||
+                            (book.isbn === '968-29-8518-8'
+                              ? '/portadas/portada_relatos_huicholes.jpg'
+                              : book.isbn === '978-607-8423-62-0'
+                              ? '/portadas/portada_cultura_wixarika_desafios.jpg'
+                              : null)) && (
+                            <img
+                              src={
+                                book.portada_url ||
+                                book.portadaUrl ||
+                                (book.isbn === '968-29-8518-8'
+                                  ? '/portadas/portada_relatos_huicholes.jpg'
+                                  : '/portadas/portada_cultura_wixarika_desafios.jpg')
+                              }
+                              alt={book.titulo}
+                              className="w-10 h-14 object-cover rounded-md border border-slate-200 shadow-xs shrink-0 bg-slate-100"
+                              loading="lazy"
+                            />
+                          )}
+                          <div>
+                            <div className="font-bold text-sm text-[#0B1A30]">
+                              {book.titulo}
+                            </div>
+                            <div className="text-slate-600 font-medium mt-0.5">
+                              {book.autor} {book.anio ? `(${book.anio})` : ''}
+                            </div>
+                            <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                              {book.isbn || book.codigo || 'S/N'} · {book.editorial || 'Fondo Nayarit'}
+                            </div>
+                          </div>
                         </div>
                       </td>
 

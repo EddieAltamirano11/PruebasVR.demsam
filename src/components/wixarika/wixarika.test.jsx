@@ -146,7 +146,7 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
 
   describe('Biblioteca Solón Argüello - Book Catalogue Integrity', () => {
     it('should have a curated list of Wixárika books for Eddie & Luis Carlos', () => {
-      expect(DEFAULT_WIXARIKA_BOOKS.length).toBeGreaterThanOrEqual(5);
+      expect(DEFAULT_WIXARIKA_BOOKS.length).toBe(2);
 
       DEFAULT_WIXARIKA_BOOKS.forEach((book) => {
         expect(book.id).toBeDefined();
@@ -156,6 +156,7 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
         expect(book.category).toBeTruthy();
         expect(book.synopsis).toBeTruthy();
         expect(typeof book.available).toBe('boolean');
+        expect(book.portadaUrl).toBeTruthy();
       });
     });
 
@@ -167,11 +168,9 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       });
 
       const deidadesBooks = DEFAULT_WIXARIKA_BOOKS.filter((b) => b.stationId === 'deidades');
-      const gastroBooks = DEFAULT_WIXARIKA_BOOKS.filter((b) => b.stationId === 'gastronomia');
       const fiestasBooks = DEFAULT_WIXARIKA_BOOKS.filter((b) => b.stationId === 'fiestas');
 
       expect(deidadesBooks.length).toBeGreaterThanOrEqual(1);
-      expect(gastroBooks.length).toBeGreaterThanOrEqual(1);
       expect(fiestasBooks.length).toBeGreaterThanOrEqual(1);
     });
   });
