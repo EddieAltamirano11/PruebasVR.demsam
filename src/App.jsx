@@ -393,7 +393,7 @@ function AppContent() {
                 <path d="M19 12H5"/>
                 <path d="m12 19-7-7 7-7"/>
               </svg>
-              <span>← Panel Admin</span>
+              <span>Panel Admin</span>
             </button>
           ) : (
             <div />
