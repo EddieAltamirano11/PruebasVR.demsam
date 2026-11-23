@@ -6,21 +6,22 @@ import { WIXARIKA_GASTRONOMY_DISHES } from './wixarikaArtworksData.js';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
 
 /**
- * Cuadro individual de platillo tradicional Wixárika en 3D
+ * Cuadro monumental 3D de platillo tradicional Wixárika
+ * Diseñado con la misma escala, altura, materialidad y elegancia museográfica
+ * que los cuadros de Deidades y Fiestas del Kalihuey
  */
 function GastronomyFrame({
   dish,
   position,
   rotation,
-  width = 1.30,
-  height = 0.95,
+  width = 1.45,
+  height = 1.15,
   onSelect,
   registerMesh,
   unregisterMesh
 }) {
   const meshRef = useRef();
   const [texture, setTexture] = useState(null);
-  const [letreroTex, setLetreroTex] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
@@ -28,7 +29,7 @@ function GastronomyFrame({
     const loader = new THREE.TextureLoader();
     loader.setCrossOrigin('anonymous');
 
-    if (dish.image) {
+    if (dish?.image) {
       loader.load(
         dish.image,
         (tex) => {
@@ -40,48 +41,30 @@ function GastronomyFrame({
           setTexture(tex);
         },
         undefined,
-        (err) => console.warn(`[GastronomyFrame] Error cargando ${dish.image}:`, err)
-      );
-    }
-
-    if (dish.letreroImage) {
-      loader.load(
-        dish.letreroImage,
-        (lTex) => {
-          if (!isMounted) return;
-          lTex.colorSpace = THREE.SRGBColorSpace;
-          lTex.minFilter = THREE.LinearMipmapLinearFilter;
-          lTex.magFilter = THREE.LinearFilter;
-          lTex.generateMipmaps = true;
-          setLetreroTex(lTex);
-        },
-        undefined,
-        () => {}
+        (err) => console.warn(`[GastronomyFrame] Error cargando imagen ${dish.image}:`, err)
       );
     }
 
     return () => {
       isMounted = false;
       if (texture) texture.dispose();
-      if (letreroTex) letreroTex.dispose();
     };
-  }, [dish.image, dish.letreroImage]);
+  }, [dish?.image]);
 
   useEffect(() => {
     if (!meshRef.current) return;
     const obj = meshRef.current;
+    const handleClick = () => {
+      SoundFX.playClick();
+      onSelect?.(dish);
+    };
+
     obj.userData = {
-      id: `btn-gastro-${dish.id}`,
+      id: `frame-gastro-${dish.id}`,
       artworkId: dish.id,
-      dish,
-      onClick: () => {
-        SoundFX.playClick();
-        onSelect?.(dish);
-      },
-      onSelect: () => {
-        SoundFX.playClick();
-        onSelect?.(dish);
-      },
+      artwork: dish,
+      onClick: handleClick,
+      onSelect: handleClick,
       onPointerEnter: () => setIsHovered(true),
       onPointerLeave: () => setIsHovered(false)
     };
@@ -92,28 +75,40 @@ function GastronomyFrame({
     };
   }, [dish, onSelect, registerMesh, unregisterMesh]);
 
+  const handleClick = () => {
+    SoundFX.playClick();
+    onSelect?.(dish);
+  };
+
   return (
     <group position={position} rotation={rotation}>
-      {/* 1. Marco exterior de madera oscura / cantera */}
-      <mesh position={[0, 0, -0.015]}>
-        <boxGeometry args={[width + 0.12, height + 0.12, 0.03]} />
+      {/* 1. Marco exterior monumental de madera oscura tallada (idéntico a deidades) */}
+      <mesh position={[0, 0, -0.025]}>
+        <boxGeometry args={[width + 0.18, height + 0.18, 0.05]} />
         <meshStandardMaterial
-          color={isHovered ? '#b45309' : '#3d2514'}
-          roughness={0.6}
-          metalness={0.1}
+          color={isHovered ? '#b45309' : '#2d1a0e'}
+          roughness={0.70}
+          metalness={0.12}
         />
       </mesh>
 
-      {/* 2. Filete ceremonial dorado */}
+      {/* 2. Filete ceremonial biselado en oro Kauyumari */}
       <mesh position={[0, 0, -0.005]}>
-        <planeGeometry args={[width + 0.04, height + 0.04]} />
-        <meshBasicMaterial color={isHovered ? '#ffd700' : '#d4af37'} />
+        <boxGeometry args={[width + 0.06, height + 0.06, 0.025]} />
+        <meshStandardMaterial
+          color={isHovered ? '#ffd700' : '#d4af37'}
+          roughness={0.35}
+          metalness={0.75}
+        />
       </mesh>
 
-      {/* 3. Lienzo con fotografía real del alimento */}
+      {/* 3. Lienzo con fotografía real del alimento tradicional */}
       <mesh
         ref={meshRef}
-        position={[0, 0, 0.005]}
+        position={[0, 0, 0.010]}
+        onClick={handleClick}
+        onPointerOver={() => setIsHovered(true)}
+        onPointerOut={() => setIsHovered(false)}
       >
         <planeGeometry args={[width, height]} />
         {texture ? (
@@ -123,133 +118,119 @@ function GastronomyFrame({
         )}
       </mesh>
 
-      {/* 4. Rombos Tsikuri decorativos en las 4 esquinas */}
-      <group position={[0, 0, 0.010]}>
+      {/* 4. Medallones ceremoniales en las 4 esquinas (Turquesa y Oro como en Deidades) */}
+      <group position={[0, 0, 0.022]}>
         <TsikuriDiamond
-          size={0.05}
-          position={[-width / 2 + 0.04, height / 2 - 0.04, 0]}
-          colors={['#d4af37', '#b45309', '#ffffff']}
+          size={0.062}
+          position={[-width / 2 + 0.050, height / 2 - 0.050, 0]}
+          colors={['#0284c7', '#d4af37', '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.05}
-          position={[width / 2 - 0.04, height / 2 - 0.04, 0]}
-          colors={['#d4af37', '#b45309', '#ffffff']}
+          size={0.062}
+          position={[width / 2 - 0.050, height / 2 - 0.050, 0]}
+          colors={['#0284c7', '#d4af37', '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.05}
-          position={[-width / 2 + 0.04, -height / 2 + 0.04, 0]}
-          colors={['#d4af37', '#b45309', '#ffffff']}
+          size={0.062}
+          position={[-width / 2 + 0.050, -height / 2 + 0.050, 0]}
+          colors={['#0284c7', '#d4af37', '#ffffff']}
         />
         <TsikuriDiamond
-          size={0.05}
-          position={[width / 2 - 0.04, -height / 2 + 0.04, 0]}
-          colors={['#d4af37', '#b45309', '#ffffff']}
+          size={0.062}
+          position={[width / 2 - 0.050, -height / 2 + 0.050, 0]}
+          colors={['#0284c7', '#d4af37', '#ffffff']}
         />
       </group>
 
-      {/* 5. Placa / Letrero inferior con el nombre tallado del platillo */}
-      <group position={[0, -height / 2 - 0.12, 0.008]}>
-        <mesh position={[0, 0, -0.002]}>
-          <planeGeometry args={[width * 0.92, 0.16]} />
-          <meshBasicMaterial color="#1a120b" />
+      {/* 5. Luminaria de galería superior (idéntica a luminaria_galeria en Deidades) */}
+      <group position={[0, height / 2 + 0.12, 0.15]}>
+        {/* Brazo de montaje en oro */}
+        <mesh position={[0, -0.04, -0.07]} rotation={[0.45, 0, 0]}>
+          <cylinderGeometry args={[0.010, 0.010, 0.16, 12]} />
+          <meshStandardMaterial color="#d4af37" roughness={0.3} metalness={0.8} />
         </mesh>
-        <mesh position={[0, 0, -0.001]}>
-          <planeGeometry args={[width * 0.88, 0.14]} />
-          <meshBasicMaterial color="#fcfaf4" />
+        {/* Cabezal de foco de galería */}
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.024, 0.024, width * 0.42, 16]} />
+          <meshStandardMaterial color="#b45309" roughness={0.35} metalness={0.7} />
+        </mesh>
+        {/* Difusor luminoso cálido */}
+        <mesh position={[0, -0.018, 0]}>
+          <planeGeometry args={[width * 0.38, 0.022]} />
+          <meshBasicMaterial color="#fffbeb" />
+        </mesh>
+      </group>
+
+      {/* 6. Placa / Cédula Museográfica institucional debajo del cuadro (como placa_deidad) */}
+      <group position={[0, -height / 2 - 0.20, 0.015]}>
+        {/* Soporte de madera oscura */}
+        <mesh position={[0, 0, -0.004]}>
+          <boxGeometry args={[width * 0.88, 0.22, 0.02]} />
+          <meshStandardMaterial color="#2d1a0e" roughness={0.7} metalness={0.1} />
+        </mesh>
+        {/* Filete de oro */}
+        <mesh position={[0, 0, 0.007]}>
+          <planeGeometry args={[width * 0.84, 0.19]} />
+          <meshBasicMaterial color={isHovered ? '#ffd700' : '#d4af37'} />
+        </mesh>
+        {/* Fondo de cantera beige */}
+        <mesh position={[0, 0, 0.009]}>
+          <planeGeometry args={[width * 0.81, 0.16]} />
+          <meshBasicMaterial color="#f7f3e8" />
         </mesh>
 
-        {letreroTex ? (
-          <mesh position={[0, 0, 0.002]}>
-            <planeGeometry args={[width * 0.82, 0.12]} />
-            <meshBasicMaterial map={letreroTex} transparent toneMapped={false} />
-          </mesh>
-        ) : (
-          <Text
-            position={[0, 0, 0.002]}
-            fontSize={0.055}
-            color="#1c1917"
-            anchorX="center"
-            anchorY="middle"
-            maxWidth={width * 0.84}
-            textAlign="center"
-          >
-            {dish.title}
-          </Text>
-        )}
+        {/* Título en español */}
+        <Text
+          position={[0, 0.034, 0.012]}
+          fontSize={0.056}
+          color="#1c1917"
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={width * 0.78}
+          textAlign="center"
+        >
+          {dish.title}
+        </Text>
+
+        {/* Nombre ceremonial sagrado en Wixárika */}
+        <Text
+          position={[0, -0.034, 0.012]}
+          fontSize={0.040}
+          color="#b45309"
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={width * 0.78}
+          textAlign="center"
+        >
+          {dish.nativeName}
+        </Text>
       </group>
     </group>
   );
 }
 
 /**
- * Módulo de Exhibición 3D del Pabellón Gastronómico
- * Anclado sobre el muro Este (+X) del Museo Wixárika
+ * Módulo de Exhibición 3D del Acervo Gastronómico
+ * Montado sobre el muro curvado Este (+X) del Museo Wixárika
+ * En perfecta armonía arquitectónica con las salas de Deidades y Fiestas
  */
 export function WixarikaGastronomyExhibition({
   onSelectArtwork,
   registerMesh,
   unregisterMesh
 }) {
-  const [centralTex, setCentralTex] = useState(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    const loader = new THREE.TextureLoader();
-    loader.setCrossOrigin('anonymous');
-    loader.load(
-      '/texturas/cedula_gastro_central.png',
-      (tex) => {
-        if (!isMounted) return;
-        tex.colorSpace = THREE.SRGBColorSpace;
-        tex.minFilter = THREE.LinearMipmapLinearFilter;
-        tex.magFilter = THREE.LinearFilter;
-        tex.generateMipmaps = true;
-        setCentralTex(tex);
-      },
-      undefined,
-      () => {}
-    );
-
-    return () => {
-      isMounted = false;
-      if (centralTex) centralTex.dispose();
-    };
-  }, []);
-
-  // Coordenadas a lo largo del Muro Este (+X = 6.4m a 6.7m en arco semicilíndrico)
-  // Orientados hacia el centro del museo mirando hacia -X
+  // Coordenadas a lo largo del Muro Este (+X en arco circular a R = 7.18m)
+  // Altura Y = 2.95m idéntica a los cuadros de Deidades y Fiestas
+  // Orientaciones con normales mirando hacia el centro del Kalihuey
   const dishLayout = [
-    { dish: WIXARIKA_GASTRONOMY_DISHES[0], pos: [6.60, 2.75, -2.20], rot: [0, -Math.PI / 2 - 0.28, 0] },
-    { dish: WIXARIKA_GASTRONOMY_DISHES[1], pos: [6.95, 2.75, -0.75], rot: [0, -Math.PI / 2 - 0.10, 0] },
-    { dish: WIXARIKA_GASTRONOMY_DISHES[2], pos: [6.95, 2.75, 0.75],  rot: [0, -Math.PI / 2 + 0.10, 0] },
-    { dish: WIXARIKA_GASTRONOMY_DISHES[3], pos: [6.60, 2.75, 2.20],  rot: [0, -Math.PI / 2 + 0.28, 0] },
-    { dish: WIXARIKA_GASTRONOMY_DISHES[4], pos: [6.75, 1.35, -1.50], rot: [0, -Math.PI / 2 - 0.18, 0] },
-    { dish: WIXARIKA_GASTRONOMY_DISHES[5], pos: [6.75, 1.35, 1.50],  rot: [0, -Math.PI / 2 + 0.18, 0] }
+    { dish: WIXARIKA_GASTRONOMY_DISHES[0], pos: [6.63, 2.95, -2.75], rot: [0, -1.18, 0] },
+    { dish: WIXARIKA_GASTRONOMY_DISHES[1], pos: [7.12, 2.95, -0.94], rot: [0, -1.44, 0] },
+    { dish: WIXARIKA_GASTRONOMY_DISHES[2], pos: [7.12, 2.95, 0.94],  rot: [0, -1.70, 0] },
+    { dish: WIXARIKA_GASTRONOMY_DISHES[3], pos: [6.63, 2.95, 2.75],  rot: [0, -1.96, 0] }
   ];
 
   return (
     <group position={[0, 0, 0]}>
-      {/* 1. Cédula Monumental Central del Pabellón Gastronómico */}
-      <group position={[6.98, 4.05, 0]} rotation={[0, -Math.PI / 2, 0]}>
-        <mesh position={[0, 0, -0.015]}>
-          <boxGeometry args={[3.20, 0.85, 0.04]} />
-          <meshStandardMaterial color="#3d2514" roughness={0.6} />
-        </mesh>
-        <mesh position={[0, 0, -0.005]}>
-          <planeGeometry args={[3.12, 0.77]} />
-          <meshBasicMaterial color="#d4af37" />
-        </mesh>
-        <mesh position={[0, 0, 0.005]}>
-          <planeGeometry args={[3.04, 0.70]} />
-          {centralTex ? (
-            <meshBasicMaterial map={centralTex} transparent toneMapped={false} />
-          ) : (
-            <meshBasicMaterial color="#fcfaf4" />
-          )}
-        </mesh>
-      </group>
-
-      {/* 2. Galería de 6 Cuadros de Alimentos Tradicionales con Fotografías */}
       {dishLayout.map(({ dish, pos, rot }) => {
         if (!dish) return null;
         return (
@@ -258,8 +239,8 @@ export function WixarikaGastronomyExhibition({
             dish={dish}
             position={pos}
             rotation={rot}
-            width={1.25}
-            height={0.88}
+            width={1.45}
+            height={1.15}
             onSelect={onSelectArtwork}
             registerMesh={registerMesh}
             unregisterMesh={unregisterMesh}

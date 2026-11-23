@@ -149,7 +149,7 @@ function StaticMuseum({
         />
       </Suspense>
 
-      {/* Exhibición 3D del Pabellón Gastronómico con las 6 fotografías tradicionales de Nayarit */}
+      {/* Exhibición 3D del Pabellón Gastronómico con los 4 cuadros y fotografías auténticas */}
       <Suspense fallback={null}>
         <WixarikaGastronomyExhibition
           onSelectArtwork={onSelectArtwork}
@@ -179,8 +179,8 @@ function StationCameraController({ targetStation, setTargetStation, orbitRef, vr
       lookTarget = new THREE.Vector3(0, 1.85, 0);
     } else if (targetStation === 'gastronomia') {
       // Muro Este (+X): la cámara se posiciona al Oeste (-X) mirando al Este
-      pos = new THREE.Vector3(-2.5, 1.60, 0);
-      lookTarget = new THREE.Vector3(0, 1.50, 0);
+      pos = new THREE.Vector3(-2.5, 1.65, 0);
+      lookTarget = new THREE.Vector3(0, 1.85, 0);
     } else if (targetStation === 'fiestas') {
       // Muro Oeste (-X): la cámara se posiciona al Este (+X) mirando al Oeste
       pos = new THREE.Vector3(2.5, 1.65, 0);
@@ -405,6 +405,7 @@ export function MuseumScene({
           onToggleAudio={handleToggleAudio}
           onRecenter={handleRecenter}
           onSelectStation={handleSelectStation}
+          onSelectArtwork={handleSelectArtwork}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
         />

@@ -260,13 +260,13 @@ function DashboardTile({
 }
 
 /**
- * Tarjeta interactiva 3D de Platillo Tradicional en el Dashboard de Gastronomía
+ * Tarjeta interactiva 3D de Platillo Tradicional en el Menú de Gastronomía
  */
-function GastronomyDashboardTile({
+function DashboardDishTile({
   dish,
   position,
-  width = 1.90,
-  height = 0.56,
+  width = 2.78,
+  height = 0.58,
   registerMesh,
   unregisterMesh,
   onSelect
@@ -299,17 +299,16 @@ function GastronomyDashboardTile({
   useEffect(() => {
     if (!meshRef.current) return;
     const obj = meshRef.current;
+    const handleClick = () => {
+      SoundFX.playClick();
+      onSelect?.(dish);
+    };
+
     obj.userData = {
-      id: `btn-dash-gastro-${dish.id}`,
+      id: `btn-dish-${dish.id}`,
       dish,
-      onClick: () => {
-        SoundFX.playClick();
-        onSelect?.(dish);
-      },
-      onSelect: () => {
-        SoundFX.playClick();
-        onSelect?.(dish);
-      },
+      onClick: handleClick,
+      onSelect: handleClick,
       onPointerEnter: () => setIsHovered(true),
       onPointerLeave: () => setIsHovered(false)
     };
@@ -320,13 +319,13 @@ function GastronomyDashboardTile({
     };
   }, [dish, onSelect, registerMesh, unregisterMesh]);
 
-  const bgIdle = '#fbf7ee';
+  const bgIdle = '#fcf8ee';
   const bgHover = '#fef3c7';
   const borderColor = isHovered ? '#b45309' : '#d4af37';
 
   return (
     <group position={position}>
-      {/* Marco de cantera/oro */}
+      {/* Marco de cantera / oro */}
       <mesh position={[0, 0, -0.001]}>
         <planeGeometry args={[width + 0.024, height + 0.024]} />
         <meshBasicMaterial color={borderColor} />
@@ -348,13 +347,13 @@ function GastronomyDashboardTile({
       </mesh>
 
       {/* Miniatura fotográfica con marco */}
-      <group position={[-width / 2 + 0.36, 0, 0.003]}>
+      <group position={[-width / 2 + 0.40, 0, 0.003]}>
         <mesh position={[0, 0, -0.001]}>
-          <planeGeometry args={[0.62, 0.46]} />
+          <planeGeometry args={[0.68, 0.48]} />
           <meshBasicMaterial color="#d4af37" />
         </mesh>
         <mesh position={[0, 0, 0.001]}>
-          <planeGeometry args={[0.58, 0.42]} />
+          <planeGeometry args={[0.64, 0.44]} />
           {texture ? (
             <meshBasicMaterial map={texture} toneMapped={false} />
           ) : (
@@ -388,39 +387,39 @@ function GastronomyDashboardTile({
       </group>
 
       {/* Textos informativos a la derecha */}
-      <group position={[-width / 2 + 0.72, 0, 0.004]}>
+      <group position={[-width / 2 + 0.82, 0, 0.004]}>
         <Text
-          position={[0, 0.16, 0]}
-          fontSize={0.058}
+          position={[0, 0.17, 0]}
+          fontSize={0.072}
           color="#1c1917"
           anchorX="left"
           anchorY="middle"
-          maxWidth={width - 0.78}
+          maxWidth={width - 0.92}
         >
           {dish.title}
         </Text>
 
         <Text
-          position={[0, 0.06, 0]}
-          fontSize={0.044}
+          position={[0, 0.07, 0]}
+          fontSize={0.054}
           color="#b45309"
           anchorX="left"
           anchorY="middle"
-          maxWidth={width - 0.78}
+          maxWidth={width - 0.92}
         >
           {dish.nativeName}
         </Text>
 
         <Text
           position={[0, -0.09, 0]}
-          fontSize={0.034}
+          fontSize={0.042}
           color="#44403c"
           anchorX="left"
           anchorY="middle"
-          maxWidth={width - 0.78}
-          lineHeight={1.25}
+          maxWidth={width - 0.92}
+          lineHeight={1.30}
         >
-          {dish.description?.slice(0, 95) + '...'}
+          {dish.description?.slice(0, 115) + '...'}
         </Text>
       </group>
     </group>
@@ -444,6 +443,7 @@ export function WixarikaWelcomeDashboard({
   onToggleAudio,
   onRecenter: _onRecenter,
   onSelectStation,
+  onSelectArtwork,
   registerMesh,
   unregisterMesh,
   hoveredId,
@@ -836,33 +836,33 @@ export function WixarikaWelcomeDashboard({
             </mesh>
           </group>
 
-          {/* Palabras Clave y Contenido Cultural */}
+          {/* Palabras Clave y Contenido en Tipografía Maximizada o Muestra Gastronómica */}
           {currentView === 'gastronomia' ? (
-            <group position={[0, 0.05, 0]}>
+            <group position={[0, 0, 0]}>
               <Text
-                position={[0, 0.46, 0]}
-                fontSize={0.075}
+                position={[0, 0.62, 0]}
+                fontSize={0.082}
                 color="#78350f"
                 anchorX="center"
                 anchorY="middle"
               >
-                MUESTRA DE ALIMENTOS SAGRADOS Y TRADICIONALES DE NAYARIT
+                MUESTRA DE GASTRONOMÍA TRADICIONAL Y ALIMENTOS SAGRADOS DE NAYARIT
               </Text>
               {WIXARIKA_GASTRONOMY_DISHES.map((dish, idx) => {
-                const col = idx % 3;
-                const row = Math.floor(idx / 3);
-                const posX = -1.98 + col * 1.98;
-                const posY = 0.14 - row * 0.58;
+                const col = idx % 2;
+                const row = Math.floor(idx / 2);
+                const posX = col === 0 ? -1.48 : 1.48;
+                const posY = row === 0 ? 0.28 : -0.30;
                 return (
-                  <GastronomyDashboardTile
+                  <DashboardDishTile
                     key={dish.id}
                     dish={dish}
                     position={[posX, posY, 0]}
-                    width={1.90}
+                    width={2.78}
                     height={0.52}
                     registerMesh={registerMesh}
                     unregisterMesh={unregisterMesh}
-                    onSelect={() => {}}
+                    onSelect={(selected) => onSelectArtwork?.(selected)}
                   />
                 );
               })}
@@ -890,7 +890,7 @@ export function WixarikaWelcomeDashboard({
           )}
 
           {/* Cédula de Identidad y Sede Cultural */}
-          <group position={[0, -0.72, 0]}>
+          <group position={[0, currentView === 'gastronomia' ? -0.85 : -0.72, 0]}>
             <mesh position={[0, 0, -0.001]}>
               <planeGeometry args={[4.80, 0.22]} />
               <meshBasicMaterial color="#f4ebd8" />

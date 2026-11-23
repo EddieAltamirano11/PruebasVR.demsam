@@ -197,146 +197,88 @@ export const WIXARIKA_ARTWORKS = [
 ];
 
 // =========================================================================
-// 3. GASTRONOMÍA TRADICIONAL Y ALIMENTOS SAGRADOS DE NAYARIT
+// 3. GASTRONOMÍA TRADICIONAL Y ALIMENTOS SAGRADOS DE NAYARIT (4 PLATILLOS)
 // =========================================================================
 export const WIXARIKA_GASTRONOMY_DISHES = [
   {
     id: 'gastro_tortillas',
     order: 1,
-    stationName: 'estacion_gastro_1_tortillas',
-    canvasNodeName: 'lienzo_gastro_tortillas',
-    stationPosition: [6.80, 2.30, -1.80],
+    stationName: 'comida_tortillas_maiz_sagrado',
+    canvasNodeName: 'disco_tortillas_comal_textura',
+    stationPosition: [6.63, 2.95, -2.75],
     category: 'Gastronomía Tradicional',
     alias: 'Sustento Sagrado de Maíz',
     title: 'TORTILLAS DE MAÍZ CRIOLLO',
     nativeName: '«Mewi» · Tortillas Ceremoniales de Comal',
-    subtitle: 'NIXTAMALIZACIÓN ANCESTRAL Y BASE DEL KALITÜEY',
-    image: '/texturas/cuadro_gastro_tortillas.jpg',
-    cedulaImage: '/texturas/cedula_gastro_tortillas.png',
-    letreroImage: '/texturas/letrero_gastro_tortillas.png',
-    discoImage: '/texturas/disco_food_tortillas.png',
+    subtitle: 'NIXTAMALIZACIÓN ANCESTRAL EN COMAL DE BARRO',
+    image: '/gastronomia/gastro_tortillas.png',
     matcher: (name) => name.includes('tortilla'),
     keywords: [
-      '• Maíz Criollo de Cinco Colores Nixtamalizado en Comal',
+      '• Maíz Criollo Azul y Morado Nixtamalizado en Comal',
       '• Base Nutricia y Espiritual de la Comunidad Serrana',
       '• Elaboración Femenina con Metate y Fuego Sagrado'
     ],
-    description: 'Las tortillas de maíz criollo son la base alimenticia y ritual de las comunidades originarias de Nayarit. Hechas a mano sobre comales de barro y cocidas con leña de roble, representan la comunión diaria entre el esfuerzo humano, el agua y el don fecundo de Tatei Niwetsika.'
-  },
-  {
-    id: 'gastro_caldo_toro',
-    order: 2,
-    stationName: 'estacion_gastro_2_caldo_toro',
-    canvasNodeName: 'lienzo_gastro_caldo_toro',
-    stationPosition: [7.20, 2.30, -0.60],
-    category: 'Gastronomía Tradicional',
-    alias: 'Platillo Ritual Comunitario',
-    title: 'CALDO DE TORO CEREMONIAL',
-    nativeName: '«Caldo de Toro» · Comida de Grandes Fiestas',
-    subtitle: 'PREPARACIÓN COLECTIVA EN FOGONES COMUNALES',
-    image: '/texturas/cuadro_gastro_caldo_toro.jpg',
-    cedulaImage: '/texturas/cedula_gastro_caldo_toro.png',
-    letreroImage: '/texturas/letrero_gastro_caldo_toro.png',
-    discoImage: '/texturas/disco_food_caldo.png',
-    matcher: (name) => name.includes('caldo') || name.includes('toro'),
-    keywords: [
-      '• Alimento Comunitario para Peregrinos y Jicareros',
-      '• Cocción Lenta en Grandes Ollas de Barro con Hierbas Serranas',
-      '• Consagración Ritual durante el Tatei Neixa'
-    ],
-    description: 'El caldo de toro ceremonial es un guiso colectivo reservado para las solemnidades más trascendentes. Preparado en ollas monumentales al calor de leña viva con chiles secos y quelites serranos, nutre a toda la comunidad tras extenuantes jornadas de rezo y danza sagrada.'
+    description: 'Las tortillas de maíz criollo son la base alimenticia y ritual de las comunidades originarias de Nayarit. Hechas a mano sobre comales de barro y cocidas con leña, representan el sustento sagrado diario bendecido por Tatei Niwetsika.'
   },
   {
     id: 'gastro_tamales',
-    order: 3,
-    stationName: 'estacion_gastro_3_tamales',
-    canvasNodeName: 'lienzo_gastro_tamales',
-    stationPosition: [7.20, 2.30, 0.60],
+    order: 2,
+    stationName: 'comida_tamales_ceremoniales',
+    canvasNodeName: 'disco_tamales_totomoxtle_textura',
+    stationPosition: [7.12, 2.95, -0.94],
     category: 'Gastronomía Tradicional',
-    alias: 'Envueltos de Mazorca',
+    alias: 'Envueltos de Mazorca Sagrada',
     title: 'TAMALES DE TOTOMOXLE',
     nativeName: '«Tamales Tradicionales» de Maíz Serrano',
     subtitle: 'COCCIÓN AL VAPOR EN HOJA DE MAZORCA SECA',
-    image: '/texturas/cuadro_gastro_tamales.jpg',
-    cedulaImage: '/texturas/cedula_gastro_tamales.png',
-    letreroImage: '/texturas/letrero_gastro_tamales.png',
-    discoImage: '/texturas/disco_food_tamales.png',
+    image: '/gastronomia/gastro_tamales.jpg',
     matcher: (name) => name.includes('tamal'),
     keywords: [
       '• Envoltura Sagrada en Hoja de Totomoxtle',
-      '• Masa de Maíz Morado, Ceniza y Manteca Tradicional',
+      '• Masa de Maíz Criollo y Manteca Tradicional',
       '• Ofrenda Imprescindible para Deidades y Ancestros'
     ],
-    description: 'Elaborados con masa sazonada envuelta cuidadosamente en hojas secas de totomoxtle. En la cosmovisión serrana, los tamales representan la protección del germen de la vida; son ofrendados en jícaras ceremoniales a los bultos sagrados antes de ser degustados en comunidad.'
+    description: 'Elaborados con masa sazonada envuelta cuidadosamente en hojas secas de totomoxtle. En la cosmovisión serrana, los tamales representan la protección del germen de la vida; son ofrendados en jícaras ceremoniales antes de ser degustados en comunidad.'
   },
   {
-    id: 'gastro_atole_tejuino',
-    order: 4,
-    stationName: 'estacion_gastro_4_atole_tejuino',
-    canvasNodeName: 'lienzo_gastro_atole_tejuino',
-    stationPosition: [6.80, 2.30, 1.80],
+    id: 'gastro_atole',
+    order: 3,
+    stationName: 'comida_atole_olla_bebidas',
+    canvasNodeName: 'disco_atole_espumoso_textura',
+    stationPosition: [7.12, 2.95, 0.94],
     category: 'Gastronomía Tradicional',
-    alias: 'Bebida Sagrada de Nawá',
-    title: 'TEJUINO Y ATOLE DE MAÍZ',
-    nativeName: '«Nawá» · Tejuino Ceremonial Fermentado',
-    subtitle: 'ENERGÍA ESPIRITUAL Y BEBIDA DE HERMANDAD',
-    image: '/texturas/cuadro_gastro_atole_tejuino.jpg',
-    cedulaImage: '/texturas/cedula_gastro_atole_tejuino.png',
-    letreroImage: '/texturas/letrero_gastro_atole.png',
-    discoImage: '/texturas/disco_food_atole.png',
-    matcher: (name) => name.includes('tejuino') || name.includes('atole') || name.includes('nawa'),
+    alias: 'Bebida Ceremonial de Nawá',
+    title: 'ATOLE DE MAÍZ Y TEJUINO',
+    nativeName: '«Nawá» · Bebida Ceremonial Sagrada',
+    subtitle: 'ENERGÍA ESPIRITUAL EN JÍCARAS ARTESANALES',
+    image: '/gastronomia/gastro_atole.jpg',
+    matcher: (name) => name.includes('atole') || name.includes('tejuino') || name.includes('nawa'),
     keywords: [
-      '• Maíz Germinado y Fermentado en Ollas de Barro',
+      '• Maíz de Temporal Cocido y Molido en Jícaras de Barro',
       '• Vigor Espiritual que Acompaña los Cantos del Mara\'akame',
-      '• Símbolo de Unión Colectiva e Identidad Indígena'
+      '• Símbolo de Hermandad y Ceremonialidad Comunitaria'
     ],
-    description: 'El tejuino tradicional (nawá) y los atoles calientes son bebidas de profunda raíz ceremonial. Su fermentación natural a base de maíz nacido proporciona la vitalidad necesaria para soportar los ayunos y vigilias nocturnas del ciclo ceremonial en la sierra de Nayarit.'
-  },
-  {
-    id: 'gastro_perruri',
-    order: 5,
-    stationName: 'estacion_gastro_5_perruri',
-    canvasNodeName: 'lienzo_gastro_perruri',
-    stationPosition: [6.00, 2.30, 2.60],
-    category: 'Gastronomía Tradicional',
-    alias: 'Golosina y Ofrenda Ancestral',
-    title: 'PERRURI DE SEMILLAS',
-    nativeName: '«Perruri» · Maíz Tostado y Pepita Dulce',
-    subtitle: 'CONFITERÍA TRADICIONAL Y ENERGÍA NATURAL',
-    image: '/texturas/cuadro_gastro_perruri.jpg',
-    cedulaImage: '/texturas/cedula_gastro_perruri.png',
-    letreroImage: '/texturas/letrero_gastro_perruri.png',
-    discoImage: '/texturas/disco_food_perruri.png',
-    matcher: (name) => name.includes('perruri'),
-    keywords: [
-      '• Harina de Maíz Tostado Mezclada con Pepitas de Calabaza',
-      '• Endulzado Natural con Piloncillo de Molienda Serrana',
-      '• Alimento Energético de Alta Durabilidad'
-    ],
-    description: 'El perruri es una de las preparaciones más representativas del ingenio culinario indígena. Combina el grano de maíz tostado con pepitas molidas y miel o piloncillo en una pasta compacta y energética que deleita tanto a niños como a ancianos en días festivos.'
+    description: 'Bebida caliente y sustanciosa elaborada a base de maíz de temporal en jícaras artesanales. Brinda vigor espiritual y acompañamiento en los cantos, desvelos y ceremonias sagradas de la sierra de Nayarit.'
   },
   {
     id: 'gastro_maiz_tostado',
-    order: 6,
-    stationName: 'estacion_gastro_6_maiz_tostado',
-    canvasNodeName: 'lienzo_gastro_maiz_tostado',
-    stationPosition: [6.00, 2.30, -2.60],
+    order: 4,
+    stationName: 'comida_maiz_tostado_xarikixa',
+    canvasNodeName: 'disco_maiz_tostado_textura',
+    stationPosition: [6.63, 2.95, 2.75],
     category: 'Gastronomía Tradicional',
     alias: 'Provisión del Peregrino',
     title: 'MAÍZ TOSTADO Y PINOLE',
-    nativeName: '«Haute» · Maíz Tostado al Comal',
-    subtitle: 'ALIMENTO DE TRAVESÍA HACIA WIRIKUTA',
-    image: '/texturas/cuadro_gastro_maiz_tostado.jpg',
-    cedulaImage: '/texturas/cedula_gastro_maiz_tostado.png',
-    letreroImage: '/texturas/letrero_gastro_maiz_tostado.png',
-    discoImage: '/texturas/disco_food_maiz_tostado.png',
-    matcher: (name) => name.includes('tostado') || name.includes('pinole'),
+    nativeName: '«Haute» · Maíces de Colores al Comal',
+    subtitle: 'PROVISIÓN SAGRADA PARA LA TRAVESÍA A WIRIKUTA',
+    image: '/gastronomia/gastro_maiz_tostado.jpg',
+    matcher: (name) => name.includes('tostado') || name.includes('pinole') || name.includes('haute'),
     keywords: [
-      '• Grano Sagrado Expandido al Fuego Vivo del Comal',
+      '• Mazorcas Criollas de Diversos Colores Tostadas al Fuego',
       '• Provisión Ligera y Nutricia para la Larga Marcha',
-      '• Testigo de la Ruta Hacia los Santuarios del Desierto'
+      '• Testigo de la Ruta Ritual Hacia los Santuarios Sagrados'
     ],
-    description: 'Los granos de maíz tostados en comal constituyen el bastimento fundamental del caminante. Ligeros y resistentes al tiempo, son llevados en morrales de estambre por los jicareros durante su cruce por los cañones de Nayarit rumbo a Wirikuta.'
+    description: 'Los granos de maíz criollo de diversos colores tostados al comal constituyen el bastimento fundamental del caminante. Ligeros y nutritivos, son llevados en morrales de estambre durante las peregrinaciones rituales.'
   }
 ];
 

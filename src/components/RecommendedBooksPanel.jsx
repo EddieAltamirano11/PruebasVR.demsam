@@ -70,43 +70,29 @@ export const GASTRONOMY_DISHES_PREVIEW = [
     id: 'gastro-tortillas',
     title: 'Tortillas de Maíz Criollo',
     nativeName: '«Mewi» · Tortillas Ceremoniales',
-    image: '/texturas/cuadro_gastro_tortillas.jpg',
-    desc: 'Maíz criollo nixtamalizado y cocido a mano sobre comal con leña de roble.'
-  },
-  {
-    id: 'gastro-caldo',
-    title: 'Caldo de Toro Ceremonial',
-    nativeName: '«Caldo de Toro» de Grandes Fiestas',
-    image: '/texturas/cuadro_gastro_caldo_toro.jpg',
-    desc: 'Preparado en ollas de barro comunitarias para alimentar a los jicareros.'
+    image: '/gastronomia/gastro_tortillas.png',
+    desc: 'Maíz criollo azul nixtamalizado y cocido a mano sobre comal de barro.'
   },
   {
     id: 'gastro-tamales',
     title: 'Tamales de Totomoxtle',
     nativeName: '«Tamales Tradicionales» de Maíz',
-    image: '/texturas/cuadro_gastro_tamales.jpg',
+    image: '/gastronomia/gastro_tamales.jpg',
     desc: 'Cocción al vapor en hoja de totomoxtle, ofrenda a deidades y ancestros.'
   },
   {
-    id: 'gastro-tejuino',
-    title: 'Tejuino y Atole de Maíz',
-    nativeName: '«Nawá» · Tejuino Ceremonial Fermentado',
-    image: '/texturas/cuadro_gastro_atole_tejuino.jpg',
-    desc: 'Bebida sagrada fermentada que brinda vitalidad en los cantos del Mara\'akame.'
-  },
-  {
-    id: 'gastro-perruri',
-    title: 'Perruri de Semillas',
-    nativeName: '«Perruri» · Maíz Tostado y Pepita Dulce',
-    image: '/texturas/cuadro_gastro_perruri.jpg',
-    desc: 'Pasta tradicional dulce de maíz tostado con pepitas molidas y miel serrana.'
+    id: 'gastro-atole',
+    title: 'Atole de Maíz y Tejuino',
+    nativeName: '«Nawá» · Bebida Ceremonial Sagrada',
+    image: '/gastronomia/gastro_atole.jpg',
+    desc: 'Bebida sagrada tradicional servida en jícaras artesanales de barro.'
   },
   {
     id: 'gastro-tostado',
     title: 'Maíz Tostado y Pinole',
     nativeName: '«Haute» · Bastimento del Caminante',
-    image: '/texturas/cuadro_gastro_maiz_tostado.jpg',
-    desc: 'Provisión sagrada ligera y nutritiva transportada en morrales hacia Wirikuta.'
+    image: '/gastronomia/gastro_maiz_tostado.jpg',
+    desc: 'Mazorcas criollas de diversos colores para la travesía sagrada a Wirikuta.'
   }
 ];
 
@@ -424,19 +410,16 @@ export function RecommendedBooksPanel({
 
       {/* 4. CONTENIDO PRINCIPAL: LISTADO O ESTADO VACÍO PREPARADO */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
-        {/* SECCIÓN ESPECIAL: MUESTRA FOTOGRÁFICA DE GASTRONOMÍA TRADICIONAL */}
+        {/* MUESTRA DE ALIMENTOS SAGRADOS Y TRADICIONALES EN SALA GASTRONÓMICA */}
         {(activeStation?.id === 'gastronomia' || selectedStationFilter === 'gastronomia') && (
-          <div className="p-3.5 rounded-xl bg-gradient-to-b from-[#1c130b] to-[#0f172a] border border-amber-500/40 shadow-sm space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-amber-600/30">
+          <div className="p-3 rounded-xl bg-gradient-to-b from-[#1c130b] to-[#0f172a] border border-amber-500/40 shadow-sm space-y-2.5">
+            <div className="flex items-center gap-2 pb-1.5 border-b border-amber-600/30">
               <Utensils size={15} className="text-[#E5A00D]" />
               <h4 className="text-xs font-bold text-amber-200">
-                Fotogalería del Acervo Gastronómico de Nayarit
+                Alimentos Sagrados de Nayarit
               </h4>
             </div>
-            <p className="text-[11px] text-amber-100/70 leading-relaxed">
-              Fotografías en alta resolución y cédulas antropológicas de los 6 alimentos sagrados documentados en la sala 3D:
-            </p>
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-2">
               {GASTRONOMY_DISHES_PREVIEW.map((item) => (
                 <div
                   key={item.id}

@@ -3,7 +3,7 @@ import { useGLTF } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SoundFX } from '../services/audioService.js';
-import { WIXARIKA_ARTWORKS } from './wixarika/wixarikaArtworksData.js';
+import { WIXARIKA_ARTWORKS, WIXARIKA_GASTRONOMY_DISHES } from './wixarika/wixarikaArtworksData.js';
 
 export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
   const group = useRef();
@@ -16,8 +16,24 @@ export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
     const maxAnisotropy = gl?.capabilities?.getMaxAnisotropy?.() || 8;
     const registered = [];
 
-    // 1. Configurar filtrado anisotrópico en todas las texturas de la escena
+    // 1. Configurar filtrado anisotrópico y visibilidad de comidas
     scene.traverse((child) => {
+      // Asegurar que el letrero superior monumental original del modelo 3D ("el que ya estaba") esté siempre visible
+      if (child.name.includes('letrero_seccion') || child.name.includes('emblema_gastronomia')) {
+        child.visible = true;
+      }
+
+      // Ocultar únicamente las comidas de las mesas que no fueron enviadas (caldo de toro, perruri, elotes)
+      const isUnsentFood =
+        child.name.includes('caldo') ||
+        child.name.includes('perruri') ||
+        child.name.includes('elote');
+
+      if (isUnsentFood) {
+        child.visible = false;
+        return;
+      }
+
       if (child.isMesh && child.material) {
         const materials = Array.isArray(child.material) ? child.material : [child.material];
         materials.forEach((mat) => {
@@ -123,6 +139,102 @@ export function MuseumModel({ onSelectArtwork, registerMesh, unregisterMesh }) {
           artwork: artworkData,
           onClick: handleSelect,
           onSelect: handleSelect
+        };
+        registerMesh?.(canvasObj);
+        registered.push(canvasObj);
+      }
+    });
+
+    // 3. Cargar texturas de los 4 platillos tradicionales en los platos de exhibición y hacerlos interactivos
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.setCrossOrigin('anonymous');
+
+    WIXARIKA_GASTRONOMY_DISHES.forEach((dish) => {
+      const stationObj = scene.getObjectByName(dish.stationName);
+      const canvasObj = scene.getObjectByName(dish.canvasNodeName);
+
+      // Cargar textura auténtica proporcionada por el usuario
+      if (dish.image) {
+        textureLoader.load(
+          dish.image,
+          (tex) => {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.anisotropy = maxAnisotropy;
+            tex.minFilter = THREE.LinearMipmapLinearFilter;
+            tex.magFilter = THREE.LinearFilter;
+            tex.generateMipmaps = true;
+            tex.needsUpdate = true;
+
+            if (canvasObj?.material) {
+              const mat = Array.isArray(canvasObj.material) ? canvasObj.material[0] : canvasObj.material;
+              mat.map = tex;
+              mat.needsUpdate = true;
+            }
+          },
+          undefined,
+          (err) => console.warn(`[MuseumModel] Error cargando textura de platillo ${dish.image}:`, err)
+        );
+      }
+
+      // Posición en mundo
+      const worldPos = new THREE.Vector3();
+      if (canvasObj) {
+        canvasObj.getWorldPosition(worldPos);
+      } else if (stationObj) {
+        stationObj.getWorldPosition(worldPos);
+      } else {
+        worldPos.set(...dish.stationPosition);
+      }
+
+      const dishArtworkData = {
+        ...dish,
+        worldPosition: worldPos
+      };
+
+      const handleSelectDish = () => {
+        SoundFX.playClick();
+        const currentWorldPos = new THREE.Vector3();
+        if (canvasObj) {
+          canvasObj.getWorldPosition(currentWorldPos);
+        } else if (stationObj) {
+          stationObj.getWorldPosition(currentWorldPos);
+        } else {
+          currentWorldPos.set(...dish.stationPosition);
+        }
+        onSelectArtwork?.({
+          ...dishArtworkData,
+          worldPosition: currentWorldPos
+        });
+      };
+
+      if (stationObj) {
+        stationObj.userData = {
+          id: `station-${dish.id}`,
+          artworkId: dish.id,
+          artwork: dishArtworkData,
+          onClick: handleSelectDish,
+          onSelect: handleSelectDish
+        };
+        stationObj.traverse((child) => {
+          if (child.isMesh) {
+            child.userData = {
+              id: `gastro-${dish.id}-${child.name}`,
+              artworkId: dish.id,
+              artwork: dishArtworkData,
+              onClick: handleSelectDish,
+              onSelect: handleSelectDish
+            };
+            registerMesh?.(child);
+            registered.push(child);
+          }
+        });
+      } else if (canvasObj) {
+        canvasObj.userData = {
+          id: `canvas-${dish.id}`,
+          artworkId: dish.id,
+          artwork: dishArtworkData,
+          onClick: handleSelectDish,
+          onSelect: handleSelectDish
         };
         registerMesh?.(canvasObj);
         registered.push(canvasObj);
