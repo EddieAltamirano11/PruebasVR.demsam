@@ -26,8 +26,8 @@
  *
  * 4. Vano Derecho (+120°, derecha desde el centro mirando a +Z):
  *   • Logo mejorado sin fondo de la Biblioteca Pública Central Estatal Solón Argüello arriba.
- *   • Cuadro gemelo en cantera con tipografía 3D grande en dos filas:
- *     "PAMPARIOS" / barra dorada con rombo turquesa / "BIENVENIDOS",
+ *   • Cuadro gemelo en cantera con la palabra 3D monumental "BIENVENIDOS"
+ *     enmarcada por filetes dorados con rombo turquesa arriba y abajo,
  *     y banca baja de madera oscura simétrica (sin placa dorada inferior).
  */
 
@@ -637,40 +637,32 @@ const CUADRO_Y = 2.28; // Cuadro: 1.45m..3.11m (espacio limpio de 1.81m arriba p
   console.log(`  ✓ Mapa de Nayarit + Logo CECAN (+60°) pos=(${x.toFixed(2)}, ${CUADRO_Y}, ${z.toFixed(2)})`);
 }
 
-// 3.2 VANO DERECHO (+120° -> -X, +Z): Cuadro "PAMPARIOS" / "BIENVENIDOS" (letra grande en 2 filas) + Logo Solón Argüello arriba
+// 3.2 VANO DERECHO (+120° -> -X, +Z): Cuadro "BIENVENIDOS" (una sola palabra monumental) + Logo Solón Argüello arriba
 {
   const rad = (120.0 * Math.PI) / 180;
   const x = R_CUADRO * Math.cos(rad);
   const z = R_CUADRO * Math.sin(rad);
 
-  const row1Geom = new TextGeometry('PAMPARIOS', {
-    font,
-    size: 0.215,
-    depth: 0.016,
-    curveSegments: 3,
-    bevelEnabled: false
-  });
-  row1Geom.computeVertexNormals();
-  row1Geom.center();
-  const { meshIdx: row1MeshIdx, bb: row1Bb } = addGeometryMeshToGltf(
-    row1Geom,
-    MAT_MADERA_OSCURA,
-    'mesh_texto_pamparios_grande'
-  );
+  // Texto único "BIENVENIDOS" escalado para ocupar ~85% del ancho del lienzo de cantera
+  const TARGET_TEXT_W = CANVAS_W * 0.85;
+  const probe = new TextGeometry('BIENVENIDOS', { font, size: 0.2, depth: 0.02, curveSegments: 3, bevelEnabled: false });
+  probe.computeBoundingBox();
+  const probeW = probe.boundingBox.max.x - probe.boundingBox.min.x;
+  const welcomeSize = Math.min(0.30, 0.2 * (TARGET_TEXT_W / probeW));
 
-  const row2Geom = new TextGeometry('BIENVENIDOS', {
+  const welcomeGeom = new TextGeometry('BIENVENIDOS', {
     font,
-    size: 0.195,
-    depth: 0.016,
-    curveSegments: 3,
+    size: welcomeSize,
+    depth: 0.02,
+    curveSegments: 4,
     bevelEnabled: false
   });
-  row2Geom.computeVertexNormals();
-  row2Geom.center();
-  const { meshIdx: row2MeshIdx, bb: row2Bb } = addGeometryMeshToGltf(
-    row2Geom,
+  welcomeGeom.computeVertexNormals();
+  welcomeGeom.center();
+  const { meshIdx: welcomeMeshIdx, bb: welcomeBb } = addGeometryMeshToGltf(
+    welcomeGeom,
     MAT_MADERA_OSCURA,
-    'mesh_texto_bienvenidos_grande'
+    'mesh_texto_bienvenidos_monumental'
   );
 
   const { meshIdx: dividerBarMeshIdx } = addGeometryMeshToGltf(
@@ -688,20 +680,24 @@ const CUADRO_Y = 2.28; // Cuadro: 1.45m..3.11m (espacio limpio de 1.81m arriba p
   );
 
   const mIdx = nodes.length;
-  nodes.push({ name: 'pamparios_marco_madera', mesh: frameMaderaMeshIdx, translation: [0, 0, 0] });
+  nodes.push({ name: 'letrero_bienvenida_marco_madera', mesh: frameMaderaMeshIdx, translation: [0, 0, 0] });
   const oIdx = nodes.length;
-  nodes.push({ name: 'pamparios_marco_oro', mesh: frameOroMeshIdx, translation: [0, 0, 0] });
+  nodes.push({ name: 'letrero_bienvenida_marco_oro', mesh: frameOroMeshIdx, translation: [0, 0, 0] });
   const cIdx = nodes.length;
-  nodes.push({ name: 'pamparios_fondo_cantera', mesh: panelCanteraMeshIdx, translation: [0, 0, 0.031] });
+  nodes.push({ name: 'letrero_bienvenida_fondo_cantera', mesh: panelCanteraMeshIdx, translation: [0, 0, 0.031] });
 
-  const t1Idx = nodes.length;
-  nodes.push({ name: 'pamparios_texto_fila1', mesh: row1MeshIdx, translation: [0, 0.30, 0.039] });
-  const barIdx = nodes.length;
-  nodes.push({ name: 'pamparios_linea_dorada', mesh: dividerBarMeshIdx, translation: [0, 0.0, 0.036] });
-  const diaIdx = nodes.length;
-  nodes.push({ name: 'pamparios_rombo_central', mesh: diamondMeshIdx, translation: [0, 0.0, 0.040] });
-  const t2Idx = nodes.length;
-  nodes.push({ name: 'pamparios_texto_fila2', mesh: row2MeshIdx, translation: [0, -0.30, 0.039] });
+  const tIdx = nodes.length;
+  nodes.push({ name: 'letrero_bienvenida_texto', mesh: welcomeMeshIdx, translation: [0, 0.0, 0.043] });
+
+  // Filetes dorados con rombo turquesa arriba y abajo de la palabra (simetría ceremonial)
+  const ornamentIdx = [];
+  for (const [suffix, y] of [['superior', 0.42], ['inferior', -0.42]]) {
+    const barIdx = nodes.length;
+    nodes.push({ name: `letrero_bienvenida_linea_${suffix}`, mesh: dividerBarMeshIdx, translation: [0, y, 0.036] });
+    const diaIdx = nodes.length;
+    nodes.push({ name: `letrero_bienvenida_rombo_${suffix}`, mesh: diamondMeshIdx, translation: [0, y, 0.040] });
+    ornamentIdx.push(barIdx, diaIdx);
+  }
 
   // Logo Biblioteca Solón Argüello (+10%) centrado arriba del cuadro (world Y = 2.28 + 1.66 = 3.94m -> 3.50m..4.38m)
   const solonIdx = nodes.length;
@@ -709,15 +705,15 @@ const CUADRO_Y = 2.28; // Cuadro: 1.45m..3.11m (espacio limpio de 1.81m arriba p
 
   const rootIdx = nodes.length;
   nodes.push({
-    name: 'cuadro_bienvenida_pamparios',
+    name: 'cuadro_bienvenida_letrero',
     translation: [x, CUADRO_Y, z],
     rotation: lookAtOriginQuat(x, CUADRO_Y, z),
-    children: [mIdx, oIdx, cIdx, t1Idx, barIdx, diaIdx, t2Idx, solonIdx]
+    children: [mIdx, oIdx, cIdx, tIdx, ...ornamentIdx, solonIdx]
   });
   nodes[0].children.push(rootIdx);
   console.log(
-    `  ✓ Cuadro Pamparios/Bienvenidos + Logo Solón Argüello (+120°) pos=(${x.toFixed(2)}, ${CUADRO_Y}, ${z.toFixed(2)}) | ` +
-    `fila1=${(row1Bb.max.x - row1Bb.min.x).toFixed(2)}m, fila2=${(row2Bb.max.x - row2Bb.min.x).toFixed(2)}m`
+    `  ✓ Cuadro "BIENVENIDOS" + Logo Solón Argüello (+120°) pos=(${x.toFixed(2)}, ${CUADRO_Y}, ${z.toFixed(2)}) | ` +
+    `texto=${(welcomeBb.max.x - welcomeBb.min.x).toFixed(2)}m × ${(welcomeBb.max.y - welcomeBb.min.y).toFixed(2)}m`
   );
 }
 
@@ -860,6 +856,15 @@ const { meshIdx: menuTextMeshIdx } = addGeometryMeshToGltf(
 
 const BTN_Y = 1.02;
 
+// Capas en Z (frente del botón). El marco de oro (BoxGeometry de 0.048) tiene su cara
+// frontal en z = 0.024; antes el panel de cantera también estaba en 0.024 y ambas caras
+// coplanares producían z-fighting (parpadeo / "algo encima" del botón). Cada capa queda
+// ahora separada al menos 4 mm de la anterior.
+const BTN_Z_CANTERA = BTN_ORO_D / 2 + 0.004;     // 0.028 (encima del marco de oro)
+const BTN_Z_ROMBO_ORO = BTN_Z_CANTERA + 0.008;   // caja 0.012 → 0.030..0.042
+const BTN_Z_ROMBO_TURQ = BTN_Z_CANTERA + 0.014;  // caja 0.015 → 0.0345..0.0495
+const BTN_Z_TEXTO = BTN_Z_CANTERA + 0.014;       // texto centrado de 0.024 → 0.030..0.054
+
 // Función auxiliar para agregar los 4 rombos de esquina
 const createCornerDiamonds = (baseName) => {
   const cornerIndices = [];
@@ -873,9 +878,9 @@ const createCornerDiamonds = (baseName) => {
   ];
   corners.forEach(([corX, corY], i) => {
     const dOroIdx = nodes.length;
-    nodes.push({ name: `${baseName}_rombo_oro_${i}`, mesh: btnDiamondOroMeshIdx, translation: [corX, corY, 0.024] });
+    nodes.push({ name: `${baseName}_rombo_oro_${i}`, mesh: btnDiamondOroMeshIdx, translation: [corX, corY, BTN_Z_ROMBO_ORO] });
     const dTurqIdx = nodes.length;
-    nodes.push({ name: `${baseName}_rombo_turq_${i}`, mesh: btnDiamondTurquesaMeshIdx, translation: [corX, corY, 0.026] });
+    nodes.push({ name: `${baseName}_rombo_turq_${i}`, mesh: btnDiamondTurquesaMeshIdx, translation: [corX, corY, BTN_Z_ROMBO_TURQ] });
     cornerIndices.push(dOroIdx, dTurqIdx);
   });
   return cornerIndices;
@@ -892,9 +897,9 @@ const createCornerDiamonds = (baseName) => {
   const oIdx = nodes.length;
   nodes.push({ name: 'boton_acerca_de_marco_oro', mesh: btnFrameOroMeshIdx, translation: [0, 0, 0] });
   const cIdx = nodes.length;
-  nodes.push({ name: 'boton_acerca_de_fondo_cantera', mesh: btnPanelCanteraMeshIdx, translation: [0, 0, 0.024] });
+  nodes.push({ name: 'boton_acerca_de_fondo_cantera', mesh: btnPanelCanteraMeshIdx, translation: [0, 0, BTN_Z_CANTERA] });
   const tIdx = nodes.length;
-  nodes.push({ name: 'boton_acerca_de_texto_oro', mesh: acercaTextMeshIdx, translation: [0, 0, 0.028] });
+  nodes.push({ name: 'boton_acerca_de_texto_oro', mesh: acercaTextMeshIdx, translation: [0, 0, BTN_Z_TEXTO] });
   const diamondIndices = createCornerDiamonds('boton_acerca_de');
 
   const rootIdx = nodes.length;
@@ -919,9 +924,9 @@ const createCornerDiamonds = (baseName) => {
   const oIdx = nodes.length;
   nodes.push({ name: 'boton_menu_marco_oro', mesh: btnFrameOroMeshIdx, translation: [0, 0, 0] });
   const cIdx = nodes.length;
-  nodes.push({ name: 'boton_menu_fondo_cantera', mesh: btnPanelCanteraMeshIdx, translation: [0, 0, 0.024] });
+  nodes.push({ name: 'boton_menu_fondo_cantera', mesh: btnPanelCanteraMeshIdx, translation: [0, 0, BTN_Z_CANTERA] });
   const tIdx = nodes.length;
-  nodes.push({ name: 'boton_menu_texto_oro', mesh: menuTextMeshIdx, translation: [0, 0, 0.028] });
+  nodes.push({ name: 'boton_menu_texto_oro', mesh: menuTextMeshIdx, translation: [0, 0, BTN_Z_TEXTO] });
   const diamondIndices = createCornerDiamonds('boton_menu');
 
   const rootIdx = nodes.length;
@@ -933,6 +938,288 @@ const createCornerDiamonds = (baseName) => {
   });
   nodes[0].children.push(rootIdx);
   console.log(`  ✓ Botón "MENÚ" estilo cuadro de deidad (+120°) pos=(${x.toFixed(2)}, ${BTN_Y}, ${z.toFixed(2)})`);
+}
+
+// ==========================================================================
+// 3.5 AMBIENTACIÓN DE MESAS: GASTRONOMÍA (media luna) Y FIESTAS (música / objetos sagrados)
+//     La mesa de Deidades se deja intacta a petición del equipo.
+// ==========================================================================
+console.log('\n[3.5] Ambientando mesas de Gastronomía y Fiestas con objetos alusivos...');
+
+// Materiales existentes en la base v15 (se reutilizan para no inflar el GLB)
+const MAT_FUEGO_AMARILLO = 6;
+const MAT_FUEGO_NARANJA = 8;
+const MAT_JICARA = 20;              // mat_rukuri_jicara
+const MAT_PIEDRA_VOLCANICA = 35;
+const MAT_CERA_BLANCA = 32;         // mat_kauyumari_blanco
+const MAT_ESTAMBRE_ROJO = 33;
+const MAT_CHAQUIRA = 34;
+const MAT_ESTAMBRE_TURQUESA = 36;
+const MAT_ESTAMBRE_AMARILLO = 37;
+const MAT_MAIZ_AZUL = 45;
+const MAT_FOOD_ATOLE = 46;
+const MAT_FOOD_TAMALES = 47;
+const MAT_TOTOMOXTLE = 48;
+const MAT_CANASTA_PALMA = 49;
+const MAT_FOOD_TORTILLAS = 50;
+const MAT_SERVILLETA = 51;
+const MAT_CAZUELA_BARRO = 55;
+const MAT_FOOD_CALDO = 56;
+const MAT_MAIZ_AMARILLO = 57;
+const MAT_MAIZ_ROJO = 58;
+const MAT_FOOD_MAIZ_TOSTADO = 59;
+const MAT_FOOD_PERRURI = 60;
+const MAT_OLLA_BARRO = 66;
+const MAT_CHILE_SECO = 67;
+const MAT_CALABAZA = 68;
+
+const findNodeIdx = (name) => {
+  const idx = nodes.findIndex((n) => n.name === name);
+  if (idx < 0) {
+    console.error(`Error: no se encontró el nodo base "${name}" en la v15.`);
+    process.exit(1);
+  }
+  return idx;
+};
+
+// Caché de mallas: la misma geometría + material se escribe una sola vez en el binario
+const propMeshCache = new Map();
+const propMesh = (key, buildGeom, matIdx, { textured = false } = {}) => {
+  const cacheKey = `${key}|${matIdx}`;
+  if (!propMeshCache.has(cacheKey)) {
+    const { meshIdx } = addGeometryMeshToGltf(buildGeom(), matIdx, `mesh_utileria_${key}`, {
+      flipVForGltf: textured
+    });
+    propMeshCache.set(cacheKey, meshIdx);
+  }
+  return propMeshCache.get(cacheKey);
+};
+
+const quatY = (deg) => {
+  const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), (deg * Math.PI) / 180);
+  return [q.x, q.y, q.z, q.w];
+};
+const quatXY = (degX, degY) => {
+  const q = new THREE.Quaternion().setFromEuler(
+    new THREE.Euler((degX * Math.PI) / 180, (degY * Math.PI) / 180, 0, 'YXZ')
+  );
+  return [q.x, q.y, q.z, q.w];
+};
+
+/** Agrega un nodo-malla y devuelve su índice. */
+const pushPart = (name, meshIdx, translation, rotation) => {
+  const idx = nodes.length;
+  nodes.push({ name, mesh: meshIdx, translation, ...(rotation ? { rotation } : {}) });
+  return idx;
+};
+/** Agrega un grupo (sin malla) y devuelve su índice. */
+const pushGroup = (name, children, translation, rotation) => {
+  const idx = nodes.length;
+  nodes.push({ name, translation, ...(rotation ? { rotation } : {}), children });
+  return idx;
+};
+
+// ---------- Geometrías base (origen en la base del objeto, Y hacia arriba) ----------
+const latheFrom = (profile, segments = 20) =>
+  new THREE.LatheGeometry(profile.map(([r, y]) => new THREE.Vector2(r, y)), segments);
+
+const geomOlla = (r, h) => () =>
+  latheFrom([
+    [0.0001, 0], [r * 0.55, 0], [r * 0.9, h * 0.22], [r, h * 0.45], [r * 0.88, h * 0.7],
+    [r * 0.58, h * 0.84], [r * 0.56, h * 0.92], [r * 0.66, h]
+  ]);
+const geomCuenco = (r, h) => () =>
+  latheFrom([[0.0001, 0], [r * 0.45, 0], [r * 0.8, h * 0.35], [r * 0.97, h * 0.75], [r, h]]);
+const geomDisco = (r) => () => {
+  const g = new THREE.CircleGeometry(r, 28);
+  g.rotateX(-Math.PI / 2);
+  return g;
+};
+const geomCilindro = (rTop, rBottom, h, seg = 20) => () => {
+  const g = new THREE.CylinderGeometry(rTop, rBottom, h, seg);
+  g.translate(0, h / 2, 0);
+  return g;
+};
+const geomCapsulaAcostada = (r, len) => () => {
+  const g = new THREE.CapsuleGeometry(r, len, 4, 10);
+  g.rotateZ(Math.PI / 2);
+  g.translate(0, r, 0);
+  return g;
+};
+const geomEsfera = (r, sy = 1) => () => {
+  const g = new THREE.SphereGeometry(r, 14, 10);
+  g.scale(1, sy, 1);
+  g.translate(0, r * sy, 0);
+  return g;
+};
+const geomServilleta = (w, d) => () => {
+  const g = new THREE.BoxGeometry(w, 0.004, d);
+  g.translate(0, 0.002, 0);
+  return g;
+};
+const geomCono = (r, h) => () => {
+  const g = new THREE.ConeGeometry(r, h, 10);
+  g.translate(0, h / 2, 0);
+  return g;
+};
+
+// ---------- Utilería compuesta ----------
+const S = 0.004; // altura de la servilleta bordada bajo cada platillo
+
+const servilleta = (base, size = 0.46) =>
+  pushPart(`${base}_servilleta_bordada`, propMesh(`servilleta_${size}`, geomServilleta(size, size), MAT_SERVILLETA), [0, 0, 0], quatY(45));
+
+const platilloTortillas = (base) => {
+  const parts = [servilleta(base)];
+  parts.push(pushPart(`${base}_comal_barro`, propMesh('comal', geomCilindro(0.20, 0.17, 0.025, 28), MAT_CAZUELA_BARRO), [0, S, 0]));
+  parts.push(pushPart(`${base}_pila_tortillas`, propMesh('pila_tortillas', geomCilindro(0.13, 0.13, 0.05, 28), MAT_MAIZ_AMARILLO), [0, S + 0.025, 0]));
+  parts.push(pushPart(`${base}_tortilla_superior`, propMesh('disco_tortilla', geomDisco(0.13), MAT_FOOD_TORTILLAS, { textured: true }), [0, S + 0.0765, 0]));
+  return parts;
+};
+
+const platilloTamales = (base) => {
+  const parts = [servilleta(base)];
+  parts.push(pushPart(`${base}_canasta_palma`, propMesh('canasta', geomCuenco(0.17, 0.10), MAT_CANASTA_PALMA), [0, S, 0]));
+  parts.push(pushPart(`${base}_relleno`, propMesh('disco_tamales', geomDisco(0.155), MAT_FOOD_TAMALES, { textured: true }), [0, S + 0.085, 0]));
+  const tamalPos = [[-0.06, -0.04, 20], [0.05, -0.05, -15], [0.0, 0.05, 80], [-0.07, 0.06, 110], [0.07, 0.05, 60]];
+  tamalPos.forEach(([tx, tz, rot], i) => {
+    parts.push(pushPart(`${base}_tamal_${i}`, propMesh('tamal', geomCapsulaAcostada(0.03, 0.09), MAT_TOTOMOXTLE), [tx, S + 0.085, tz], quatY(rot)));
+  });
+  return parts;
+};
+
+const platilloAtole = (base) => {
+  const parts = [servilleta(base, 0.52)];
+  parts.push(pushPart(`${base}_olla_barro`, propMesh('olla_atole', geomOlla(0.12, 0.26), MAT_OLLA_BARRO), [0.04, S, -0.04]));
+  parts.push(pushPart(`${base}_olla_superficie`, propMesh('disco_atole_olla', geomDisco(0.072), MAT_FOOD_ATOLE, { textured: true }), [0.04, S + 0.235, -0.04]));
+  [[-0.14, 0.12], [0.13, 0.15]].forEach(([jx, jz], i) => {
+    parts.push(pushPart(`${base}_jicara_${i}`, propMesh('jicara_bebida', geomCuenco(0.065, 0.05), MAT_JICARA), [jx, S, jz]));
+    parts.push(pushPart(`${base}_jicara_${i}_atole`, propMesh('disco_atole_jicara', geomDisco(0.058), MAT_FOOD_ATOLE, { textured: true }), [jx, S + 0.042, jz]));
+  });
+  return parts;
+};
+
+const platilloCazuela = (base, foodMat, key) => {
+  const parts = [servilleta(base)];
+  parts.push(pushPart(`${base}_cazuela`, propMesh('cazuela', geomCuenco(0.17, 0.09), MAT_CAZUELA_BARRO), [0, S, 0]));
+  parts.push(pushPart(`${base}_contenido`, propMesh(`disco_${key}`, geomDisco(0.158), foodMat, { textured: true }), [0, S + 0.078, 0]));
+  return parts;
+};
+
+const platilloPerruri = (base) => {
+  const parts = [servilleta(base)];
+  parts.push(pushPart(`${base}_plato_barro`, propMesh('plato', geomCilindro(0.17, 0.14, 0.02, 28), MAT_CAZUELA_BARRO), [0, S, 0]));
+  parts.push(pushPart(`${base}_pan`, propMesh('disco_perruri', geomDisco(0.15), MAT_FOOD_PERRURI, { textured: true }), [0, S + 0.0215, 0]));
+  return parts;
+};
+
+const mazorca = (name, mat, t, rotY) =>
+  [
+    pushPart(`${name}_granos`, propMesh('mazorca', geomCapsulaAcostada(0.035, 0.15), mat), t, quatY(rotY)),
+    pushPart(`${name}_hojas`, propMesh('hoja_mazorca', geomCono(0.03, 0.10), MAT_TOTOMOXTLE),
+      [t[0] + 0.12 * Math.cos((rotY * Math.PI) / 180), t[1] + 0.035, t[2] - 0.12 * Math.sin((rotY * Math.PI) / 180)],
+      quatXY(0, rotY))
+  ];
+
+// ---------- 1. Mesa de media luna de Gastronomía ----------
+{
+  const mesaIdx = findNodeIdx('mesa_gastronomia_media_luna');
+  const TOP_Y = 0.865; // tablero (0.785) + espesor (0.08)
+  const RX = 1.30;
+  const RZ = 1.62;
+
+  // Mismo orden que los recuadros del muro (de -Z a +Z): tortillas/caldo, tamales/maíz, perruri/atole
+  const platillos = [
+    { key: 'tortillas', deg: -54, build: platilloTortillas },
+    { key: 'caldo_toro', deg: -32, build: (b) => platilloCazuela(b, MAT_FOOD_CALDO, 'caldo') },
+    { key: 'tamales', deg: -11, build: platilloTamales },
+    { key: 'maiz_tostado', deg: 11, build: (b) => platilloCazuela(b, MAT_FOOD_MAIZ_TOSTADO, 'maiz_tostado') },
+    { key: 'perruri', deg: 32, build: platilloPerruri },
+    { key: 'atole', deg: 54, build: platilloAtole }
+  ];
+
+  const groupChildren = [];
+  for (const p of platillos) {
+    const rad = (p.deg * Math.PI) / 180;
+    const base = `utileria_gastronomia_${p.key}`;
+    const parts = p.build(base);
+    groupChildren.push(pushGroup(base, parts, [-RX * Math.cos(rad), TOP_Y, RZ * Math.sin(rad)]));
+  }
+
+  // Fila trasera (junto al muro, baja para no tapar las cédulas): maíces criollos, calabazas y chiles
+  const back = [];
+  back.push(...mazorca('utileria_gastronomia_mazorca_azul', MAT_MAIZ_AZUL, [-0.42, TOP_Y, -0.62], 12));
+  back.push(...mazorca('utileria_gastronomia_mazorca_amarilla', MAT_MAIZ_AMARILLO, [-0.38, TOP_Y, -0.48], -8));
+  back.push(...mazorca('utileria_gastronomia_mazorca_roja', MAT_MAIZ_ROJO, [-0.44, TOP_Y, -0.34], 18));
+  back.push(...mazorca('utileria_gastronomia_mazorca_blanca', MAT_CERA_BLANCA, [-0.40, TOP_Y, -0.20], -4));
+  back.push(pushPart('utileria_gastronomia_calabaza_1', propMesh('calabaza_grande', geomEsfera(0.11, 0.72), MAT_CALABAZA), [-0.40, TOP_Y, 0.22]));
+  back.push(pushPart('utileria_gastronomia_calabaza_2', propMesh('calabaza_chica', geomEsfera(0.08, 0.75), MAT_CALABAZA), [-0.52, TOP_Y, 0.42]));
+  [[-0.36, 0.62, 30], [-0.42, 0.70, -20], [-0.34, 0.76, 70], [-0.46, 0.80, 5]].forEach(([cx, cz, r], i) => {
+    back.push(pushPart(`utileria_gastronomia_chile_seco_${i}`, propMesh('chile_seco', geomCapsulaAcostada(0.014, 0.07), MAT_CHILE_SECO), [cx, TOP_Y, cz], quatY(r)));
+  });
+  back.push(pushPart('utileria_gastronomia_metate_mano', propMesh('mano_metate', geomCapsulaAcostada(0.03, 0.20), MAT_PIEDRA_VOLCANICA), [-0.40, TOP_Y, 0.0], quatY(90)));
+  groupChildren.push(pushGroup('utileria_gastronomia_fila_trasera', back, [0, 0, 0]));
+
+  const rootIdx = pushGroup('utileria_mesa_gastronomia', groupChildren, [0, 0, 0]);
+  nodes[mesaIdx].children = [...(nodes[mesaIdx].children || []), rootIdx];
+  console.log(`  ✓ Mesa de media luna: ${platillos.length} platillos sobre servilletas bordadas + maíces criollos, calabazas y chiles.`);
+}
+
+// ---------- 2. Mesas de Fiestas (velas, jícaras votivas, tejuino y cempasúchil) ----------
+const velaCeremonial = (base, h) => [
+  pushPart(`${base}_cera`, propMesh(`vela_${h}`, geomCilindro(0.022, 0.024, h, 14), MAT_CERA_BLANCA), [0, 0, 0]),
+  pushPart(`${base}_liston_rojo`, propMesh('liston_vela', geomCilindro(0.026, 0.026, 0.02, 14), MAT_ESTAMBRE_ROJO), [0, h * 0.45, 0]),
+  pushPart(`${base}_liston_turquesa`, propMesh('liston_vela_t', geomCilindro(0.026, 0.026, 0.012, 14), MAT_ESTAMBRE_TURQUESA), [0, h * 0.45 + 0.026, 0]),
+  pushPart(`${base}_mecha_fuego`, propMesh('flama_vela', geomCono(0.012, 0.045), MAT_FUEGO_AMARILLO), [0, h + 0.004, 0]),
+  pushPart(`${base}_flama_naranja`, propMesh('flama_vela_base', geomEsfera(0.011, 1.1), MAT_FUEGO_NARANJA), [0, h + 0.002, 0])
+];
+
+const jicaraVotiva = (base) => [
+  pushPart(`${base}_jicara`, propMesh('jicara_votiva', geomCuenco(0.08, 0.055), MAT_JICARA), [0, 0, 0]),
+  pushPart(`${base}_chaquira`, propMesh('disco_chaquira', geomDisco(0.072), MAT_CHAQUIRA), [0, 0.048, 0])
+];
+
+const jicaraCempasuchil = (base) => {
+  const parts = [pushPart(`${base}_jicara`, propMesh('jicara_flores', geomCuenco(0.075, 0.05), MAT_JICARA), [0, 0, 0])];
+  const flores = [[0, 0], [0.04, 0.02], [-0.04, 0.02], [0.02, -0.04], [-0.025, -0.035], [0.0, 0.045], [0.045, -0.02]];
+  flores.forEach(([fx, fz], i) => {
+    parts.push(pushPart(`${base}_flor_${i}`, propMesh('flor_cempasuchil', geomEsfera(0.026, 0.8), i % 2 ? MAT_FUEGO_NARANJA : MAT_ESTAMBRE_AMARILLO), [fx, 0.032, fz]));
+  });
+  return parts;
+};
+
+const ollaTejuino = (base) => [
+  pushPart(`${base}_olla`, propMesh('olla_tejuino', geomOlla(0.09, 0.19), MAT_OLLA_BARRO), [0, 0, 0]),
+  pushPart(`${base}_tejuino`, propMesh('disco_tejuino', geomDisco(0.054), MAT_JICARA), [0, 0.172, 0]),
+  pushPart(`${base}_jicara_servir`, propMesh('jicara_bebida', geomCuenco(0.065, 0.05), MAT_JICARA), [0.13, 0, 0.02])
+];
+
+{
+  const FIESTA_TOP_Y = 0.85; // tablero de las mesas de fiesta (0.82 + 0.03)
+
+  // Mesa de música (kanari, xaweri, sonajas): trío de velas y jícara votiva con chaquira
+  const musicaIdx = findNodeIdx('estacion_musica_fiesta');
+  const musicaChildren = [
+    pushGroup('utileria_fiesta_musica_vela_0', velaCeremonial('utileria_fiesta_musica_vela_0', 0.20), [0.64, FIESTA_TOP_Y, 0.18]),
+    pushGroup('utileria_fiesta_musica_vela_1', velaCeremonial('utileria_fiesta_musica_vela_1', 0.15), [0.71, FIESTA_TOP_Y, 0.27]),
+    pushGroup('utileria_fiesta_musica_vela_2', velaCeremonial('utileria_fiesta_musica_vela_2', 0.12), [0.60, FIESTA_TOP_Y, 0.30]),
+    pushGroup('utileria_fiesta_musica_jicara_votiva', jicaraVotiva('utileria_fiesta_musica_jicara_votiva'), [-0.05, FIESTA_TOP_Y, 0.27])
+  ];
+  const musicaRoot = pushGroup('utileria_mesa_fiesta_musica', musicaChildren, [0, 0, 0]);
+  nodes[musicaIdx].children = [...(nodes[musicaIdx].children || []), musicaRoot];
+
+  // Mesa de objetos sagrados (flechas, tsikuri, morral, sombrero): tejuino, cempasúchil y velas
+  const objetosIdx = findNodeIdx('estacion_objetos_sagrados_fiesta');
+  const objetosChildren = [
+    pushGroup('utileria_fiesta_objetos_tejuino', ollaTejuino('utileria_fiesta_objetos_tejuino'), [-0.44, FIESTA_TOP_Y, 0.25]),
+    pushGroup('utileria_fiesta_objetos_cempasuchil', jicaraCempasuchil('utileria_fiesta_objetos_cempasuchil'), [0.68, FIESTA_TOP_Y, -0.28]),
+    pushGroup('utileria_fiesta_objetos_vela_0', velaCeremonial('utileria_fiesta_objetos_vela_0', 0.18), [-0.70, FIESTA_TOP_Y, -0.04]),
+    pushGroup('utileria_fiesta_objetos_vela_1', velaCeremonial('utileria_fiesta_objetos_vela_1', 0.13), [-0.70, FIESTA_TOP_Y, -0.18])
+  ];
+  const objetosRoot = pushGroup('utileria_mesa_fiesta_objetos', objetosChildren, [0, 0, 0]);
+  nodes[objetosIdx].children = [...(nodes[objetosIdx].children || []), objetosRoot];
+
+  console.log('  ✓ Mesas de Fiestas: velas ceremoniales, jícara votiva con chaquira, olla de tejuino y ofrenda de cempasúchil.');
 }
 
 // ==========================================================================

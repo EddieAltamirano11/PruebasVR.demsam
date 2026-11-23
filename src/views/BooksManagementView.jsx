@@ -9,6 +9,7 @@ import {
   subscribeInventory
 } from '../services/inventoryService';
 import { getCultures, subscribeCultures } from '../services/culturalService';
+import { validateIsbn, normalizeIsbn, lookupIsbn, friendlyErrorMessage } from '../utils/isbn';
 import {
   BookOpen,
   Plus,
@@ -43,6 +44,8 @@ export function BooksManagementView() {
   const [editingBook, setEditingBook] = useState(null);
   const [deletingBook, setDeletingBook] = useState(null);
   const [feedbackMsg, setFeedbackMsg] = useState(null);
+  const [isbnError, setIsbnError] = useState('');
+  const [isbnLookupState, setIsbnLookupState] = useState('idle'); // 'idle' | 'loading' | 'found' | 'notfound'
 
   // Form State
   const [formData, setFormData] = useState({
@@ -116,7 +119,37 @@ export function BooksManagementView() {
       seccion: 'Sala de Culturas Vivas & VR (SEC-VR-01)',
       sinopsis: ''
     });
+    setIsbnError('');
+    setIsbnLookupState('idle');
     setIsModalOpen(true);
+  };
+
+  // Autocompletar datos bibliográficos a partir del ISBN (solo llena campos vacíos)
+  const handleIsbnAutocomplete = async () => {
+    const check = validateIsbn(formData.isbn);
+    if (!check.valid || !check.normalized) {
+      setIsbnError(check.message || 'Escribe un ISBN para autocompletar.');
+      return;
+    }
+    setIsbnError('');
+    setIsbnLookupState('loading');
+    const found = await lookupIsbn(check.normalized);
+    if (!found) {
+      setIsbnLookupState('notfound');
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      titulo: prev.titulo.trim() ? prev.titulo : found.titulo,
+      autor: prev.autor.trim() ? prev.autor : found.autor,
+      editorial:
+        !prev.editorial.trim() || prev.editorial === 'Fondo Editorial Indígena de Nayarit'
+          ? found.editorial || prev.editorial
+          : prev.editorial,
+      anio: found.anio || prev.anio,
+      codigo: prev.codigo || check.normalized
+    }));
+    setIsbnLookupState('found');
   };
 
   // Abrir modal de editar libro
@@ -136,6 +169,8 @@ export function BooksManagementView() {
       seccion: book.seccion || 'Sala de Culturas Vivas & VR (SEC-VR-01)',
       sinopsis: book.sinopsis || ''
     });
+    setIsbnError('');
+    setIsbnLookupState('idle');
     setIsModalOpen(true);
   };
 
@@ -144,10 +179,21 @@ export function BooksManagementView() {
     e.preventDefault();
     if (!formData.titulo.trim() || !formData.autor.trim()) return;
 
+    const isbnCheck = validateIsbn(formData.isbn);
+    if (!isbnCheck.valid) {
+      setIsbnError(isbnCheck.message);
+      return;
+    }
+
     try {
       const selectedCultObj = cultures.find((c) => c.id === formData.cultura_id);
       const payload = {
         ...formData,
+        titulo: formData.titulo.trim(),
+        autor: formData.autor.trim(),
+        isbn: formData.isbn.trim(),
+        codigo: formData.codigo?.trim() || isbnCheck.normalized,
+        stock: Math.max(0, Number.parseInt(formData.stock, 10) || 0),
         cultura: selectedCultObj ? selectedCultObj.nombre : 'Cultura Viva'
       };
 
@@ -161,7 +207,7 @@ export function BooksManagementView() {
       setIsModalOpen(false);
       loadAll();
     } catch (err) {
-      showFeedback('Error al guardar el libro: ' + err.message, 'error');
+      showFeedback('No se pudo guardar el libro. ' + friendlyErrorMessage(err), 'error');
     }
   };
 
@@ -174,7 +220,7 @@ export function BooksManagementView() {
       setDeletingBook(null);
       loadAll();
     } catch (err) {
-      showFeedback('Error al eliminar libro: ' + err.message, 'error');
+      showFeedback('No se pudo eliminar el libro. ' + friendlyErrorMessage(err), 'error');
     }
   };
 
@@ -199,11 +245,12 @@ export function BooksManagementView() {
   // Filtrado reactivo de libros
   const filteredBooks = books.filter((b) => {
     // 1. Búsqueda de texto
-    const term = search.toLowerCase();
+    const term = search.trim().toLowerCase();
+    const isbnTerm = normalizeIsbn(search);
     const matchesSearch =
       b.titulo?.toLowerCase().includes(term) ||
       b.autor?.toLowerCase().includes(term) ||
-      b.isbn?.toLowerCase().includes(term) ||
+      (isbnTerm && normalizeIsbn(b.isbn).includes(isbnTerm)) ||
       b.cultura?.toLowerCase().includes(term) ||
       b.editorial?.toLowerCase().includes(term);
 
@@ -583,6 +630,56 @@ export function BooksManagementView() {
             </div>
 
             <form onSubmit={handleSubmitForm} className="space-y-3.5 text-xs">
+              <div className="p-3 rounded-lg bg-amber-50/60 border border-amber-100">
+                <label htmlFor="book-isbn" className="block font-bold text-slate-700 mb-1">
+                  ISBN (opcional · con o sin guiones)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="book-isbn"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="978-607-8423-62-0"
+                    value={formData.isbn}
+                    onChange={(e) => {
+                      setFormData({ ...formData, isbn: e.target.value });
+                      if (isbnError) setIsbnError('');
+                      if (isbnLookupState !== 'idle') setIsbnLookupState('idle');
+                    }}
+                    onBlur={() => setIsbnError(validateIsbn(formData.isbn).message)}
+                    aria-invalid={Boolean(isbnError)}
+                    className={`flex-1 px-3 py-2 bg-white border rounded-lg focus:outline-none focus:border-[#E5A00D] ${
+                      isbnError ? 'border-red-400' : 'border-slate-200'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleIsbnAutocomplete}
+                    disabled={isbnLookupState === 'loading'}
+                    className="px-3 py-2 rounded-lg bg-[#E5A00D] hover:bg-[#c98a08] text-white font-bold flex items-center gap-1 disabled:opacity-60"
+                  >
+                    <Sparkles size={14} />
+                    {isbnLookupState === 'loading' ? 'Buscando…' : 'Autocompletar'}
+                  </button>
+                </div>
+                {isbnError && <p className="mt-1 text-red-600 font-medium">{isbnError}</p>}
+                {!isbnError && isbnLookupState === 'found' && (
+                  <p className="mt-1 text-emerald-700 font-medium">
+                    Datos encontrados: revisa y completa lo que falte.
+                  </p>
+                )}
+                {!isbnError && isbnLookupState === 'notfound' && (
+                  <p className="mt-1 text-slate-600">
+                    No encontramos este ISBN en el catálogo público; llena los datos manualmente.
+                  </p>
+                )}
+                {!isbnError && isbnLookupState === 'idle' && (
+                  <p className="mt-1 text-slate-500">
+                    Escribe el ISBN y pulsa Autocompletar para llenar título, autor, editorial y año.
+                  </p>
+                )}
+              </div>
+
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
                   Título de la Obra *
@@ -631,7 +728,7 @@ export function BooksManagementView() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">
                     Ejemplares (Stock) *
@@ -660,18 +757,6 @@ export function BooksManagementView() {
                   />
                 </div>
 
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">
-                    ISBN / Código
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="978-607-..."
-                    value={formData.isbn}
-                    onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#E5A00D]"
-                  />
-                </div>
               </div>
 
               <div>

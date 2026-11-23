@@ -460,6 +460,57 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(mat.pbrMetallicRoughness.metallicFactor).toBeCloseTo(0.5, 2);
     });
 
+    it('separa en Z las capas de los botones del muro para evitar z-fighting (cantera por delante del marco de oro)', () => {
+      const buf = fs.readFileSync(path.resolve(process.cwd(), 'public', 'museo_wixarika_v16.glb'));
+      const gltf = JSON.parse(buf.toString('utf8', 20, 20 + buf.readUInt32LE(12)));
+      const byName = (n) => gltf.nodes.find((node) => node.name === n);
+
+      for (const prefix of ['boton_acerca_de', 'boton_menu']) {
+        const oro = byName(`${prefix}_marco_oro`);
+        const oroAcc = gltf.accessors[gltf.meshes[oro.mesh].primitives[0].attributes.POSITION];
+        const oroFrontZ = oroAcc.max[2];
+        const canteraZ = byName(`${prefix}_fondo_cantera`).translation[2];
+        const textoZ = byName(`${prefix}_texto_oro`).translation[2];
+        expect(canteraZ - oroFrontZ).toBeGreaterThanOrEqual(0.003);
+        expect(textoZ).toBeGreaterThan(canteraZ);
+      }
+    });
+
+    it('el letrero de bienvenida muestra solo "BIENVENIDOS" (sin la fila PAMPARIOS)', () => {
+      const buf = fs.readFileSync(path.resolve(process.cwd(), 'public', 'museo_wixarika_v16.glb'));
+      const gltf = JSON.parse(buf.toString('utf8', 20, 20 + buf.readUInt32LE(12)));
+      expect(gltf.nodes.some((n) => /pamparios/i.test(n.name))).toBe(false);
+      expect(gltf.meshes.some((m) => /pamparios/i.test(m.name))).toBe(false);
+      const letrero = gltf.nodes.find((n) => n.name === 'cuadro_bienvenida_letrero');
+      expect(letrero).toBeDefined();
+      expect(letrero.children.some((ci) => gltf.nodes[ci].name === 'letrero_bienvenida_texto')).toBe(true);
+    });
+
+    it('ambienta las mesas de Gastronomía y Fiestas con utilería alusiva, dejando intacta la de Deidades', () => {
+      const buf = fs.readFileSync(path.resolve(process.cwd(), 'public', 'museo_wixarika_v16.glb'));
+      const gltf = JSON.parse(buf.toString('utf8', 20, 20 + buf.readUInt32LE(12)));
+      const childNames = (parentName) => {
+        const parent = gltf.nodes.find((n) => n.name === parentName);
+        return (parent.children || []).map((ci) => gltf.nodes[ci].name);
+      };
+
+      expect(childNames('mesa_gastronomia_media_luna')).toContain('utileria_mesa_gastronomia');
+      const platillos = childNames('utileria_mesa_gastronomia');
+      ['tortillas', 'caldo_toro', 'tamales', 'maiz_tostado', 'perruri', 'atole'].forEach((p) => {
+        expect(platillos).toContain(`utileria_gastronomia_${p}`);
+      });
+
+      expect(childNames('estacion_musica_fiesta')).toContain('utileria_mesa_fiesta_musica');
+      expect(childNames('estacion_objetos_sagrados_fiesta')).toContain('utileria_mesa_fiesta_objetos');
+
+      // Ninguna estación de deidad recibe utilería nueva
+      const deidades = gltf.nodes.filter((n) => n.name.startsWith('estacion_deidad_'));
+      expect(deidades.length).toBe(6);
+      deidades.forEach((d) => {
+        (d.children || []).forEach((ci) => expect(gltf.nodes[ci].name.startsWith('utileria_')).toBe(false));
+      });
+    });
+
     it('enlarges 3D wall buttons to match deity plaque scale (2.18m x 0.62m) and models acute accent on MENÚ', () => {
       const glbPath = path.resolve(process.cwd(), 'public', 'museo_wixarika_v16.glb');
       const buf = fs.readFileSync(glbPath);

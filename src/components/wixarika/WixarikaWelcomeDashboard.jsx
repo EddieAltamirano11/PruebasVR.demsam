@@ -238,6 +238,90 @@ export const WIXARIKA_REFERENCES = {
 // Color unificado ceremonial para TODOS los iconos del menú principal
 const UNIFIED_ICON_COLOR = '#b45309';
 
+/**
+ * Convierte una URL larga en una etiqueta corta y legible (solo dominio),
+ * evitando que enlaces sin espacios desborden la card y se encimen con la vecina.
+ */
+export const formatReferenceLink = (link) => {
+  if (!link) return '';
+  try {
+    return new URL(link).hostname.replace(/^www\./, '');
+  } catch {
+    return link;
+  }
+};
+
+/**
+ * Bloque de texto apilado (título → referencia → enlace) para las cards de referencias.
+ * Mide la altura real de cada bloque (troika onSync) y coloca el siguiente justo debajo,
+ * de modo que títulos de 2 líneas o referencias largas nunca se enciman entre sí.
+ */
+function ReferenceCardText({ title, reference, link, top = -0.20, width = 2.36 }) {
+  const GAP = 0.05;
+  const [heights, setHeights] = useState({ title: 0.14, reference: 0.24 });
+
+  const measure = (key) => (mesh) => {
+    const bounds = mesh?.textRenderInfo?.blockBounds;
+    if (!bounds) return;
+    const h = bounds[3] - bounds[1];
+    setHeights((prev) => (Math.abs(prev[key] - h) > 0.001 ? { ...prev, [key]: h } : prev));
+  };
+
+  // Referencias muy largas (ej. fichas bibliográficas con ISBN) usan un cuerpo de letra menor
+  const referenceFontSize = reference && reference.length > 160 ? 0.074 : 0.086;
+  const referenceY = top - heights.title - GAP;
+  const linkY = referenceY - heights.reference - GAP;
+
+  return (
+    <group>
+      <Text
+        position={[0, top, 0.004]}
+        fontSize={0.108}
+        lineHeight={1.15}
+        color="#1c1917"
+        anchorX="center"
+        anchorY="top"
+        maxWidth={width}
+        overflowWrap="break-word"
+        textAlign="center"
+        onSync={measure('title')}
+      >
+        {title}
+      </Text>
+
+      <Text
+        position={[0, referenceY, 0.004]}
+        fontSize={referenceFontSize}
+        lineHeight={1.25}
+        color="#44403c"
+        anchorX="center"
+        anchorY="top"
+        maxWidth={width}
+        overflowWrap="break-word"
+        textAlign="center"
+        onSync={measure('reference')}
+      >
+        {reference}
+      </Text>
+
+      {link && (
+        <Text
+          position={[0, linkY, 0.004]}
+          fontSize={0.080}
+          color="#b45309"
+          anchorX="center"
+          anchorY="top"
+          maxWidth={width}
+          overflowWrap="break-word"
+          textAlign="center"
+        >
+          {`Fuente: ${formatReferenceLink(link)}`}
+        </Text>
+      )}
+    </group>
+  );
+}
+
 // Estaciones culturales oficiales para navegación integrada dentro del menú principal
 export const DEFAULT_CULTURAL_STATIONS = [
   {
@@ -761,7 +845,7 @@ export function WixarikaWelcomeDashboard({
               maxWidth={panelWidth * 0.78}
               textAlign="center"
             >
-              Fija tu mirada durante 3 segundos o pulsa el botón para interactuar
+              Fija tu mirada durante 2 segundos o pulsa el botón para interactuar
             </Text>
           </group>
         </group>
@@ -776,11 +860,12 @@ export function WixarikaWelcomeDashboard({
           <group position={[0, 1.48, 0]}>
             <WixarikaVRButton
               id="btn-ref-back-top"
+              label="Volver"
               iconName="arrow-left"
               variant="cantera"
-              width={0.42}
-              height={0.26}
-              position={[-2.75, 0, 0]}
+              width={0.92}
+              height={0.30}
+              position={[-2.62, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -795,7 +880,7 @@ export function WixarikaWelcomeDashboard({
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
-              maxWidth={panelWidth * 0.70}
+              maxWidth={panelWidth * 0.64}
               textAlign="center"
             >
               REFERENCIAS
@@ -897,7 +982,7 @@ export function WixarikaWelcomeDashboard({
               maxWidth={panelWidth * 0.78}
               textAlign="center"
             >
-              Fija tu mirada durante 3 segundos o pulsa el botón para interactuar
+              Fija tu mirada durante 2 segundos o pulsa el botón para interactuar
             </Text>
           </group>
         </group>
@@ -912,11 +997,12 @@ export function WixarikaWelcomeDashboard({
           <group position={[0, 1.48, 0]}>
             <WixarikaVRButton
               id="btn-ref-detail-back-top"
+              label="Volver"
               iconName="arrow-left"
               variant="cantera"
-              width={0.42}
-              height={0.26}
-              position={[-2.75, 0, 0]}
+              width={0.92}
+              height={0.30}
+              position={[-2.62, 0, 0]}
               onClick={handleReturnToAbout}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -927,11 +1013,11 @@ export function WixarikaWelcomeDashboard({
 
             <Text
               position={[0, 0.02, 0]}
-              fontSize={0.200}
+              fontSize={0.170}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
-              maxWidth={panelWidth * 0.70}
+              maxWidth={panelWidth * 0.64}
               textAlign="center"
             >
               {activeRefCategory === 'deidades'
@@ -996,17 +1082,17 @@ export function WixarikaWelcomeDashboard({
                   </group>
 
                   {/* Área de Imagen Superior (Misma imagen de los cuadros o portada de libros) */}
-                  <group position={[0, 0.42, 0.002]}>
+                  <group position={[0, 0.48, 0.002]}>
                     {item.image ? (
                       <ReferenceCardImage
                         url={item.image}
-                        width={activeRefCategory === 'libros' ? 0.96 : 2.40}
-                        height={1.26}
+                        width={activeRefCategory === 'libros' ? 0.88 : 2.40}
+                        height={1.16}
                       />
                     ) : (
                       <group position={[0, 0, 0]}>
                         <mesh position={[0, 0, 0]}>
-                          <planeGeometry args={[2.40, 1.26]} />
+                          <planeGeometry args={[2.40, 1.16]} />
                           <meshBasicMaterial color="#f0e6d2" side={THREE.DoubleSide} />
                         </mesh>
                         <LucideVRIcon
@@ -1031,56 +1117,25 @@ export function WixarikaWelcomeDashboard({
 
                     {/* Marco dorado delgado para la imagen */}
                     <mesh position={[0, 0, 0.001]}>
-                      <planeGeometry args={[activeRefCategory === 'libros' ? 1.00 : 2.42, 1.28]} />
+                      <planeGeometry args={[activeRefCategory === 'libros' ? 0.92 : 2.42, 1.18]} />
                       <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
                     </mesh>
                   </group>
 
                   {/* Línea divisoria dorada bajo la imagen */}
-                  <mesh position={[0, -0.24, 0.003]}>
+                  <mesh position={[0, -0.14, 0.003]}>
                     <planeGeometry args={[2.42, 0.004]} />
                     <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
                   </mesh>
 
-                  {/* Título de la obra o platillo */}
-                  <Text
-                    position={[0, -0.34, 0.004]}
-                    fontSize={0.120}
-                    color="#1c1917"
-                    anchorX="center"
-                    anchorY="top"
-                    maxWidth={2.42}
-                    textAlign="center"
-                  >
-                    {item.title}
-                  </Text>
-
-                  {/* Referencia de dónde fue sacado */}
-                  <Text
-                    position={[0, -0.56, 0.004]}
-                    fontSize={0.098}
-                    color="#44403c"
-                    anchorX="center"
-                    anchorY="top"
-                    maxWidth={2.42}
-                    lineHeight={1.28}
-                    textAlign="center"
-                  >
-                    {item.reference}
-                  </Text>
-
-                  {/* Enlace o fuente digital */}
-                  <Text
-                    position={[0, -0.92, 0.004]}
-                    fontSize={0.090}
-                    color="#b45309"
-                    anchorX="center"
-                    anchorY="top"
-                    maxWidth={2.42}
-                    textAlign="center"
-                  >
-                    {item.link}
-                  </Text>
+                  {/* Título, referencia y fuente apilados con medición real (sin encimarse) */}
+                  <ReferenceCardText
+                    title={item.title}
+                    reference={item.reference}
+                    link={item.link}
+                    top={-0.20}
+                    width={2.36}
+                  />
                 </group>
               );
             })}
@@ -1176,11 +1231,12 @@ export function WixarikaWelcomeDashboard({
           <group position={[0, 1.48, 0]}>
             <WixarikaVRButton
               id="btn-books-back-top"
+              label="Volver"
               iconName="arrow-left"
               variant="cantera"
-              width={0.42}
-              height={0.26}
-              position={[-2.75, 0, 0]}
+              width={0.92}
+              height={0.30}
+              position={[-2.62, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -1190,12 +1246,12 @@ export function WixarikaWelcomeDashboard({
             />
 
             <Text
-              position={[-0.38, 0.02, 0]}
-              fontSize={0.145}
+              position={[-0.08, 0.02, 0]}
+              fontSize={0.130}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
-              maxWidth={4.10}
+              maxWidth={3.80}
             >
               LIBROS RECOMENDADOS · BIBLIOTECA SOLÓN ARGÜELLO
             </Text>
@@ -1453,11 +1509,12 @@ export function WixarikaWelcomeDashboard({
           <group position={[0, 1.50, 0]}>
             <WixarikaVRButton
               id="btn-videos-back-top"
+              label="Volver"
               iconName="arrow-left"
               variant="cantera"
-              width={0.42}
-              height={0.26}
-              position={[-2.75, 0, 0]}
+              width={0.92}
+              height={0.30}
+              position={[-2.62, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -1468,10 +1525,11 @@ export function WixarikaWelcomeDashboard({
 
             <Text
               position={[0, 0.02, 0]}
-              fontSize={0.145}
+              fontSize={0.135}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
+              maxWidth={4.10}
             >
               SALA AUDIOVISUAL · BIBLIOTECA SOLÓN ARGÜELLO
             </Text>

@@ -40,7 +40,7 @@ function isVisibleInHierarchy(obj) {
  * Características:
  * - Mira fija en el centro del eje visual de la cámara (z = -1.2m).
  * - Anillo de contraste exterior (WCAG AAA) para legibilidad en salas iluminadas.
- * - Temporizador circular de mirada (Gaze Fuse) calibrado a 3.0 segundos.
+ * - Temporizador circular de mirada (Gaze Fuse) calibrado a 2.0 segundos.
  * - Soporte completo de gatillo físico Homido Grab / Cardboard:
  *   1. WebXR nativo (`XRSession` selectstart/select + `gl.xr.getController(0/1)`),
  *      capturando los eventos `gaze`/`screen` de Chrome Android WebXR.
@@ -372,7 +372,7 @@ export function GazeReticle({
               />
             </mesh>
 
-            {/* 4. Disco interior de progreso Gaze Fuse (se expande circularmente de 0 a 3.0s) */}
+            {/* 4. Disco interior de progreso Gaze Fuse (se expande circularmente de 0 a 2.0s) */}
             <mesh ref={progressMeshRef} scale={[0, 0, 1]} renderOrder={9999}>
               <circleGeometry args={[0.0145, 32]} />
               <meshBasicMaterial

@@ -453,7 +453,7 @@ export function MuseumScene({
         />
       )}
 
-      {/* Reticula Central con Gaze Fuse calibrado a 3.0 segundos + gatillo físico Homido Grab / WebXR */}
+      {/* Reticula Central con Gaze Fuse calibrado a 2.0 segundos + gatillo físico Homido Grab / WebXR */}
       <GazeReticle
         interactiveObjects={getInteractiveObjects}
         distance={1.2}

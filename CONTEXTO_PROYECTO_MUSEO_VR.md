@@ -90,9 +90,9 @@ A lo largo del proyecto se definió y consolidó una **filosofía de diseño est
 * **Cinemática:** Se utiliza `THREE.MathUtils.damp(current, target, 4.5, delta)` en `useFrame`, logrando una transición ceremonial suave de aproximadamente 0.7 segundos sin saltos bruscos.
 * **Ocultamiento del Menú:** Al elegir una sala, el menú flotante se oculta automáticamente para que el visitante contemple directamente las obras en 3D en la pared sin barreras visuales. El menú puede volver a desplegarse en cualquier instante con el botón insignia inferior (*Mostrar Menú*).
 
-### B. Fijación Visual Calibrada a 3.0 Segundos (Gaze Fuse)
+### B. Fijación Visual Calibrada a 2.0 Segundos (Gaze Fuse)
 * Se utiliza un sistema de puntero central (*Gaze Reticle*) con indicador circular de progreso.
-* **Duración Calibrada:** Se ajustó a **3.0 segundos continuos** (`GAZE_FUSE_DEFAULT_DURATION = 3.0`). Esto previene activaciones accidentales mientras el visitante simplemente lee o contempla una opción.
+* **Duración Calibrada:** Se ajustó a **2.0 segundos continuos** (`GAZE_FUSE_DEFAULT_DURATION = 2.0`). Sigue evitando activaciones accidentales mientras el visitante lee, pero reduce un tercio la espera por acción (antes 3.0 s). El gatillo físico del visor (Homido Grab) activa al instante sin esperar.
 * **Aislamiento de Clics Fantasma:** Cuando se abre una ventana modal o ficha de cuadro, el raycaster desactiva temporalmente todos los objetos interactivos que están detrás del modal. De esta forma, el usuario no "traspasa" el menú ni activa cuadros de fondo por accidente.
 
 ### C. Geometría y Cero Solapamiento en la Sala de Video
@@ -136,7 +136,7 @@ c:/GitHub/PruebasVR.demsam/
 │   │       └── wixarikaArtworksData.js      # Datos curatoriales de las 9 obras
 │   └── services/
 │       ├── audioService.js          # Audio tradicional y efectos de clic/hover
-│       ├── gazeFuseService.js       # Lógica matemática de temporización visual (3.0s)
+│       ├── gazeFuseService.js       # Lógica matemática de temporización visual (2.0s)
 │       └── videoService.js          # Detección HTTP Range y resolución de fuentes
 ```
 
@@ -188,7 +188,7 @@ npm run dev
 ### 5. Suite de Verificación de Calidad (QA)
 Antes de realizar cualquier commit o entrega, ejecuta siempre estos comandos en Linux:
 ```bash
-# 1. Pruebas unitarias completas (59 tests deben pasar)
+# 1. Pruebas unitarias completas (91 tests deben pasar)
 npm test
 
 # 2. Análisis estático de código (0 errores, 0 advertencias)
@@ -207,7 +207,32 @@ npm run build
 
 ---
 
-## 6. Resumen de Decisiones de Diseño para Futuras Modificaciones
+## 6. Evaluación de Usabilidad: Cumplimiento de las 10 Leyes de UX
+
+Mapa de evidencia para la ficha de pruebas cruzadas. Cada ley indica **qué hace la app** y **dónde comprobarlo**.
+
+| # | Ley | Cómo se cumple | Dónde verlo |
+|---|-----|----------------|-------------|
+| 1 | **Jakob** (familiaridad) | Retícula central con anillo de progreso, igual que las apps de Cardboard. "X" de cierre siempre arriba a la derecha y botón **"← Volver"** con texto siempre arriba a la izquierda. El admin usa el patrón estándar tabla + buscador + modal de alta/edición. | Menú VR (todas las vistas), `/admin` → Libros |
+| 2 | **Fitts** (tamaño y distancia) | Botones del muro "ACERCA DE"/"MENÚ" de 2.18 × 0.62 m. Botones "Volver" ampliados de 0.42 × 0.26 m a 0.92 × 0.30 m, del mismo alto que la paginación. Gatillo físico como alternativa a la mirada. | Bienvenida (muros a ±60°), cabecera de Referencias/Libros/Videos |
+| 3 | **Hick** (decisiones) | El menú principal tiene 3 cards (Libros, Audio, Videos) y Acerca de tiene 4 (Deidades, Gastronomía, Fiestas, Libros). Nunca hay más de 4 opciones principales a la vez. | Menú principal y Acerca de |
+| 4 | **Miller** (memoria) | Las referencias se muestran de **2 en 2** con paginación "Página X de N". Las salas tienen 3–6 cuadros y cada card tiene un título, una referencia y una fuente. | Acerca de → cualquier categoría |
+| 5 | **Tesler** (complejidad) | Alta de libros con **Autocompletar por ISBN** (Open Library: título, autor, editorial, año) y valores por defecto (cultura, stock 3, año actual, sección, editorial). El código interno toma el ISBN si se deja vacío. | `/admin` → Libros → Nuevo libro |
+| 6 | **Parkinson** (eficiencia) | La activación por mirada bajó de 3.0 s a **2.0 s**. Llegar a cualquier referencia toma 3 acciones (Acerca de → categoría → página). | Cualquier botón VR |
+| 7 | **Postel** (tolerancia) | El ISBN se acepta con o sin guiones, con espacios o con prefijo "ISBN:". Se valida el dígito verificador y el error se explica en español. Los errores de Supabase/red se traducen a mensajes claros (duplicado, sin permiso, sin conexión). La búsqueda por ISBN ignora guiones. | `/admin` → Libros (formulario y buscador) |
+| 8 | **Proximidad** | Etiquetas pegadas a sus campos. ISBN y botón Autocompletar en el mismo bloque. En las cards VR, título → referencia → fuente se apilan midiendo su altura real (sin encimarse). | Formulario de libros, cards de referencias |
+| 9 | **Región común** | Todo grupo vive en un contenedor: cards con marco de madera, bisel de oro y fondo de cantera; bloque ISBN con fondo ámbar; cuadros del museo con marco y cédula. | Todo el menú VR y el admin |
+| 10 | **Posición en serie** | Lo más usado va a los extremos: **Libros** primero y **Videos** al final, con Audio (ajuste secundario) al centro. "Volver" siempre al inicio de la cabecera y "Cerrar" al final. | Menú principal |
+
+### Ajustes de museografía asociados
+* El letrero del vano derecho de Bienvenida dice únicamente **"BIENVENIDOS"**, con filetes dorados y rombo turquesa arriba y abajo.
+* La mesa de media luna de **Gastronomía** muestra los 6 platillos de los recuadros del muro en el mismo orden (tortillas en comal, caldo de toro, tamales en canasta, maíz tostado, perruri y olla de atole con jícaras), sobre servilletas bordadas, con maíces criollos de 4 colores, calabazas y chiles secos al fondo.
+* Las mesas de **Fiestas** suman velas ceremoniales con listones, una jícara votiva con chaquira, una olla de tejuino y una ofrenda de cempasúchil. La sala de **Deidades** no se modificó.
+* Los botones 3D del muro separan sus capas en Z (cantera a +4 mm del marco de oro) para eliminar el parpadeo por z-fighting.
+
+---
+
+## 7. Resumen de Decisiones de Diseño para Futuras Modificaciones
 
 Si necesitas agregar nuevas características en Linux, mantén presentes estas directrices:
 

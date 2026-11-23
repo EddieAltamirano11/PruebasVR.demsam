@@ -1,10 +1,11 @@
 /**
  * Gaze Fuse Interaction Service
- * Calibrado a 3.0 segundos (3000ms) para una interaccion deliberada, precisa y sin activaciones involuntarias
+ * Calibrado a 2.0 segundos (2000ms): suficientemente deliberado para evitar activaciones involuntarias
+ * y lo bastante corto para que cada mision se complete sin esperas (Ley de Parkinson / Fitts en VR)
  * para interaccion manos libres sin fatiga cervical y soporte de gatillo dual (Homido Grab)
  */
 
-export const GAZE_FUSE_DEFAULT_DURATION = 3.0;
+export const GAZE_FUSE_DEFAULT_DURATION = 2.0;
 
 export class GazeFuseController {
   constructor({
@@ -78,7 +79,7 @@ export class GazeFuseController {
   /**
    * Gatillo dual inmediato: permite activar la accion instantaneamente
    * si el usuario presiona el boton fisico capacitivo del visor Homido Grab
-   * (o gatillo WebXR / toque de pantalla) sin esperar a que transcurran los 3.0 segundos.
+   * (o gatillo WebXR / toque de pantalla) sin esperar a que transcurran los 2.0 segundos.
    * Permite pulsaciones repetidas sobre el mismo boton (ej. Libro Siguiente, Audio, Ocultar/Mostrar)
    * mientras mantiene bloqueado el auto-disparo continuo del Gaze Fuse pasivo.
    * @param {any} [explicitTarget=null] - Objetivo opcional detectado por raycast sincrono al pulsar
