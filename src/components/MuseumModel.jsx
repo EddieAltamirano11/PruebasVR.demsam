@@ -3,7 +3,7 @@ import { useGLTF } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SoundFX } from '../services/audioService.js';
-import { WIXARIKA_ARTWORKS } from './wixarika/wixarikaArtworksData.js';
+import { WIXARIKA_ARTWORKS, WIXARIKA_GASTRONOMY_DISHES } from './wixarika/wixarikaArtworksData.js';
 
 export function MuseumModel({
   onSelectArtwork,
@@ -22,8 +22,24 @@ export function MuseumModel({
     const maxAnisotropy = gl?.capabilities?.getMaxAnisotropy?.() || 8;
     const registered = [];
 
-    // 1. Configurar filtrado anisotrópico en todas las texturas de la escena
+    // 1. Configurar filtrado anisotrópico y visibilidad de comidas en la escena
     scene.traverse((child) => {
+      // Asegurar visibilidad del letrero superior y emblema de gastronomía
+      if (child.name.includes('letrero_seccion') || child.name.includes('emblema_gastronomia')) {
+        child.visible = true;
+      }
+
+      // Ocultar comidas y recuadros no enviados (caldo de toro, perruri, elotes)
+      const isUnsentFood =
+        child.name.includes('caldo') ||
+        child.name.includes('perruri') ||
+        child.name.includes('elote');
+
+      if (isUnsentFood) {
+        child.visible = false;
+        return;
+      }
+
       if (child.isMesh && child.material) {
         const materials = Array.isArray(child.material) ? child.material : [child.material];
         materials.forEach((mat) => {
@@ -184,6 +200,131 @@ export function MuseumModel({
         }
       });
     }
+
+    // 4. Mapeo de los 4 recuadros en muro y platillos sobre mesas para Gastronomía Tradicional
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.setCrossOrigin('anonymous');
+
+    WIXARIKA_GASTRONOMY_DISHES.forEach((dish) => {
+      const recuadroObj = scene.getObjectByName(dish.recuadroNodeName);
+      const canvasObj = scene.getObjectByName(dish.canvasNodeName);
+      const tableStationObj = scene.getObjectByName(dish.tableStationName);
+      const tableDishObj = scene.getObjectByName(dish.tableDishNodeName);
+
+      // Cargar la textura auténtica provista por el usuario
+      if (dish.image) {
+        textureLoader.load(
+          dish.image,
+          (tex) => {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.anisotropy = maxAnisotropy;
+            tex.minFilter = THREE.LinearMipmapLinearFilter;
+            tex.magFilter = THREE.LinearFilter;
+            tex.generateMipmaps = true;
+            tex.needsUpdate = true;
+
+            // Texturizar el cuadro en el muro
+            if (canvasObj?.material) {
+              const baseMat = Array.isArray(canvasObj.material) ? canvasObj.material[0] : canvasObj.material;
+              const mat = baseMat.clone();
+              mat.map = tex;
+              mat.needsUpdate = true;
+              canvasObj.material = mat;
+            }
+
+            // Texturizar el plato sobre la mesa
+            if (tableDishObj?.material) {
+              const baseMat = Array.isArray(tableDishObj.material) ? tableDishObj.material[0] : tableDishObj.material;
+              const mat = baseMat.clone();
+              mat.map = tex;
+              mat.needsUpdate = true;
+              tableDishObj.material = mat;
+            }
+          },
+          undefined,
+          (err) => console.warn(`[MuseumModel] Error cargando textura para ${dish.title}:`, err)
+        );
+      }
+
+      // Obtener posición del mundo
+      const worldPos = new THREE.Vector3();
+      if (canvasObj) {
+        canvasObj.getWorldPosition(worldPos);
+      } else if (recuadroObj) {
+        recuadroObj.getWorldPosition(worldPos);
+      } else {
+        worldPos.set(...dish.stationPosition);
+      }
+
+      const dishArtworkData = {
+        ...dish,
+        worldPosition: worldPos
+      };
+
+      const handleSelectDish = () => {
+        SoundFX.playClick();
+        const currentWorldPos = new THREE.Vector3();
+        if (canvasObj) {
+          canvasObj.getWorldPosition(currentWorldPos);
+        } else if (recuadroObj) {
+          recuadroObj.getWorldPosition(currentWorldPos);
+        } else {
+          currentWorldPos.set(...dish.stationPosition);
+        }
+        onSelectArtwork?.({
+          ...dishArtworkData,
+          worldPosition: currentWorldPos
+        });
+      };
+
+      // Interactividad en el recuadro en muro
+      if (recuadroObj) {
+        recuadroObj.userData = {
+          id: `recuadro-${dish.id}`,
+          artworkId: dish.id,
+          artwork: dishArtworkData,
+          onClick: handleSelectDish,
+          onSelect: handleSelectDish
+        };
+        recuadroObj.traverse((child) => {
+          if (child.isMesh) {
+            child.userData = {
+              id: `recuadro-${dish.id}-${child.name}`,
+              artworkId: dish.id,
+              artwork: dishArtworkData,
+              onClick: handleSelectDish,
+              onSelect: handleSelectDish
+            };
+            registerMesh?.(child);
+            registered.push(child);
+          }
+        });
+      }
+
+      // Interactividad en el platillo de mesa
+      if (tableStationObj) {
+        tableStationObj.userData = {
+          id: `table-dish-${dish.id}`,
+          artworkId: dish.id,
+          artwork: dishArtworkData,
+          onClick: handleSelectDish,
+          onSelect: handleSelectDish
+        };
+        tableStationObj.traverse((child) => {
+          if (child.isMesh) {
+            child.userData = {
+              id: `table-dish-${dish.id}-${child.name}`,
+              artworkId: dish.id,
+              artwork: dishArtworkData,
+              onClick: handleSelectDish,
+              onSelect: handleSelectDish
+            };
+            registerMesh?.(child);
+            registered.push(child);
+          }
+        });
+      }
+    });
 
     return () => {
       if (unregisterMesh) {

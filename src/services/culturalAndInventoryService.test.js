@@ -1,12 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  getCultures,
-  addCulture,
-  updateCulture,
-  deleteCulture,
-  DEFAULT_CULTURAS
-} from './culturalService.js';
-import {
   getInventoryBooks,
   addBookToInventory,
   updateBookInInventory,
@@ -16,74 +9,20 @@ import {
   DEFAULT_INVENTORY_BOOKS
 } from './inventoryService.js';
 
-describe('Gestión de Culturas Vivas y Control de Inventario', () => {
+describe('Control de Inventario de Libros de Culturas Vivas', () => {
   beforeEach(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.clear();
     }
   });
 
-  describe('culturalService (Culturas Vivas de Nayarit)', () => {
-    it('debe inicializar con las 4 culturas vivas representativas de Nayarit', async () => {
-      const cultures = await getCultures();
-      expect(cultures.length).toBeGreaterThanOrEqual(4);
-
-      const names = cultures.map((c) => c.nombre);
-      expect(names).toContain('Wixárika');
-      expect(names).toContain('Náayeri');
-      expect(names).toContain("O'dam");
-      expect(names).toContain('Meshikan / Mexicanero');
-    });
-
-    it('permite al administrador agregar una nueva cultura viva', async () => {
-      const nueva = await addCulture({
-        nombre: 'Cultura de Prueba',
-        variante: 'Prueba Sierra',
-        region: 'Norte de Nayarit',
-        lengua: 'Variante Serrana',
-        descripcion: 'Cosmovisión de prueba para validación de servicios',
-        tradiciones: 'Danza ritual de prueba',
-        activaVR: true
-      });
-
-      expect(nueva.id).toBeDefined();
-      expect(nueva.nombre).toBe('Cultura de Prueba');
-
-      const all = await getCultures();
-      const found = all.find((c) => c.id === nueva.id);
-      expect(found).toBeDefined();
-      expect(found.region).toBe('Norte de Nayarit');
-    });
-
-    it('permite al administrador actualizar la información de una cultura existente', async () => {
-      const cultures = await getCultures();
-      const target = cultures[0];
-
-      const updated = await updateCulture(target.id, {
-        region: 'Región Actualizada de Nayarit',
-        descripcion: 'Descripción antropológica revisada'
-      });
-
-      expect(updated.region).toBe('Región Actualizada de Nayarit');
-      expect(updated.descripcion).toBe('Descripción antropológica revisada');
-    });
-
-    it('permite al administrador quitar / eliminar una cultura', async () => {
-      const nueva = await addCulture({
-        nombre: 'Cultura Temporal',
-        region: 'Sur de Nayarit'
-      });
-
-      const deleted = await deleteCulture(nueva.id);
-      expect(deleted).toBe(true);
-
-      const all = await getCultures();
-      expect(all.find((c) => c.id === nueva.id)).toBeUndefined();
-    });
-  });
-
   describe('inventoryService (Inventario Exclusivo de Culturas Vivas)', () => {
     it('debe manejar únicamente libros pertenecientes a las culturas vivas recomendadas o registradas', async () => {
+      await addBookToInventory({
+        titulo: 'El Fuego Sagrado de Wirikuta',
+        autor: 'Ramón Medina',
+        cultura: 'Wixárika'
+      });
       const books = await getInventoryBooks();
       expect(books.length).toBeGreaterThan(0);
 

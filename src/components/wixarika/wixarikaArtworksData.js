@@ -196,6 +196,113 @@ export const WIXARIKA_ARTWORKS = [
   }
 ];
 
+// =========================================================================
+// 3. GASTRONOMÍA TRADICIONAL Y ALIMENTOS SAGRADOS DE NAYARIT (4 PLATILLOS)
+// =========================================================================
+export const WIXARIKA_GASTRONOMY_DISHES = [
+  {
+    id: 'gastro_tortillas',
+    order: 1,
+    recuadroNodeName: 'recuadro_gastronomia_tortillas',
+    canvasNodeName: 'lienzo_gastronomia_tortillas',
+    tableStationName: 'comida_tortillas_maiz_sagrado',
+    tableDishNodeName: 'disco_tortillas_comal_textura',
+    stationPosition: [7.416, 3.77, -2.071],
+    category: 'Gastronomía Tradicional',
+    alias: 'Sustento Sagrado de Maíz',
+    title: 'TORTILLAS DE MAÍZ CRIOLLO',
+    nativeName: '«Mewi» · Tortillas Ceremoniales de Comal',
+    subtitle: 'NIXTAMALIZACIÓN ANCESTRAL EN COMAL DE BARRO',
+    image: '/gastronomia/gastro_tortillas.png',
+    matcher: (name) => name.includes('tortilla'),
+    keywords: [
+      '• Maíz Criollo Azul y Morado Nixtamalizado en Comal',
+      '• Base Nutricia y Espiritual de la Comunidad Serrana',
+      '• Elaboración Femenina con Metate y Fuego Sagrado'
+    ],
+    sourceUrl: 'https://elsouvenir.com/la-cultura-huichol-de-la-sierra-wirrarika-de-nayarit/',
+    reference: 'El Souvenir: "La cultura Huichol de Nayarit, la Sierra Wixarika"',
+    description: 'Base alimenticia y ritual wixárika. Elaboradas a mano en comal de barro con maíz criollo nixtamalizado, son bendecidas por Tatei Niwetsika.'
+  },
+  {
+    id: 'gastro_tamales',
+    order: 2,
+    recuadroNodeName: 'recuadro_gastronomia_tamales',
+    canvasNodeName: 'lienzo_gastronomia_tamales',
+    tableStationName: 'comida_tamales_ceremoniales',
+    tableDishNodeName: 'disco_tamales_totomoxtle_textura',
+    stationPosition: [7.700, 3.77, 0.000],
+    category: 'Gastronomía Tradicional',
+    alias: 'Envueltos de Mazorca Sagrada',
+    title: 'TAMALES DE TOTOMOXLE',
+    nativeName: '«Tamales Tradicionales» de Maíz Serrano',
+    subtitle: 'COCCIÓN AL VAPOR EN HOJA DE MAZORCA SECA',
+    image: '/gastronomia/gastro_tamales.jpg',
+    matcher: (name) => name.includes('tamal'),
+    keywords: [
+      '• Envoltura Sagrada en Hoja de Totomoxtle',
+      '• Masa de Maíz Criollo y Manteca Tradicional',
+      '• Ofrenda Imprescindible para Deidades y Ancestros'
+    ],
+    sourceUrl: 'https://www.fundacioncausaazul.org/es-es/blog/detras-de-una-artesania/honrando-la-memoria-cosmovision-wixarika',
+    reference: 'Fundación Causa Azul: "Honrando la Memoria: Cosmovisión Wixárika"',
+    description: 'Alimento ceremonial envuelto en hojas secas de totomoxtle. Simboliza la protección de la vida y se ofrenda a las deidades en el Kalihuey.'
+  },
+  {
+    id: 'gastro_atole',
+    order: 3,
+    recuadroNodeName: 'recuadro_gastronomia_atole',
+    canvasNodeName: 'lienzo_gastronomia_atole',
+    tableStationName: 'comida_atole_olla_bebidas',
+    tableDishNodeName: 'disco_atole_espumoso_textura',
+    stationPosition: [7.416, 3.77, 2.071],
+    category: 'Gastronomía Tradicional',
+    alias: 'Bebida Ceremonial de Nawá',
+    title: 'ATOLE DE MAÍZ Y TEJUINO',
+    nativeName: '«Nawá» · Bebida Ceremonial Sagrada',
+    subtitle: 'ENERGÍA ESPIRITUAL EN JÍCARAS ARTESANALES',
+    image: '/gastronomia/gastro_atole.jpg',
+    matcher: (name) => name.includes('atole') || name.includes('tejuino') || name.includes('nawa'),
+    keywords: [
+      '• Maíz de Temporal Cocido y Molido en Jícaras de Barro',
+      '• Vigor Espiritual que Acompaña los Cantos del Mara\'akame',
+      '• Símbolo de Hermandad y Ceremonialidad Comunitaria'
+    ],
+    sourceUrl: 'https://www.youtube.com/watch?v=meHGpPLrDaU',
+    reference: '"Atole seco de maiz" Gastronomía indígena wixarika',
+    description: 'Bebida sagrada tradicional preparada en jícaras de barro. Brinda vigor espiritual durante las ceremonias y velaciones del Mara\'akame.'
+  },
+  {
+    id: 'gastro_maiz_tostado',
+    order: 4,
+    recuadroNodeName: 'recuadro_gastronomia_maiz_tostado',
+    canvasNodeName: 'lienzo_gastronomia_maiz_tostado',
+    tableStationName: 'comida_maiz_tostado_xarikixa',
+    tableDishNodeName: 'disco_maiz_tostado_textura',
+    stationPosition: [7.700, 1.99, 0.000],
+    category: 'Gastronomía Tradicional',
+    alias: 'Provisión del Peregrino',
+    title: 'MAÍZ TOSTADO Y PINOLE',
+    nativeName: '«Haute» · Maíces de Colores al Comal',
+    subtitle: 'PROVISIÓN SAGRADA PARA LA TRAVESÍA A WIRIKUTA',
+    image: '/gastronomia/gastro_maiz_tostado.jpg',
+    matcher: (name) => name.includes('tostado') || name.includes('pinole') || name.includes('haute'),
+    keywords: [
+      '• Mazorcas Criollas de Diversos Colores Tostadas al Fuego',
+      '• Provisión Ligera y Nutricia para la Larga Marcha',
+      '• Testigo de la Ruta Ritual Hacia los Santuarios Sagrados'
+    ],
+    sourceUrl: 'https://www.fundacioncausaazul.org/es-es/blog/detras-de-una-artesania/honrando-la-memoria-cosmovision-wixarika',
+    reference: 'Fundación Causa Azul (Cosmovisión Wixárika) & El Souvenir',
+    description: 'Granos de maíz criollo multicolor tostados al fuego. Bastimento sagrado y provisión esencial de los peregrinos rumbo a Wirikuta.'
+  }
+];
+
+export const ALL_WIXARIKA_EXHIBITION_ITEMS = [
+  ...WIXARIKA_ARTWORKS,
+  ...WIXARIKA_GASTRONOMY_DISHES
+];
+
 /**
  * Busca y retorna la obra correspondiente al nombre de una estación, lienzo o identificador
  */
@@ -203,11 +310,14 @@ export function findArtworkByNodeName(nodeName) {
   if (!nodeName) return null;
   const lower = nodeName.toLowerCase();
   return (
-    WIXARIKA_ARTWORKS.find(
+    ALL_WIXARIKA_EXHIBITION_ITEMS.find(
       (art) =>
-        art.stationName.toLowerCase() === lower ||
-        art.canvasNodeName.toLowerCase() === lower ||
-        art.matcher(lower)
+        art.stationName?.toLowerCase() === lower ||
+        art.canvasNodeName?.toLowerCase() === lower ||
+        art.recuadroNodeName?.toLowerCase() === lower ||
+        art.tableStationName?.toLowerCase() === lower ||
+        art.tableDishNodeName?.toLowerCase() === lower ||
+        (art.matcher && art.matcher(lower))
     ) || null
   );
 }
@@ -216,7 +326,7 @@ export function findArtworkByNodeName(nodeName) {
  * Obtiene una obra por su ID único
  */
 export function getArtworkById(id) {
-  return WIXARIKA_ARTWORKS.find((art) => art.id === id) || null;
+  return ALL_WIXARIKA_EXHIBITION_ITEMS.find((art) => art.id === id) || null;
 }
 
 /**

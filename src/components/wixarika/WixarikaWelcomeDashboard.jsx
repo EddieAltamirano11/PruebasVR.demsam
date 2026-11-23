@@ -189,46 +189,48 @@ export const WIXARIKA_REFERENCES = {
   ],
   gastronomia: [
     {
-      id: 'ref-gastro-maiz',
-      title: 'MAÍZ CRIOLLO Y TORTILLAS DE COMAL',
-      image: null,
-      reference: 'Tradición culinaria de los coamiles serranos. Cédula etnográfica en recopilación documental de alimentos originarios de Nayarit.',
-      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
+      id: 'ref-gastro-tortillas',
+      title: 'TORTILLAS DE MAÍZ CRIOLLO',
+      image: '/gastronomia/gastro_tortillas.png',
+      reference: 'El Souvenir. Tradición culinaria y maíz criollo azul en los coamiles de Nayarit.',
+      link: 'https://elsouvenir.com/la-cultura-huichol-de-la-sierra-wirrarika-de-nayarit/'
     },
     {
       id: 'ref-gastro-tamales',
-      title: 'TAMALES TOTOMOXTLI DE LA SIERRA',
-      image: null,
-      reference: 'Gastronomía ceremonial elaborada con hoja de maíz totomoxtle y masa martajada para fiestas patronales y rituales comunales.',
-      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
-    },
-    {
-      id: 'ref-gastro-caldo',
-      title: 'CALDO DE TORO CEREMONIAL',
-      image: null,
-      reference: 'Platillo ritual de consagración comunitaria preparado exclusivamente durante velaciones y ceremonias del Kalihuey.',
-      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
-    },
-    {
-      id: 'ref-gastro-tejuino',
-      title: 'TEJUINO RITUAL FERMENTADO (NAWÁ)',
-      image: null,
-      reference: 'Bebida sagrada fermentada a base de maíz germinado, ofrendada a Tatewari y compartida en danzas circulares comunitarias.',
-      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
-    },
-    {
-      id: 'ref-gastro-perruri',
-      title: 'PERRURI (SEMILLAS TOSTADAS DE COAMIL)',
-      image: null,
-      reference: 'Alimento tradicional de viaje elaborado con semillas de maíz y calabaza tostadas en comal de barro para los peregrinos.',
-      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
+      title: 'TAMALES DE TOTOMOXLE',
+      image: '/gastronomia/gastro_tamales.jpg',
+      reference: 'Fundación Causa Azul. Tamales ceremoniales envueltos en hojas de totomoxtle.',
+      link: 'https://www.fundacioncausaazul.org/es-es/blog/detras-de-una-artesania/honrando-la-memoria-cosmovision-wixarika'
     },
     {
       id: 'ref-gastro-atole',
-      title: 'ATOLE BLANCO Y ESQUITE RITUAL',
-      image: null,
-      reference: 'Preparación ritual matutina para bendecir las cosechas tempranas en las ceremonias agrícolas de Tatei Neixa.',
-      link: 'https://www.gob.mx/cultura/patrimonio-gastronomico'
+      title: 'ATOLE SECO DE MAÍZ (NAWÁ)',
+      image: '/gastronomia/gastro_atole.jpg',
+      reference: 'Registro Comunitario. Preparación tradicional de atole seco de maíz en jícaras.',
+      link: 'https://www.youtube.com/watch?v=meHGpPLrDaU'
+    },
+    {
+      id: 'ref-gastro-maiz',
+      title: 'MAÍZ TOSTADO Y MAÍCES CRIOLLOS',
+      image: '/gastronomia/gastro_maiz_tostado.jpg',
+      reference: 'Fundación Causa Azul & El Souvenir. Maíz criollo sagrado y bastimento para Wirikuta.',
+      link: 'https://www.fundacioncausaazul.org/es-es/blog/detras-de-una-artesania/honrando-la-memoria-cosmovision-wixarika'
+    }
+  ],
+  libros: [
+    {
+      id: 'ref-libro-relatos-huicholes',
+      title: 'RELATOS HUICHOLES',
+      image: '/portadas/portada_relatos_huicholes.jpg',
+      reference: 'Mondragón, L., Tello, J. y Valdez, A. (Compiladoras). (1996). Relatos Huicholes. México: CONACULTA. ISBN: 968-29-8518-8. Colección de la Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit).',
+      link: 'https://bibliotecanacional.cultura.gob.mx'
+    },
+    {
+      id: 'ref-libro-cultura-desafios',
+      title: 'LA CULTURA WIXÁRIKA ANTE LOS DESAFÍOS DEL MUNDO ACTUAL',
+      image: '/portadas/portada_cultura_wixarika_desafios.jpg',
+      reference: 'Corona Berkin, S. y Le Mûr, R. (Coordinadoras). (2015). La cultura wixárika ante los desafíos del mundo actual. México: CONACULTA. ISBN: 978-607-8423-62-0. Acervo de la Biblioteca Pública Profesor Solón Argüello (Tepic, Nayarit).',
+      link: 'https://bibliotecanacional.cultura.gob.mx'
     }
   ]
 };
@@ -800,7 +802,7 @@ export function WixarikaWelcomeDashboard({
             </Text>
           </group>
 
-          {/* Tres Tarjetas Culturales de Referencias (Deidades, Gastronomía, Fiestas) */}
+          {/* Cuatro Tarjetas Culturales de Referencias (Deidades, Gastronomía, Fiestas, Libros) */}
           <group position={[0, -0.18, 0]}>
             <DashboardTile
               key="btn-ref-deidades"
@@ -808,11 +810,11 @@ export function WixarikaWelcomeDashboard({
               title="Deidades"
               iconName="sun"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.84}
+              width={1.28}
               height={1.15}
-              iconSize={0.30}
-              titleSize={0.140}
-              position={[-1.98, 0, 0]}
+              iconSize={0.28}
+              titleSize={0.120}
+              position={[-2.07, 0, 0]}
               onClick={() => handleOpenRefCategory('deidades')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -823,14 +825,14 @@ export function WixarikaWelcomeDashboard({
             <DashboardTile
               key="btn-ref-gastronomia"
               id="btn-ref-gastronomia"
-              title="Gastronomía Tradicional"
+              title="Gastronomía"
               iconName="utensils"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.84}
+              width={1.28}
               height={1.15}
-              iconSize={0.30}
-              titleSize={0.140}
-              position={[0, 0, 0]}
+              iconSize={0.28}
+              titleSize={0.120}
+              position={[-0.69, 0, 0]}
               onClick={() => handleOpenRefCategory('gastronomia')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -841,15 +843,33 @@ export function WixarikaWelcomeDashboard({
             <DashboardTile
               key="btn-ref-fiestas"
               id="btn-ref-fiestas"
-              title="Fiestas y Ceremonias"
+              title="Fiestas"
               iconName="sparkles"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.84}
+              width={1.28}
               height={1.15}
-              iconSize={0.30}
-              titleSize={0.140}
-              position={[1.98, 0, 0]}
+              iconSize={0.28}
+              titleSize={0.120}
+              position={[0.69, 0, 0]}
               onClick={() => handleOpenRefCategory('fiestas')}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+            />
+
+            <DashboardTile
+              key="btn-ref-libros"
+              id="btn-ref-libros"
+              title="Acervo Libros"
+              iconName="book-open"
+              accentColor={UNIFIED_ICON_COLOR}
+              width={1.28}
+              height={1.15}
+              iconSize={0.28}
+              titleSize={0.120}
+              position={[2.07, 0, 0]}
+              onClick={() => handleOpenRefCategory('libros')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
               hoveredId={hoveredId}
@@ -918,7 +938,9 @@ export function WixarikaWelcomeDashboard({
                 ? 'REFERENCIAS · DEIDADES SAGRADAS'
                 : activeRefCategory === 'gastronomia'
                 ? 'REFERENCIAS · GASTRONOMÍA TRADICIONAL'
-                : 'REFERENCIAS · FIESTAS Y CEREMONIAS'}
+                : activeRefCategory === 'fiestas'
+                ? 'REFERENCIAS · FIESTAS Y CEREMONIAS'
+                : 'REFERENCIAS · ACERVO BIBLIOGRÁFICO'}
             </Text>
           </group>
 
@@ -973,10 +995,14 @@ export function WixarikaWelcomeDashboard({
                     />
                   </group>
 
-                  {/* Área de Imagen Superior (Misma imagen de los cuadros o placeholder para gastronomía) */}
+                  {/* Área de Imagen Superior (Misma imagen de los cuadros o portada de libros) */}
                   <group position={[0, 0.42, 0.002]}>
                     {item.image ? (
-                      <ReferenceCardImage url={item.image} width={2.40} height={1.26} />
+                      <ReferenceCardImage
+                        url={item.image}
+                        width={activeRefCategory === 'libros' ? 0.96 : 2.40}
+                        height={1.26}
+                      />
                     ) : (
                       <group position={[0, 0, 0]}>
                         <mesh position={[0, 0, 0]}>
@@ -1005,7 +1031,7 @@ export function WixarikaWelcomeDashboard({
 
                     {/* Marco dorado delgado para la imagen */}
                     <mesh position={[0, 0, 0.001]}>
-                      <planeGeometry args={[2.42, 1.28]} />
+                      <planeGeometry args={[activeRefCategory === 'libros' ? 1.00 : 2.42, 1.28]} />
                       <meshBasicMaterial color="#c69214" side={THREE.DoubleSide} />
                     </mesh>
                   </group>

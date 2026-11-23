@@ -154,7 +154,7 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
 
   describe('Biblioteca Solón Argüello - Book Catalogue Integrity', () => {
     it('should have a curated list of Wixárika books for Eddie & Luis Carlos', () => {
-      expect(DEFAULT_WIXARIKA_BOOKS.length).toBeGreaterThanOrEqual(5);
+      expect(DEFAULT_WIXARIKA_BOOKS.length).toBe(2);
 
       DEFAULT_WIXARIKA_BOOKS.forEach((book) => {
         expect(book.id).toBeDefined();
@@ -164,6 +164,7 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
         expect(book.category).toBeTruthy();
         expect(book.synopsis).toBeTruthy();
         expect(typeof book.available).toBe('boolean');
+        expect(book.portadaUrl).toBeTruthy();
       });
     });
 
@@ -175,11 +176,9 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       });
 
       const deidadesBooks = DEFAULT_WIXARIKA_BOOKS.filter((b) => b.stationId === 'deidades');
-      const gastroBooks = DEFAULT_WIXARIKA_BOOKS.filter((b) => b.stationId === 'gastronomia');
       const fiestasBooks = DEFAULT_WIXARIKA_BOOKS.filter((b) => b.stationId === 'fiestas');
 
       expect(deidadesBooks.length).toBeGreaterThanOrEqual(1);
-      expect(gastroBooks.length).toBeGreaterThanOrEqual(1);
       expect(fiestasBooks.length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -488,10 +487,11 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(menuBounds.height).toBeGreaterThan(0.20);
     });
 
-    it('contains complete 2-card reference catalogs for deidades, fiestas, and gastronomía', () => {
+    it('contains complete 2-card reference catalogs for deidades, fiestas, gastronomía, and libros', () => {
       expect(WIXARIKA_REFERENCES.deidades.length).toBe(6);
       expect(WIXARIKA_REFERENCES.fiestas.length).toBe(3);
-      expect(WIXARIKA_REFERENCES.gastronomia.length).toBe(6);
+      expect(WIXARIKA_REFERENCES.gastronomia.length).toBe(4);
+      expect(WIXARIKA_REFERENCES.libros.length).toBe(2);
 
       // Todas las deidades deben tener las mismas imágenes de los cuadros y referencias
       WIXARIKA_REFERENCES.deidades.forEach((ref) => {
@@ -509,10 +509,18 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
         expect(ref.link).toBeTruthy();
       });
 
-      // Gastronomía no tiene imágenes aún (image: null) y cuenta con links genéricos
+      // Gastronomía cuenta con fotografías de platillos auténticos y links
       WIXARIKA_REFERENCES.gastronomia.forEach((ref) => {
         expect(ref.title).toBeTruthy();
-        expect(ref.image).toBeNull();
+        expect(ref.image).toBeTruthy();
+        expect(ref.reference).toBeTruthy();
+        expect(ref.link).toContain('http');
+      });
+
+      // Libros cuentan con portadas oficiales y fichas bibliográficas
+      WIXARIKA_REFERENCES.libros.forEach((ref) => {
+        expect(ref.title).toBeTruthy();
+        expect(ref.image).toBeTruthy();
         expect(ref.reference).toBeTruthy();
         expect(ref.link).toContain('http');
       });
