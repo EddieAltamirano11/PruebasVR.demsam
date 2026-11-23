@@ -487,6 +487,32 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       }
     });
 
+    it('los paneles de fondo café bajito inician al ras del zoclo de madera sin encimarse', () => {
+      const buf = fs.readFileSync(path.resolve(process.cwd(), 'public', 'museo_wixarika_v16.glb'));
+      const gltf = JSON.parse(buf.toString('utf8', 20, 20 + buf.readUInt32LE(12)));
+      const parentOf = new Map();
+      gltf.nodes.forEach((n, i) => (n.children || []).forEach((c) => parentOf.set(c, i)));
+      const worldY = (idx, localY) => {
+        // Solo traslación/escala en Y (sin rotaciones en esta cadena de nodos)
+        let y = localY;
+        for (let i = idx; i !== undefined; i = parentOf.get(i)) {
+          const n = gltf.nodes[i];
+          y = y * (n.scale?.[1] ?? 1) + (n.translation?.[1] ?? 0);
+        }
+        return y;
+      };
+      const paneles = gltf.nodes
+        .map((n, i) => ({ n, i }))
+        .filter(({ n }) => n.mesh !== undefined &&
+          (gltf.materials[gltf.meshes[n.mesh].primitives[0].material]?.name || '').startsWith('mat_muro_nicho'));
+      expect(paneles).toHaveLength(3);
+      paneles.forEach(({ n, i }) => {
+        const acc = gltf.accessors[gltf.meshes[n.mesh].primitives[0].attributes.POSITION];
+        expect(worldY(i, acc.min[1])).toBeCloseTo(0.29, 3); // cara superior del filete turquesa
+        expect(worldY(i, acc.max[1])).toBeCloseTo(5.40, 3);
+      });
+    });
+
     it('el letrero de bienvenida muestra solo "BIENVENIDOS" (sin la fila PAMPARIOS)', () => {
       const buf = fs.readFileSync(path.resolve(process.cwd(), 'public', 'museo_wixarika_v16.glb'));
       const gltf = JSON.parse(buf.toString('utf8', 20, 20 + buf.readUInt32LE(12)));

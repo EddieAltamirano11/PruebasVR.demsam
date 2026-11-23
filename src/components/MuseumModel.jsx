@@ -15,7 +15,7 @@ export function MuseumModel({
   const group = useRef();
   const { gl } = useThree();
   // Carga del modelo 3D oficial v16 del Museo Wixarika (Bienvenida: Portal + Logos ITT/CECAN/Solón + Botones 3D Acerca de/Menú estilo Deidad ampliado)
-  const { scene } = useGLTF('./museo_wixarika_v16.glb?v=16.6');
+  const { scene } = useGLTF('./museo_wixarika_v16.glb?v=16.7');
 
   useEffect(() => {
     if (!scene) return;
@@ -360,5 +360,5 @@ export function MuseumModel({
   );
 }
 
-useGLTF.preload('./museo_wixarika_v16.glb?v=16.6');
+useGLTF.preload('./museo_wixarika_v16.glb?v=16.7');
 export default MuseumModel;

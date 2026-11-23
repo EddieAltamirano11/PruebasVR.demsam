@@ -1223,6 +1223,48 @@ const ollaTejuino = (base) => [
 }
 
 // ==========================================================================
+// 3.6 PANELES DE FONDO "CAFÉ BAJITO" (mat_muro_nicho) AL RAS DEL ZOCLO
+//     En la base v15 los paneles de Deidades, Fiestas y Gastronomía empezaban a 0.10 m,
+//     encimándose 19 cm sobre el zoclo de madera oscura (0–0.25 m) y su filete turquesa
+//     (0.25–0.29 m). Se reescalan en Y para que inicien justo sobre el filete y conserven
+//     su borde superior en 5.40 m.
+// ==========================================================================
+console.log('\n[3.6] Ajustando paneles de fondo café bajito al ras del zoclo de madera...');
+{
+  const NICHO_BOTTOM_Y = 0.29; // cara superior del filete turquesa sobre el zoclo
+  const NICHO_TOP_Y = 5.40;    // altura de muro (sin cambios)
+  const parentOf = new Map();
+  nodes.forEach((n, i) => (n.children || []).forEach((c) => parentOf.set(c, i)));
+
+  let ajustados = 0;
+  nodes.forEach((n, i) => {
+    if (n.mesh === undefined) return;
+    const prim = gltf.meshes[n.mesh].primitives[0];
+    const matName = gltf.materials[prim.material]?.name || '';
+    if (!matName.startsWith('mat_muro_nicho')) return;
+
+    const acc = gltf.accessors[prim.attributes.POSITION];
+    const localMinY = acc.min[1];
+    const localMaxY = acc.max[1];
+    const parentIdx = parentOf.get(i);
+    const parentY = parentIdx !== undefined ? nodes[parentIdx].translation?.[1] || 0 : 0;
+
+    const scaleY = (NICHO_TOP_Y - NICHO_BOTTOM_Y) / (localMaxY - localMinY);
+    const translateY = NICHO_BOTTOM_Y - parentY - localMinY * scaleY;
+    const [sx, , sz] = n.scale || [1, 1, 1];
+    const [tx, , tz] = n.translation || [0, 0, 0];
+    n.scale = [sx, scaleY, sz];
+    n.translation = [tx, translateY, tz];
+    ajustados += 1;
+    console.log(`  ✓ ${n.name} (${nodes[parentIdx]?.name || 'raíz'}): ${NICHO_BOTTOM_Y.toFixed(2)} m → ${NICHO_TOP_Y.toFixed(2)} m`);
+  });
+  if (ajustados !== 3) {
+    console.error(`Error: se esperaban 3 paneles mat_muro_nicho y se encontraron ${ajustados}.`);
+    process.exit(1);
+  }
+}
+
+// ==========================================================================
 // PARTE 4: EMPAQUETADO FINAL DEL GLB v16
 // ==========================================================================
 gltf.buffers[0].byteLength = binBuffer.length;
