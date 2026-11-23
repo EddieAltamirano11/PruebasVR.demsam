@@ -16,56 +16,31 @@ import {
  */
 export const DEFAULT_WIXARIKA_VIDEOS = [
   {
-    id: 'video-1',
-    title: 'Ceremonia y Fuego Sagrado en el Kalihuey',
-    director: 'Archivo Audiovisual Solón Argüello & INPI',
-    category: 'Documental Ceremonial',
-    badge: 'ACERVO CULTURAL',
-    duration: '03:22',
-    year: '2024',
-    poster: DEFAULT_VIDEO_POSTER,
-    sources: { ...DEFAULT_VIDEO_SOURCES },
-    synopsis:
-      'Peregrinación y cantos ceremoniales alrededor del fuego sagrado Tatewari dentro del Kalihuey comunitario Wixárika.'
+    id: 'video-tambor',
+    title: 'Nuestras Raíces «Nayarit: Ceremonia Wixarika del tambor»',
+    director: 'Nuestras Raíces (YouTube)',
+    category: 'Documental',
+    badge: 'REFERENCIA EN VIDEO',
+    duration: '03:26',
+    poster: './videos/tambor_poster.jpg',
+    sources: {
+      '720p': './videos/tambor_720p.mp4',
+      '480p': './videos/tambor_480p.mp4'
+    },
+    youtube: 'https://youtu.be/inUzeIlj9P0',
+    synopsis: 'Registro de la ceremonia wixárika del tambor en Nayarit, de la serie «Nuestras Raíces».'
   },
   {
-    id: 'video-2',
-    title: 'Tatei Neixa: La Fiesta del Maíz Tierno',
-    director: 'Etnógrafos de la Sierra del Nayar',
-    category: 'Ciclo Ritual',
-    badge: 'ACERVO HISTÓRICO',
+    id: 'video-ojo-de-dios',
+    title: 'Los Wixárika, un pueblo lleno de magia que conserva tradiciones ancestrales: ¿Qué es el ojo de Dios?',
+    director: 'YouTube',
+    category: 'Reportaje',
+    badge: 'REFERENCIA EN VIDEO',
     duration: '03:22',
-    year: '2022',
     poster: DEFAULT_VIDEO_POSTER,
     sources: { ...DEFAULT_VIDEO_SOURCES },
-    synopsis:
-      'Bendición de infantes y primeros elotes en el Kalihuey comunitario. Los niños danzan guiados por el Mara\'akame al ritmo del tepu ancestral y las sonajas ceremoniales.'
-  },
-  {
-    id: 'video-3',
-    title: 'Sabores del Nayar: Cocina y Maíz Ancestral',
-    director: 'Colectivo Etnobotánico de Nayarit',
-    category: 'Patrimonio Culinario',
-    badge: 'SERIE PATRIMONIAL',
-    duration: '03:22',
-    year: '2024',
-    poster: DEFAULT_VIDEO_POSTER,
-    sources: { ...DEFAULT_VIDEO_SOURCES },
-    synopsis:
-      'Elaboración tradicional del perruri, el caldo ceremonial de toro y los atoles curativos con granos de maíz criollo de cuatro colores cultivados en la sierra nayarita.'
-  },
-  {
-    id: 'video-4',
-    title: 'El Vuelo del Águila y la Chaquira Sagrada',
-    director: 'Artesanos Unidos de Santa Catarina',
-    category: 'Arte y Simbolismo',
-    badge: 'COLECCIÓN TALLER',
-    duration: '03:22',
-    year: '2023',
-    poster: DEFAULT_VIDEO_POSTER,
-    sources: { ...DEFAULT_VIDEO_SOURCES },
-    synopsis:
-      'Maestros artesanos descifran la iconografía de las jícaras rukuri y tablas de estambre: el venado Kauyumari, el peyote florecido y la protección cósmica del tsikuri.'
+    youtube: 'https://youtu.be/zR0z1gkvVHA',
+    synopsis: 'Reportaje sobre el pueblo wixárika, sus tradiciones ancestrales y el significado del ojo de Dios (tsikuri).'
   }
 ];
 

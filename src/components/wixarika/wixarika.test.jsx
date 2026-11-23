@@ -138,7 +138,8 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
 
   describe('Biblioteca Solón Argüello - Video Catalogue Integrity', () => {
     it('should have a curated list of Wixárika cultural documentaries', () => {
-      expect(DEFAULT_WIXARIKA_VIDEOS.length).toBeGreaterThanOrEqual(4);
+      // Solo los dos videos proporcionados por el equipo (con su archivo local y su enlace de YouTube)
+      expect(DEFAULT_WIXARIKA_VIDEOS.map((v) => getYouTubeId(v.youtube))).toEqual(['inUzeIlj9P0', 'zR0z1gkvVHA']);
 
       DEFAULT_WIXARIKA_VIDEOS.forEach((video) => {
         expect(video.id).toBeDefined();
@@ -150,6 +151,12 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
         expect(video.sources?.['720p']).toBeTruthy();
         expect(video.sources?.['480p']).toBeTruthy();
         expect(video.poster).toBeTruthy();
+        [video.poster, video.sources['720p'], video.sources['480p']].forEach((file) => {
+          const abs = path.resolve(process.cwd(), 'public', file.replace(/^\.\//, ''));
+          expect(fs.existsSync(abs), file).toBe(true);
+          // Cloudflare Workers sirve archivos estáticos de máximo 25 MiB
+          expect(fs.statSync(abs).size).toBeLessThan(25 * 1024 * 1024);
+        });
       });
     });
   });

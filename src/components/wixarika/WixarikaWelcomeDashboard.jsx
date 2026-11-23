@@ -245,7 +245,20 @@ export const WIXARIKA_REFERENCES = {
   // Videos de YouTube usados como referencia. Formato de cada entrada:
   // { id, title, link: 'https://www.youtube.com/watch?v=...', reference: 'Canal / fuente' }
   // La miniatura se obtiene automáticamente de YouTube (ver getReferenceImage).
-  videos: []
+  videos: [
+    {
+      id: 'ref-video-tambor',
+      title: 'NAYARIT: CEREMONIA WIXARIKA DEL TAMBOR',
+      reference: 'Serie «Nuestras Raíces». «Nayarit: Ceremonia Wixarika del tambor». Video en YouTube.',
+      link: 'https://youtu.be/inUzeIlj9P0'
+    },
+    {
+      id: 'ref-video-ojo-de-dios',
+      title: 'LOS WIXÁRIKA: ¿QUÉ ES EL OJO DE DIOS?',
+      reference: '«Los Wixárika, un pueblo lleno de magia que conserva tradiciones ancestrales: ¿Qué es el ojo de Dios?». Video en YouTube.',
+      link: 'https://youtu.be/zR0z1gkvVHA'
+    }
+  ]
 };
 
 /** Extrae el ID de un enlace de YouTube (watch?v=, youtu.be/, shorts/, embed/). */
@@ -274,7 +287,8 @@ const UNIFIED_ICON_COLOR = '#b45309';
 export const formatReferenceLink = (link) => {
   if (!link) return '';
   try {
-    return new URL(link).hostname.replace(/^www\./, '');
+    const host = new URL(link).hostname.replace(/^www\./, '');
+    return host === 'youtu.be' ? 'youtube.com' : host;
   } catch {
     return link;
   }
@@ -616,8 +630,6 @@ export function WixarikaWelcomeDashboard({
   fuseProgress = 0
 }) {
   // Dimensiones monumentales y ergonómicas que aprovechan todo el espacio frontal
-  const panelWidth = 6.40;
-  const panelHeight = 3.50;
   const dashboardBgMeshRef = useRef();
 
   // Registrar el fondo del menú principal como bloqueador de raycast para que
@@ -638,6 +650,10 @@ export function WixarikaWelcomeDashboard({
 
   // Estado de navegación interna: 'home' | 'about' | 'videos' | 'books'
   const [currentView, setCurrentView] = useState(initialView);
+  // La Sala Audiovisual usa un contenedor más grande (7.60 × 4.30 m) para una pantalla de 5.20 m
+  const isVideoView = currentView === 'videos';
+  const panelWidth = isVideoView ? 7.60 : 6.40;
+  const panelHeight = isVideoView ? 4.30 : 3.50;
   const [isAudioActive, setIsAudioActive] = useState(false);
 
   // Sincronizar vista si el componente padre cambia initialView (ej. 'home' vs 'about')
@@ -683,7 +699,6 @@ export function WixarikaWelcomeDashboard({
   // Estados para sub-vista de videos
   const [videoIndex, setVideoIndex] = useState(0);
   const [videoQuality, setVideoQuality] = useState('720p');
-  const [videoCinemaMode, setVideoCinemaMode] = useState(false);
 
   const currentVideo = videos[videoIndex] || videos[0];
   const totalVideos = videos.length;
@@ -1591,8 +1606,8 @@ export function WixarikaWelcomeDashboard({
       {/* ===================================================================== */}
       {currentView === 'videos' && (
         <group position={[0, 0, 0.005]}>
-          {/* Barra Superior con botón Volver al Menú (solo flecha <-) */}
-          <group position={[0, 1.50, 0]}>
+          {/* Barra Superior: Volver + título de la sala */}
+          <group position={[0, panelHeight / 2 - 0.21, 0]}>
             <WixarikaVRButton
               id="btn-videos-back-top"
               label="Volver"
@@ -1600,7 +1615,7 @@ export function WixarikaWelcomeDashboard({
               variant="cantera"
               width={0.92}
               height={0.30}
-              position={[-2.62, 0, 0]}
+              position={[-panelWidth / 2 + 0.58, 0, 0]}
               onClick={handleReturnHome}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -1611,32 +1626,26 @@ export function WixarikaWelcomeDashboard({
 
             <Text
               position={[0, 0.02, 0]}
-              fontSize={0.135}
+              fontSize={0.150}
               color="#1c1917"
               anchorX="center"
               anchorY="middle"
-              maxWidth={4.10}
+              maxWidth={4.60}
             >
               SALA AUDIOVISUAL · BIBLIOTECA SOLÓN ARGÜELLO
             </Text>
-
-            {/* Línea divisoria superior dorada acotada al centro para no encimarse a botones ni cruz */}
-            <mesh position={[0, -0.15, 0]}>
-              <planeGeometry args={[3.60, 0.006]} />
-              <meshBasicMaterial color="#d4af37" />
-            </mesh>
           </group>
 
-          {/* Selector de Videos: Anterior, Video X de Y, Siguiente con amplia separación */}
-          <group position={[0, 1.20, 0]}>
+          {/* Selector de Videos: Anterior, título del video, Siguiente */}
+          <group position={[0, panelHeight / 2 - 0.55, 0]}>
             <WixarikaVRButton
               id="btn-dash-video-prev"
               label="Anterior"
               iconName="chevron-left"
               variant="cantera"
-              width={1.05}
-              height={0.22}
-              position={[-1.95, 0, 0]}
+              width={1.20}
+              height={0.28}
+              position={[-2.60, 0, 0]}
               onClick={handlePrevVideo}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -1647,18 +1656,23 @@ export function WixarikaWelcomeDashboard({
 
             <group position={[0, 0, 0]}>
               <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[2.30, 0.22]} />
+                <planeGeometry args={[3.70, 0.30]} />
                 <meshBasicMaterial color="#f4ebd8" />
               </mesh>
-              <Text
+              <AutoFitText
+                key={currentVideo?.id}
                 position={[0, 0, 0.001]}
-                fontSize={0.115}
+                fontSize={0.120}
+                maxHeight={0.17}
+                minScale={0.75}
                 color="#1c1917"
                 anchorX="center"
                 anchorY="middle"
+                maxWidth={3.56}
+                textAlign="center"
               >
-                {`Video ${videoIndex + 1} de ${totalVideos}`}
-              </Text>
+                {`${videoIndex + 1}/${totalVideos} · ${currentVideo?.title || ''}`}
+              </AutoFitText>
             </group>
 
             <WixarikaVRButton
@@ -1666,9 +1680,9 @@ export function WixarikaWelcomeDashboard({
               label="Siguiente"
               iconName="chevron-right"
               variant="cantera"
-              width={1.05}
-              height={0.22}
-              position={[1.95, 0, 0]}
+              width={1.20}
+              height={0.28}
+              position={[2.60, 0, 0]}
               onClick={handleNextVideo}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -1678,15 +1692,14 @@ export function WixarikaWelcomeDashboard({
             />
           </group>
 
-          {/* Reproductor de Video 3D Integrado (descendido a Y=-0.22 para evitar cualquier solapamiento) */}
+          {/* Reproductor en modo sala (pantalla 5.20 × 2.925 m, sin ficha) */}
           {currentVideo && (
-            <group position={[0, -0.22, 0]}>
+            <group position={[0, panelHeight / 2 - 0.75 - (5.20 * 9) / 16 / 2, 0]}>
               <WixarikaVRVideoPlayer
                 video={currentVideo}
                 quality={videoQuality}
                 onQualityChange={setVideoQuality}
-                cinemaMode={videoCinemaMode}
-                onToggleCinemaMode={() => setVideoCinemaMode((p) => !p)}
+                theater
                 registerMesh={registerMesh}
                 unregisterMesh={unregisterMesh}
                 hoveredId={hoveredId}

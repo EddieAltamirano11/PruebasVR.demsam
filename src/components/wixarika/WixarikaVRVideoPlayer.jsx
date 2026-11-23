@@ -21,6 +21,8 @@ export function WixarikaVRVideoPlayer({
   onQualityChange: _onQualityChange,
   cinemaMode = false,
   onToggleCinemaMode,
+  // theater: pantalla grande fija (5.20 × 2.925 m) sin ficha ni botón Ampliar/Ver Ficha
+  theater = false,
   onPlaybackChange,
   onRegister,
   onUnregister,
@@ -444,12 +446,13 @@ export function WixarikaVRVideoPlayer({
     }
   }, []);
 
-  const screenWidth = cinemaMode ? 3.60 : 2.60;
-  const screenHeight = cinemaMode ? 2.025 : 1.4625; // Relación exacta 16:9
-  const columnX = cinemaMode ? 0 : -1.45;
-  const screenY = cinemaMode ? 0.06 : 0.20;
-  const seekBarY = cinemaMode ? -1.04 : -0.63;
-  const timeY = cinemaMode ? -1.12 : -0.71;
+  const isWide = cinemaMode || theater;
+  const screenWidth = theater ? 5.20 : cinemaMode ? 3.60 : 2.60;
+  const screenHeight = screenWidth * (9 / 16); // Relación exacta 16:9
+  const columnX = isWide ? 0 : -1.45;
+  const screenY = theater ? 0 : cinemaMode ? 0.06 : 0.20;
+  const seekBarY = theater ? -screenHeight / 2 - 0.10 : cinemaMode ? -1.04 : -0.63;
+  const timeY = theater ? seekBarY - 0.27 : cinemaMode ? -1.12 : -0.71;
 
   const handleSeekBarClick = useCallback(
     (e) => {
@@ -531,7 +534,7 @@ export function WixarikaVRVideoPlayer({
               </mesh>
 
               <mesh position={[0, 0, -0.0005]}>
-                <planeGeometry args={[cinemaMode ? 1.84 : 1.54, 0.28]} />
+                <planeGeometry args={[theater ? 2.40 : cinemaMode ? 1.84 : 1.54, theater ? 0.36 : 0.28]} />
                 <meshBasicMaterial color={errorMsg ? '#dc2626' : '#c69214'} />
               </mesh>
               <mesh
@@ -540,26 +543,26 @@ export function WixarikaVRVideoPlayer({
                 onPointerDown={(e) => e.stopPropagation?.()}
                 onClick={handleTogglePlay}
               >
-                <planeGeometry args={[cinemaMode ? 1.80 : 1.50, 0.25]} />
+                <planeGeometry args={[theater ? 2.36 : cinemaMode ? 1.80 : 1.50, theater ? 0.33 : 0.25]} />
                 <meshBasicMaterial color="#faf6eb" transparent opacity={0.96} />
               </mesh>
 
               {!errorMsg && !isBuffering && !statusNote && (
                 <LucideVRIcon
                   name="play"
-                  size={0.12}
+                  size={theater ? 0.16 : 0.12}
                   color="#b45309"
-                  position={[-(cinemaMode ? 0.64 : 0.52), 0, 0.002]}
+                  position={[-(theater ? 0.86 : cinemaMode ? 0.64 : 0.52), 0, 0.002]}
                 />
               )}
 
               <Text
                 position={[!errorMsg && !isBuffering && !statusNote ? 0.08 : 0, 0, 0.002]}
-                fontSize={0.098}
+                fontSize={theater ? 0.130 : 0.098}
                 color={errorMsg ? '#991b1b' : '#1c1917'}
                 anchorX="center"
                 anchorY="middle"
-                maxWidth={cinemaMode ? 1.40 : 1.15}
+                maxWidth={theater ? 1.90 : cinemaMode ? 1.40 : 1.15}
                 textAlign="center"
               >
                 {errorMsg ||
@@ -605,8 +608,8 @@ export function WixarikaVRVideoPlayer({
 
         {/* Tiempo actual / Duración */}
         <Text
-          position={[0, timeY, 0.012]}
-          fontSize={0.088}
+          position={[theater ? 1.90 : 0, timeY, 0.012]}
+          fontSize={theater ? 0.130 : 0.088}
           color="#1c1917"
           anchorX="center"
           anchorY="middle"
@@ -615,7 +618,46 @@ export function WixarikaVRVideoPlayer({
         </Text>
 
         {/* Controles: Solo Iniciar/Pausar, Audio y Ampliar Pantalla */}
-        {cinemaMode ? (
+        {theater ? (
+          <group position={[0, timeY, 0.014]}>
+            <WixarikaVRButton
+              id="btn-video-play"
+              label={isPlaying ? 'Pausar' : 'Iniciar'}
+              iconName={isPlaying ? 'pause' : 'play'}
+              variant="cantera"
+              active={isPlaying}
+              width={1.30}
+              height={0.28}
+              position={[-1.55, 0, 0]}
+              onClick={handleTogglePlay}
+              onRegister={onRegister}
+              onUnregister={onUnregister}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
+            />
+            <WixarikaVRButton
+              id="btn-video-mute"
+              label={isMuted ? 'Silencio' : 'Audio'}
+              iconName={isMuted ? 'volume-x' : 'volume-2'}
+              variant="cantera"
+              active={isMuted}
+              width={1.30}
+              height={0.28}
+              position={[-0.10, 0, 0]}
+              onClick={handleToggleMute}
+              onRegister={onRegister}
+              onUnregister={onUnregister}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
+            />
+          </group>
+        ) : cinemaMode ? (
           <group position={[0, -1.28, 0.014]}>
             <WixarikaVRButton
               id="btn-video-play"
@@ -731,7 +773,7 @@ export function WixarikaVRVideoPlayer({
       </group>
 
       {/* 2. COLUMNA DERECHA: FICHA CULTURAL AMPLIA Y LEGIBLE (Solo Título, Sinopsis y Sello) */}
-      {!cinemaMode && video && (
+      {!isWide && video && (
         <group position={[1.45, -0.06, 0.01]}>
           <mesh position={[0, 0, -0.004]}>
             <planeGeometry args={[2.44, 1.89]} />
