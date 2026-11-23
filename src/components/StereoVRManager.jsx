@@ -2,6 +2,20 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 
+/**
+ * Viewports de cada ojo en píxeles CSS. WebGLRenderer.setViewport/setScissor multiplican
+ * internamente por el pixelRatio, así que NO se debe usar getDrawingBufferSize (píxeles
+ * físicos): con DPR 2 (iPhone) el ojo izquierdo cubría toda la pantalla y el derecho quedaba
+ * fuera de ella, por lo que no se veía la vista dividida.
+ */
+export function computeEyeViewports(cssWidth, cssHeight) {
+  const halfW = Math.floor(cssWidth / 2);
+  return {
+    left: [0, 0, halfW, cssHeight],
+    right: [halfW, 0, cssWidth - halfW, cssHeight]
+  };
+}
+
 export function StereoVRManager({ eyeSep = 0.064 }) {
   const { gl } = useThree();
 
@@ -23,8 +37,8 @@ export function StereoVRManager({ eyeSep = 0.064 }) {
 
   // Bucle de renderizado prioritario (priority 1) exclusivo para el modo estereoscopico
   useFrame(({ scene, camera }) => {
-    // Usar el tamaño físico real del búfer WebGL (getDrawingBufferSize) para evitar submuestreo de píxeles
-    gl.getDrawingBufferSize(sizeVec.current);
+    // Tamaño en píxeles CSS: three.js aplica el pixelRatio dentro de setViewport/setScissor
+    gl.getSize(sizeVec.current);
     const w = sizeVec.current.x;
     const h = sizeVec.current.y;
     if (w <= 0 || h <= 0) return;
@@ -50,20 +64,20 @@ export function StereoVRManager({ eyeSep = 0.064 }) {
     stereoCam.cameraL.matrixWorldInverse.copy(stereoCam.cameraL.matrixWorld).invert();
     stereoCam.cameraR.matrixWorldInverse.copy(stereoCam.cameraR.matrixWorld).invert();
 
-    const halfW = Math.floor(w / 2);
+    const { left, right } = computeEyeViewports(w, h);
 
     gl.autoClear = false;
     gl.clear();
 
     // 1. OJO IZQUIERDO (Mitad izquierda de la pantalla física)
-    gl.setViewport(0, 0, halfW, h);
-    gl.setScissor(0, 0, halfW, h);
+    gl.setViewport(...left);
+    gl.setScissor(...left);
     gl.setScissorTest(true);
     gl.render(scene, stereoCam.cameraL);
 
     // 2. OJO DERECHO (Mitad derecha de la pantalla física)
-    gl.setViewport(halfW, 0, w - halfW, h);
-    gl.setScissor(halfW, 0, w - halfW, h);
+    gl.setViewport(...right);
+    gl.setScissor(...right);
     gl.setScissorTest(true);
     gl.render(scene, stereoCam.cameraR);
 

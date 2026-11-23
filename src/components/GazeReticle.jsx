@@ -254,14 +254,14 @@ export function GazeReticle({
     };
 
     const onTouchStart = (e) => {
-      if (!enabled) return;
+      // Solo en modo visor el toque es el "botón" del Homido Grab. En la Experiencia 2D los
+      // toques son para girar la vista (OrbitControls) y para tocar objetos directamente
+      // (onClick de R3F); si disparaban la retícula, arrastrar seleccionaba lo que estuviera
+      // al centro y la cámara se iba a otra sala.
+      if (!enabled || !vrMode) return;
       if (isHtmlControl(e.target)) return;
-      // En modo normal (no VR) solo disparar si el toque fue dentro del canvas 3D
-      if (!vrMode && gl?.domElement && !gl.domElement.contains(e.target)) return;
-      if (vrMode) {
-        // En modo visor (Homido Grab), el toque del pad capacitivo dispara exclusivamente la retícula central
-        e.stopPropagation();
-      }
+      // En modo visor (Homido Grab), el toque del pad capacitivo dispara exclusivamente la retícula central
+      e.stopPropagation();
       firePhysicalTrigger();
     };
 
@@ -269,13 +269,10 @@ export function GazeReticle({
       if (!enabled) return;
       if (isHtmlControl(e.target)) return;
 
-      // En escritorio (no VR), ignorar ratón para que arrastrar OrbitControls no dispare la retícula
-      if (!vrMode && e.pointerType === 'mouse') return;
-      if (!vrMode && gl?.domElement && !gl.domElement.contains(e.target)) return;
+      // Fuera del modo visor (mouse o toque) la retícula no se dispara: se usa el onClick directo
+      if (!vrMode) return;
 
-      if (vrMode) {
-        e.stopPropagation();
-      }
+      e.stopPropagation();
       firePhysicalTrigger();
     };
 

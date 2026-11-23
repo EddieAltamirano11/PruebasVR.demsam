@@ -67,6 +67,20 @@ function AppContent() {
   const [experience, setExperience] = useState(null);
   const [landingNotice, setLandingNotice] = useState('');
 
+  // iOS Safari ignora user-scalable=no: bloquear el zoom con pellizco/doble toque de la página,
+  // que dejaba la vista ampliada y descentrada (OrbitControls usa pointer events, no se ve afectado)
+  useEffect(() => {
+    const preventPageZoom = (e) => e.preventDefault();
+    document.addEventListener('gesturestart', preventPageZoom, { passive: false });
+    document.addEventListener('gesturechange', preventPageZoom, { passive: false });
+    document.addEventListener('dblclick', preventPageZoom, { passive: false });
+    return () => {
+      document.removeEventListener('gesturestart', preventPageZoom);
+      document.removeEventListener('gesturechange', preventPageZoom);
+      document.removeEventListener('dblclick', preventPageZoom);
+    };
+  }, []);
+
   // iOS: desbloquear el audio con el primer toque real (los clics por mirada no cuentan como gesto)
   useEffect(() => {
     const unlockAudio = () => {
