@@ -17,7 +17,9 @@ import { WixarikaVRVideoPlayer } from './WixarikaVRVideoPlayer.jsx';
 import {
   WixarikaWelcomeDashboard,
   DEFAULT_CULTURAL_STATIONS,
-  WIXARIKA_REFERENCES
+  WIXARIKA_REFERENCES,
+  getYouTubeId,
+  getReferenceImage
 } from './WixarikaWelcomeDashboard.jsx';
 import { BadgeCloseButton } from './BadgeCloseButton.jsx';
 import { LUCIDE_SVG_PATHS, getLucideIconTexture } from './LucideVRIcon.jsx';
@@ -538,11 +540,12 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
       expect(menuBounds.height).toBeGreaterThan(0.20);
     });
 
-    it('contains complete 2-card reference catalogs for deidades, fiestas, gastronomía, and libros', () => {
+    it('contains complete 2-card reference catalogs for deidades, fiestas, gastronomía, and videos', () => {
       expect(WIXARIKA_REFERENCES.deidades.length).toBe(6);
       expect(WIXARIKA_REFERENCES.fiestas.length).toBe(3);
       expect(WIXARIKA_REFERENCES.gastronomia.length).toBe(4);
-      expect(WIXARIKA_REFERENCES.libros.length).toBe(2);
+      expect(WIXARIKA_REFERENCES.libros).toBeUndefined();
+      expect(Array.isArray(WIXARIKA_REFERENCES.videos)).toBe(true);
 
       // Todas las deidades deben tener las mismas imágenes de los cuadros y referencias
       WIXARIKA_REFERENCES.deidades.forEach((ref) => {
@@ -568,12 +571,11 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
         expect(ref.link).toContain('http');
       });
 
-      // Libros cuentan con portadas oficiales y fichas bibliográficas
-      WIXARIKA_REFERENCES.libros.forEach((ref) => {
+      // Videos: cada referencia es un enlace de YouTube válido (la miniatura sale de YouTube)
+      WIXARIKA_REFERENCES.videos.forEach((ref) => {
         expect(ref.title).toBeTruthy();
-        expect(ref.image).toBeTruthy();
-        expect(ref.reference).toBeTruthy();
-        expect(ref.link).toContain('http');
+        expect(getYouTubeId(ref.link)).toMatch(/^[A-Za-z0-9_-]{11}$/);
+        expect(getReferenceImage(ref)).toContain('i.ytimg.com');
       });
     });
 
@@ -582,6 +584,26 @@ describe('Wixárika VR Design System - Contrast & Angular Ergonomics', () => {
         expect(art.description.length).toBeGreaterThan(50);
         expect(art.description.length).toBeLessThanOrEqual(260);
       });
+    });
+  });
+
+  describe('Referencias: imágenes y videos', () => {
+    it('todas las imágenes de referencias existen en /public', () => {
+      for (const [cat, items] of Object.entries(WIXARIKA_REFERENCES)) {
+        items.forEach((ref) => {
+          if (ref.image) {
+            expect(fs.existsSync(path.resolve(process.cwd(), 'public', ref.image.replace(/^\//, ''))), `${cat}: ${ref.image}`).toBe(true);
+          }
+        });
+      }
+    });
+
+    it('obtiene el ID y la miniatura de distintos formatos de enlace de YouTube', () => {
+      ['https://www.youtube.com/watch?v=meHGpPLrDaU', 'https://youtu.be/meHGpPLrDaU', 'https://youtube.com/shorts/meHGpPLrDaU', 'https://www.youtube.com/watch?feature=share&v=meHGpPLrDaU'].forEach((url) => {
+        expect(getYouTubeId(url)).toBe('meHGpPLrDaU');
+      });
+      expect(getReferenceImage({ link: 'https://youtu.be/meHGpPLrDaU' })).toBe('https://i.ytimg.com/vi/meHGpPLrDaU/hqdefault.jpg');
+      expect(getReferenceImage({ link: 'https://inah.gob.mx' })).toBeNull();
     });
   });
 });
