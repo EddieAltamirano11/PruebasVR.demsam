@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { SoundFX } from '../services/audioService.js';
 import { WIXARIKA_ARTWORKS, WIXARIKA_GASTRONOMY_DISHES } from './wixarika/wixarikaArtworksData.js';
 import { setOutlineRoot } from './HoverOutline.jsx';
+import { useMuseumModelUrl } from '../services/museumModelLoader.js';
 
 export function MuseumModel({
   onSelectArtwork,
@@ -16,7 +17,10 @@ export function MuseumModel({
   const group = useRef();
   const { gl } = useThree();
   // Carga del modelo 3D oficial v16 del Museo Wixarika (Bienvenida: Portal + Logos ITT/CECAN/Solón + Botones 3D Acerca de/Menú estilo Deidad ampliado)
-  const { scene } = useGLTF('./museo_wixarika_v16.glb?v=16.8');
+  // El archivo se descarga con avance visible (museumModelLoader); mientras tanto este componente
+  // suspende y la app muestra la pantalla de carga.
+  const modelUrl = useMuseumModelUrl();
+  const { scene } = useGLTF(modelUrl);
 
   useEffect(() => {
     if (!scene) return;
@@ -367,5 +371,4 @@ export function MuseumModel({
   );
 }
 
-useGLTF.preload('./museo_wixarika_v16.glb?v=16.8');
 export default MuseumModel;

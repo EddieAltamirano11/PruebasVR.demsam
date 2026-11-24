@@ -11,6 +11,8 @@ import { ExperienceLandingView } from './views/ExperienceLandingView.jsx';
 import { RotateDeviceHint } from './components/RotateDeviceHint.jsx';
 import { PointerLockHint } from './components/PointerLockHint.jsx';
 import { Tutorial2D } from './components/Tutorial2D.jsx';
+import { ModelLoadingOverlay } from './components/ModelLoadingOverlay.jsx';
+import { startMuseumModelDownload } from './services/museumModelLoader.js';
 import { SoundFX } from './services/audioService.js';
 import { requestMotionPermission, MOTION_PERMISSION_DENIED_MESSAGE } from './utils/vrSupport.js';
 
@@ -52,6 +54,11 @@ function AppContent() {
   // Siempre inicia en null para que la app abra en el selector de experiencia.
   const [experience, setExperience] = useState(null);
   const [landingNotice, setLandingNotice] = useState('');
+
+  // Empezar a descargar el modelo 3D desde la pantalla de inicio (se aprovecha el tiempo de elegir)
+  useEffect(() => {
+    if (viewMode === 'museum') startMuseumModelDownload();
+  }, [viewMode]);
 
   // iOS Safari ignora user-scalable=no: bloquear el zoom con pellizco/doble toque de la página,
   // que dejaba la vista ampliada y descentrada (OrbitControls usa pointer events, no se ve afectado)
@@ -337,6 +344,9 @@ function AppContent() {
 
       {/* Experiencia 2D con mouse: aviso de clic para explorar / Esc para mostrar el cursor */}
       {experience !== null && !vrMode && !tutorialOpen && <PointerLockHint />}
+
+      {/* Pantalla de carga mientras llega el modelo 3D (si no, la escena se ve en negro) */}
+      {experience !== null && <ModelLoadingOverlay />}
 
       {/* Tutorial inicial de la Experiencia 2D */}
       {experience === '2d' && !vrMode && tutorialOpen && (
