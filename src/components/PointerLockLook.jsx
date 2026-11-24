@@ -65,6 +65,10 @@ export function PointerLockLook({ enabled, orbitRef, onUserLook }) {
       if (e.target !== el) return; // clics en botones o ventanas HTML no activan el control
       armedRef.current = true;
       if (typeof el.requestPointerLock !== 'function') return;
+      // Este clic solo captura el cursor: no debe llegar a OrbitControls (empezaría un arrastre
+      // cuyo "soltar" se bloquea con el cursor capturado; al liberarlo con una tecla, el arrastre
+      // seguía activo y la vista se movía sin hacer clic) ni a los objetos de la escena.
+      e.stopPropagation();
       try {
         // Chrome devuelve una promesa (puede rechazar si se pide justo después de pulsar Esc)
         const result = el.requestPointerLock();
