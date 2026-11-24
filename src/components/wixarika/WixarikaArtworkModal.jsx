@@ -99,6 +99,13 @@ export function WixarikaArtworkModal({
   const panelWidth = 7.04;
   const panelHeight = 2.975;
   const bgMeshRef = useRef();
+  // Altura real (medida por troika) del título y del subtítulo para apilar sin encimarse
+  const [titleHeight, setTitleHeight] = useState(null);
+  const [subtitleHeight, setSubtitleHeight] = useState(null);
+  useEffect(() => {
+    setTitleHeight(null);
+    setSubtitleHeight(null);
+  }, [artwork?.id, artwork?.title]);
 
   // Registro del fondo del modal como bloqueador visual y de raycast
   useEffect(() => {
@@ -128,6 +135,21 @@ export function WixarikaArtworkModal({
   const leftColX = -panelWidth / 2 + leftColWidth / 2; // -3.52 + 1.3225 = -2.1975m
   const dividerX = -panelWidth / 2 + leftColWidth; // -3.52 + 2.645 = -0.875m
   const rightColX = dividerX + rightColWidth / 2; // -0.875 + 2.1975 = +1.3225m
+
+  // Encabezado: el título se reduce para caber en un renglón si es largo (mín. 0.19 m) y el
+  // subtítulo y la línea dorada se colocan debajo de la altura medida del título.
+  const titleText = artwork.title || '';
+  const titleMaxWidth = rightColWidth * 0.76;
+  const titleFontSize = THREE.MathUtils.clamp(titleMaxWidth / (Math.max(titleText.length, 1) * 0.62), 0.19, 0.27);
+  const titleTop = 1.05;
+  const titleBottom = titleTop - (titleHeight ?? titleFontSize * 1.2);
+  const subtitleTop = titleBottom - 0.07;
+  const subtitleBottom = subtitleTop - (subtitleHeight ?? 0.18);
+  const dividerY = Math.max(0.34, subtitleBottom - 0.06);
+  const measure = (setter) => (troika) => {
+    const b = troika?.textRenderInfo?.blockBounds;
+    if (b) setter(b[3] - b[1]);
+  };
 
   return (
     <group position={position} rotation={rotation}>
@@ -224,20 +246,22 @@ export function WixarikaArtworkModal({
         {/* 1. Encabezado Superior: Título y Subtítulo con el Alias (ej. "HERMANO MAYOR VENADO AZUL") */}
         <group position={[0, 0, 0]}>
           <Text
-            position={[0, 1.05, 0]}
-            fontSize={0.270}
+            position={[0, titleTop, 0]}
+            fontSize={titleFontSize}
             color="#1c1917"
             anchorX="center"
             anchorY="top"
-            maxWidth={rightColWidth * 0.76}
+            maxWidth={titleMaxWidth}
             textAlign="center"
+            lineHeight={1.1}
+            onSync={measure(setTitleHeight)}
           >
-            {artwork.title}
+            {titleText}
           </Text>
 
           {/* Subtítulo: Texto del alias que antes iba debajo de la foto */}
           <Text
-            position={[0, 0.68, 0]}
+            position={[0, subtitleTop, 0]}
             fontSize={0.145}
             color="#78350f"
             anchorX="center"
@@ -246,12 +270,13 @@ export function WixarikaArtworkModal({
             textAlign="center"
             letterSpacing={0.03}
             lineHeight={1.25}
+            onSync={measure(setSubtitleHeight)}
           >
             {(artwork.alias || artwork.category || 'PATRIMONIO CULTURAL').toUpperCase()}
           </Text>
 
           {/* Línea divisoria dorada ceremonial debajo del subtítulo */}
-          <mesh position={[0, 0.46, 0]}>
+          <mesh position={[0, dividerY, 0]}>
             <planeGeometry args={[rightColWidth * 0.94, 0.008]} />
             <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
           </mesh>

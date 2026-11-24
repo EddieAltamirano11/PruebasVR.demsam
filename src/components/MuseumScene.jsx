@@ -454,7 +454,12 @@ export function MuseumScene({
       />
 
       {/* Menú Principal Flotante ÚNICO del Museo (anclado en Bienvenida +Z) */}
+      {/* Cada ventana tiene su propio <Suspense>: si algo dentro tarda en cargar (fuentes de texto,
+          imágenes), solo se espera esa ventana. Sin esto React ocultaba TODA la escena un instante,
+          la cámara principal se reasignaba y OrbitControls se recreaba mirando a Bienvenida
+          (en 2D la ficha del platillo quedaba a la espalda del visitante). */}
       {showButtons && !activeArtwork && (
+        <Suspense fallback={null}>
         <WixarikaWelcomeDashboard
           position={[0, 2.30, 3.75]}
           rotation={[0, Math.PI, 0]}
@@ -468,28 +473,35 @@ export function MuseumScene({
           unregisterMesh={unregisterMesh}
           vrMode={vrMode}
         />
+        </Suspense>
       )}
 
       {/* Tutorial inicial de la Experiencia VR (letra grande, frente al visitante) */}
       {vrMode && showVRTutorial && (
-        <WixarikaVRTutorialPanel
-          onClose={onCloseVRTutorial}
-          registerMesh={registerMesh}
-          unregisterMesh={unregisterMesh}
-        />
+        <Suspense fallback={null}>
+          <WixarikaVRTutorialPanel
+            onClose={onCloseVRTutorial}
+            registerMesh={registerMesh}
+            unregisterMesh={unregisterMesh}
+          />
+        </Suspense>
       )}
 
       {/* Contorno naranja sobre el cuadro / botón / platillo del GLB al que apunta el punto central */}
-      <HoverOutline target={activeArtwork ? null : outlineTarget} />
+      <Suspense fallback={null}>
+        <HoverOutline target={activeArtwork ? null : outlineTarget} />
+      </Suspense>
 
       {/* Ventana Modal Monumental del Cuadro Seleccionado (Opción C: frente a la mirada del usuario) */}
       {activeArtwork && (
-        <DynamicArtworkModal
-          artwork={activeArtwork}
-          onClose={handleCloseArtwork}
-          registerMesh={registerMesh}
-          unregisterMesh={unregisterMesh}
-        />
+        <Suspense fallback={null}>
+          <DynamicArtworkModal
+            artwork={activeArtwork}
+            onClose={handleCloseArtwork}
+            registerMesh={registerMesh}
+            unregisterMesh={unregisterMesh}
+          />
+        </Suspense>
       )}
 
       {/* Reticula Central con Gaze Fuse calibrado a 2.0 segundos + gatillo físico Homido Grab / WebXR */}
