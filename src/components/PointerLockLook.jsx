@@ -8,7 +8,7 @@ import * as THREE from 'three';
  * - maxPitch: inclinación máxima arriba/abajo (para no voltear la vista).
  */
 export const POINTER_LOOK = {
-  sensitivity: 0.0022,
+  sensitivity: 0.0011, // ~0.06° por píxel (la mitad del valor inicial, que se sentía demasiado sensible)
   maxPitch: THREE.MathUtils.degToRad(80)
 };
 
