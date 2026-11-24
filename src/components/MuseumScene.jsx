@@ -18,6 +18,17 @@ import {
 import { SoundFX } from '../services/audioService.js';
 import { isIOSDevice } from '../utils/vrSupport.js';
 import { STATION_WORLD_DIRECTIONS, computeShortestYawDelta } from '../utils/vrNavigation.js';
+import {
+  VIEWER_CENTER,
+  initialLookTarget,
+  lookTargetFromAngles,
+  stationLookAngles,
+  anglesFromDirection,
+  shortestAngle
+} from '../utils/viewerCenter.js';
+
+const INITIAL_LOOK_TARGET = initialLookTarget();
+const _center = new THREE.Vector3(...VIEWER_CENTER);
 
 // Estaciones Culturales del Museo Wixarika (HU-03, HU-06 ISO 9241-210)
 // Posicionadas a distancias y alturas ergonómicas (Y=1.35-1.40m a la vista del usuario)
@@ -90,13 +101,33 @@ function StaticMuseum({
   );
 }
 
+/**
+ * Mantiene al espectador exactamente en el centro del museo.
+ * - Experiencia 2D: OrbitControls gira la cámara alrededor de un objetivo a 10 cm; después de cada
+ *   actualización se trasladan cámara y objetivo juntos de regreso al centro (se conserva la dirección
+ *   de la mirada), así que arrastrar o mover el mouse solo gira la vista en su lugar.
+ * - Modo visor VR (giroscopio): la cámara vuelve al centro; con WebXR la posición la da el visor.
+ */
+export function KeepViewerCentered({ orbitRef, vrMode, isWebXRSession }) {
+  const { camera } = useThree();
+  const offset = useRef(new THREE.Vector3());
+  useFrame(() => {
+    if (isWebXRSession) return;
+    offset.current.copy(_center).sub(camera.position);
+    if (offset.current.lengthSq() < 1e-12) return;
+    camera.position.add(offset.current);
+    if (!vrMode && orbitRef.current) orbitRef.current.target.add(offset.current);
+  });
+  return null;
+}
+
 // Controlador de cámara para navegación suave hacia las salas tanto en PC (OrbitControls)
 // como en visor VR móvil (WebXR nativo y modo estereoscópico + giroscopio rotando cameraRigRef)
 function StationCameraController({ targetStation, setTargetStation, orbitRef, cameraRigRef, vrMode }) {
   const { camera } = useThree();
-  const targetCamPos = useRef(null);
-  const targetOrbitTarget = useRef(null);
+  const targetLook = useRef(null);
   const isNavigatingPC = useRef(false);
+  const lookDir = useRef(new THREE.Vector3());
 
   const vrTargetYaw = useRef(null);
   const isNavigatingVR = useRef(false);
@@ -142,33 +173,10 @@ function StationCameraController({ targetStation, setTargetStation, orbitRef, ca
       return;
     }
 
-    // 2. MODO COMPUTADORA (PC con OrbitControls)
-    let pos = null;
-    let lookTarget = null;
-    if (stationId === 'deidades') {
-      // Muro Norte (-Z): la cámara se posiciona al Sur (+Z) mirando al Norte
-      pos = new THREE.Vector3(0, 1.65, 2.5);
-      lookTarget = new THREE.Vector3(0, 1.85, 0);
-    } else if (stationId === 'gastronomia') {
-      // Muro Este (+X): la cámara se posiciona al Oeste (-X) mirando al Este
-      pos = new THREE.Vector3(-2.5, 1.60, 0);
-      lookTarget = new THREE.Vector3(0, 1.50, 0);
-    } else if (stationId === 'fiestas') {
-      // Muro Oeste (-X): la cámara se posiciona al Este (+X) mirando al Oeste
-      pos = new THREE.Vector3(2.5, 1.65, 0);
-      lookTarget = new THREE.Vector3(0, 1.85, 0);
-    } else if (stationId === 'home' || stationId === 'bienvenida') {
-      // Bienvenida / Menú Principal (+Z):
-      // Se posiciona en [0, 1.65, -2.5] con target [0, 1.80, 0] para que la mira
-      // quede EXACTAMENTE en el espacio neutro entre las dos filas de cards (Y=2.03 en mundo, local Y=-0.275),
-      // sin activar el Gaze Fuse en Gastronomía ni en ningún botón.
-      pos = new THREE.Vector3(0, 1.65, -2.5);
-      lookTarget = new THREE.Vector3(0, 1.80, 0);
-    }
-
-    if (pos && lookTarget) {
-      targetCamPos.current = pos;
-      targetOrbitTarget.current = lookTarget;
+    // 2. MODO COMPUTADORA / 2D: el espectador se queda en el centro y solo gira la vista hacia la sala
+    const angles = stationLookAngles(stationId);
+    if (angles) {
+      targetLook.current = angles;
       isNavigatingPC.current = true;
     }
   }, [targetStation, vrMode, camera, cameraRigRef]);
@@ -191,27 +199,26 @@ function StationCameraController({ targetStation, setTargetStation, orbitRef, ca
       return;
     }
 
-    if (vrMode || !isNavigatingPC.current || !targetCamPos.current || !targetOrbitTarget.current) return;
+    const controls = orbitRef.current;
+    if (vrMode || !isNavigatingPC.current || !targetLook.current || !controls) return;
 
-    // Interpolación suave y ágil hacia la posición y target de la estación en PC
-    camera.position.lerp(targetCamPos.current, Math.min(1, delta * 4.5));
-    if (orbitRef.current) {
-      orbitRef.current.target.lerp(targetOrbitTarget.current, Math.min(1, delta * 4.5));
-      orbitRef.current.update();
-    }
+    // Giro suave (yaw/pitch) desde el centro hacia la sala elegida
+    lookDir.current.copy(controls.target).sub(camera.position);
+    const now = anglesFromDirection(lookDir.current);
+    const dYaw = shortestAngle(now.yaw, targetLook.current.yaw);
+    const dPitch = targetLook.current.pitch - now.pitch;
+    const k = Math.min(1, delta * 5);
+    const done = Math.abs(dYaw) < 0.003 && Math.abs(dPitch) < 0.003;
+    const yaw = done ? targetLook.current.yaw : now.yaw + dYaw * k;
+    const pitch = done ? targetLook.current.pitch : now.pitch + dPitch * k;
 
-    if (
-      camera.position.distanceTo(targetCamPos.current) < 0.04 &&
-      (!orbitRef.current || orbitRef.current.target.distanceTo(targetOrbitTarget.current) < 0.04)
-    ) {
-      camera.position.copy(targetCamPos.current);
-      if (orbitRef.current) {
-        orbitRef.current.target.copy(targetOrbitTarget.current);
-        orbitRef.current.update();
-      }
+    camera.position.copy(_center);
+    controls.target.set(...lookTargetFromAngles(yaw, pitch));
+    controls.update();
+
+    if (done) {
       isNavigatingPC.current = false;
-      targetCamPos.current = null;
-      targetOrbitTarget.current = null;
+      targetLook.current = null;
       setTargetStation(null);
     }
   });
@@ -385,8 +392,8 @@ export function MuseumScene({
     if (onRecenterRef?.current) {
       onRecenterRef.current();
     } else if (orbitRef.current) {
-      orbitRef.current.target.set(0, 1.80, 0);
-      orbitRef.current.object.position.set(0, 1.65, -2.5);
+      orbitRef.current.object.position.set(...VIEWER_CENTER);
+      orbitRef.current.target.set(...INITIAL_LOOK_TARGET);
       orbitRef.current.update();
     }
   }, [onRecenterRef]);
@@ -415,7 +422,7 @@ export function MuseumScene({
       <group ref={cameraRigRef} position={[0, 0, 0]}>
         <PerspectiveCamera
           makeDefault
-          position={vrMode ? [0, 1.6, 0] : [0, 1.65, -2.5]}
+          position={VIEWER_CENTER}
           fov={75}
           near={0.05}
           far={1000}
@@ -494,17 +501,19 @@ export function MuseumScene({
         vrMode={vrMode}
       />
 
-      {/* Controles de orbita activos en modo pantalla normal (giro 360° libre alrededor del centro del museo) */}
+      {/* Experiencia 2D: el espectador está fijo en el centro del museo y solo gira la vista
+          (arrastre o mouse). Sin zoom ni desplazamiento para no salir del centro. */}
       <OrbitControls
         ref={orbitRef}
         enabled={!vrMode}
-        target={[0, 1.80, 0]}
+        target={INITIAL_LOOK_TARGET}
         enableDamping
-        dampingFactor={0.05}
-        minDistance={0.2}
-        maxDistance={7.5}
-        maxPolarAngle={Math.PI - 0.05}
-        minPolarAngle={0.05}
+        dampingFactor={0.08}
+        enableZoom={false}
+        enablePan={false}
+        rotateSpeed={-0.35}
+        maxPolarAngle={Math.PI * 0.82}
+        minPolarAngle={Math.PI * 0.18}
         onStart={() => {
           setNavTargetStation(null);
         }}
@@ -513,6 +522,7 @@ export function MuseumScene({
       {/* Experiencia 2D con mouse "tipo juego": clic captura el cursor, el mouse gira la vista y
           los clics se disparan en el punto central (GazeReticle). Cualquier tecla libera el cursor. */}
       <PointerLockLook enabled={!vrMode} orbitRef={orbitRef} />
+      <KeepViewerCentered orbitRef={orbitRef} vrMode={vrMode} isWebXRSession={isWebXRSession} />
 
       {/* Gestor Nativo WebXR */}
       <WebXRManager onSessionChange={handleWebXRSessionChange} onTriggerRef={onWebXRTriggerRef} />

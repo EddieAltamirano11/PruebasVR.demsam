@@ -9,7 +9,7 @@ import * as THREE from 'three';
  */
 export const POINTER_LOOK = {
   sensitivity: 0.0011, // ~0.06° por píxel (la mitad del valor inicial, que se sentía demasiado sensible)
-  maxPitch: THREE.MathUtils.degToRad(80)
+  maxPitch: THREE.MathUtils.degToRad(55) // igual que el límite de OrbitControls en 2D
 };
 
 /** true si el cursor está capturado por `element` (Pointer Lock activo). */

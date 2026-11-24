@@ -248,6 +248,7 @@ Mapa de evidencia para la ficha de pruebas cruzadas. Cada ley indica **qué hace
 
 ## 7.1 Ajustes por Pruebas con Usuarios (observaciones de compañeros)
 
+* **Espectador fijo en el centro** (`src/utils/viewerCenter.js`, `KeepViewerCentered`): en 2D y en el modo visor el espectador está siempre en `[0, 1.6, 0]` y solo gira la vista. Elegir una sala gira la mirada hacia su muro, sin desplazar la cámara. En 2D no hay zoom ni desplazamiento, y el arrastre con el dedo "jala" la escena, como en Street View.
 * **Control 2D tipo videojuego** (`PointerLockLook`): clic en la escena captura el cursor (se oculta y solo queda el punto central), el mouse gira la vista y cada clic se dispara en el punto central. **Cualquier tecla** (o Esc) libera el cursor para usar la barra superior.
 * **Tutorial inicial** cada vez que se entra a una experiencia: en 2D una ventana (`Tutorial2D`, versión mouse o táctil) y en VR un panel 3D con letra grande frente al visitante (`WixarikaVRTutorialPanel`). Ambos explican que al seleccionar una imagen se despliega su información. El botón «Cómo usar» de la barra superior lo vuelve a mostrar.
 * **Sin selección por mirada en 2D:** solo con clic; en VR se mantiene el Gaze Fuse de 2.0 s.
