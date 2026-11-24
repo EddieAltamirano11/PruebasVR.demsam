@@ -47,14 +47,24 @@ export function PointerLockLook({ enabled, orbitRef, onUserLook }) {
   enabledRef.current = enabled;
   const onUserLookRef = useRef(onUserLook);
   onUserLookRef.current = onUserLook;
+  const armedRef = useRef(false);
 
   useEffect(() => {
     const el = gl.domElement;
     const dir = new THREE.Vector3();
 
+    // "Armado": la vista solo sigue al mouse después de un clic en la escena. Cualquier tecla lo
+    // desarma al instante (aunque el navegador tarde en soltar el cursor o no lo suelte), y
+    // también al soltar el cursor por cualquier motivo. Volver a mirar requiere otro clic.
     const onPointerDown = (e) => {
       if (!enabledRef.current || e.pointerType !== 'mouse' || e.button !== 0) return;
-      if (isPointerLockedTo(el) || typeof el.requestPointerLock !== 'function') return;
+      if (isPointerLockedTo(el)) {
+        armedRef.current = true;
+        return;
+      }
+      if (e.target !== el) return; // clics en botones o ventanas HTML no activan el control
+      armedRef.current = true;
+      if (typeof el.requestPointerLock !== 'function') return;
       try {
         // Chrome devuelve una promesa (puede rechazar si se pide justo después de pulsar Esc)
         const result = el.requestPointerLock();
@@ -66,7 +76,7 @@ export function PointerLockLook({ enabled, orbitRef, onUserLook }) {
 
     const onMouseMove = (e) => {
       const controls = orbitRef?.current;
-      if (!enabledRef.current || !controls || !isPointerLockedTo(el)) return;
+      if (!enabledRef.current || !armedRef.current || !controls || !isPointerLockedTo(el)) return;
       if (!e.movementX && !e.movementY) return;
       onUserLookRef.current?.(e.movementX, e.movementY);
       dir.copy(controls.target).sub(camera.position);
@@ -76,20 +86,27 @@ export function PointerLockLook({ enabled, orbitRef, onUserLook }) {
       controls.update();
     };
 
-    // Cualquier tecla libera el cursor (además de Esc, que lo hace el navegador)
-    const onKeyDown = (e) => {
-      if (!isPointerLockedTo(el)) return;
-      e.preventDefault();
-      document.exitPointerLock?.();
+    // Cualquier tecla desactiva el control del mouse y libera el cursor (Esc lo hace el navegador)
+    const onKeyDown = () => {
+      if (!armedRef.current && !isPointerLockedTo(el)) return;
+      armedRef.current = false;
+      if (isPointerLockedTo(el)) document.exitPointerLock?.();
     };
 
-    el.addEventListener('pointerdown', onPointerDown);
+    const onLockChange = () => {
+      if (!isPointerLockedTo(el)) armedRef.current = false;
+    };
+
+    // En fase de captura sobre window: llega aunque la retícula detenga la propagación del clic
+    window.addEventListener('pointerdown', onPointerDown, true);
     document.addEventListener('mousemove', onMouseMove);
     window.addEventListener('keydown', onKeyDown, true);
+    document.addEventListener('pointerlockchange', onLockChange);
     return () => {
-      el.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('keydown', onKeyDown, true);
+      document.removeEventListener('pointerlockchange', onLockChange);
     };
   }, [gl, camera, orbitRef]);
 
