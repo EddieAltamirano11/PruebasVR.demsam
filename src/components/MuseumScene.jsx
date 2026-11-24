@@ -8,9 +8,11 @@ import { VRDeviceOrientation } from './VRDeviceOrientation.jsx';
 import { StereoVRManager } from './StereoVRManager.jsx';
 import { PointerLockLook } from './PointerLockLook.jsx';
 import { GazeReticle } from './GazeReticle.jsx';
+import { HoverOutline, findOutlineRoot } from './HoverOutline.jsx';
 import {
   WixarikaWelcomeDashboard,
   WixarikaArtworkModal,
+  WixarikaVRTutorialPanel,
   calculateArtworkModalTransform
 } from './wixarika/index.js';
 import { SoundFX } from '../services/audioService.js';
@@ -263,7 +265,9 @@ export function MuseumScene({
   onActiveStationChange: _onActiveStationChange,
   onOpenBooksPanel: _onOpenBooksPanel,
   isBooksOpen: _externalIsBooksOpen,
-  onToggleBooksOpen: _onToggleBooksOpen
+  onToggleBooksOpen: _onToggleBooksOpen,
+  showVRTutorial = false,
+  onCloseVRTutorial
 }) {
   const orbitRef = useRef();
   const cameraRigRef = useRef();
@@ -276,6 +280,12 @@ export function MuseumScene({
   const [dashboardView, setDashboardView] = useState('home');
   const [navTargetStation, setNavTargetStation] = useState(null);
   const [isWebXRSession, setIsWebXRSession] = useState(false);
+  // Objeto del GLB bajo el punto central (se resalta con un contorno naranja)
+  const [outlineTarget, setOutlineTarget] = useState(null);
+  const handleReticleHover = useCallback((target, isHovering) => {
+    const root = findOutlineRoot(target);
+    setOutlineTarget((prev) => (isHovering ? root : prev === root ? null : prev));
+  }, []);
 
   const handleWebXRSessionChange = useCallback(
     (active) => {
@@ -449,8 +459,21 @@ export function MuseumScene({
           onClose={handleCloseDashboard}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
+          vrMode={vrMode}
         />
       )}
+
+      {/* Tutorial inicial de la Experiencia VR (letra grande, frente al visitante) */}
+      {vrMode && showVRTutorial && (
+        <WixarikaVRTutorialPanel
+          onClose={onCloseVRTutorial}
+          registerMesh={registerMesh}
+          unregisterMesh={unregisterMesh}
+        />
+      )}
+
+      {/* Contorno naranja sobre el cuadro / botón / platillo del GLB al que apunta el punto central */}
+      <HoverOutline target={activeArtwork ? null : outlineTarget} />
 
       {/* Ventana Modal Monumental del Cuadro Seleccionado (Opción C: frente a la mirada del usuario) */}
       {activeArtwork && (
@@ -465,6 +488,7 @@ export function MuseumScene({
       {/* Reticula Central con Gaze Fuse calibrado a 2.0 segundos + gatillo físico Homido Grab / WebXR */}
       <GazeReticle
         interactiveObjects={getInteractiveObjects}
+        onHoverChange={handleReticleHover}
         distance={1.2}
         enabled={true}
         vrMode={vrMode}
@@ -487,7 +511,7 @@ export function MuseumScene({
       />
 
       {/* Experiencia 2D con mouse "tipo juego": clic captura el cursor, el mouse gira la vista y
-          los clics se disparan en el punto central (GazeReticle). Esc libera el cursor. */}
+          los clics se disparan en el punto central (GazeReticle). Cualquier tecla libera el cursor. */}
       <PointerLockLook enabled={!vrMode} orbitRef={orbitRef} />
 
       {/* Gestor Nativo WebXR */}

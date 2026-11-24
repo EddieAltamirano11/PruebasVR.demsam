@@ -10,6 +10,7 @@ import { DEFAULT_WIXARIKA_VIDEOS } from './WixarikaVRVideoPanel.jsx';
 import * as THREE from 'three';
 import { DEFAULT_WIXARIKA_BOOKS } from './WixarikaVRBookPanel.jsx';
 import { fetchRecommendedBooks } from '../../services/bookService.js';
+import { DEVELOPERS } from './developersData.js';
 
 /**
  * Subcomponente para renderizar la portada del libro con textura segura.
@@ -466,6 +467,68 @@ export const DEFAULT_CULTURAL_STATIONS = [
  * icono vectorial Lucide unificado y soporte completo para Gaze Fuse (1.2s) y clics.
  * Dimensiones ampliadas horizontal y verticalmente con tipografía maximizada para VR.
  */
+/**
+ * Tarjeta informativa de un integrante del equipo (nombre, correo y teléfono).
+ * No es interactiva: solo muestra datos. Los campos vacíos se muestran como "Por definir".
+ */
+function DeveloperCard({ developer, index, position = [0, 0, 0], width = 2.90, height = 1.10 }) {
+  const pending = 'Por definir';
+  const name = developer?.name || `Integrante ${index + 1}`;
+  const rows = [
+    { icon: 'mail', text: developer?.email || pending },
+    { icon: 'phone', text: developer?.phone || pending }
+  ];
+  const left = -width / 2 + 0.62;
+
+  return (
+    <group position={position}>
+      <mesh position={[0, 0, -0.002]}>
+        <planeGeometry args={[width + 0.03, height + 0.03]} />
+        <meshBasicMaterial color="#d4af37" />
+      </mesh>
+      <mesh position={[0, 0, -0.001]}>
+        <planeGeometry args={[width, height]} />
+        <meshBasicMaterial color="#fbf7ee" />
+      </mesh>
+
+      <LucideVRIcon
+        name="user"
+        size={0.40}
+        color={UNIFIED_ICON_COLOR}
+        position={[-width / 2 + 0.32, 0.02, 0.003]}
+        strokeWidth={2.4}
+      />
+
+      <Text
+        position={[left, 0.30, 0.004]}
+        fontSize={0.150}
+        color="#1c1917"
+        anchorX="left"
+        anchorY="middle"
+        maxWidth={width - 0.74}
+      >
+        {name}
+      </Text>
+
+      {rows.map((row, i) => (
+        <group key={row.icon} position={[left, -0.04 - i * 0.30, 0.004]}>
+          <LucideVRIcon name={row.icon} size={0.14} color={UNIFIED_ICON_COLOR} position={[0.07, 0, 0]} strokeWidth={2.4} />
+          <Text
+            position={[0.22, 0, 0]}
+            fontSize={0.118}
+            color={row.text === pending ? '#a8a29e' : '#44403c'}
+            anchorX="left"
+            anchorY="middle"
+            maxWidth={width - 0.98}
+          >
+            {row.text}
+          </Text>
+        </group>
+      ))}
+    </group>
+  );
+}
+
 function DashboardTile({
   id,
   title,
@@ -633,7 +696,8 @@ export function WixarikaWelcomeDashboard({
   registerMesh,
   unregisterMesh,
   hoveredId,
-  fuseProgress = 0
+  fuseProgress = 0,
+  vrMode = false
 }) {
   // Dimensiones monumentales y ergonómicas que aprovechan todo el espacio frontal
   const dashboardBgMeshRef = useRef();
@@ -739,6 +803,10 @@ export function WixarikaWelcomeDashboard({
     setCurrentView('about');
   }, []);
 
+  const handleOpenDevelopers = useCallback(() => {
+    setCurrentView('developers');
+  }, []);
+
   // Estados y navegación para la vista de Referencias en 2 columnas verticales con paginación
   const [activeRefCategory, setActiveRefCategory] = useState('deidades');
   const [refPageIndex, setRefPageIndex] = useState(0);
@@ -816,8 +884,8 @@ export function WixarikaWelcomeDashboard({
       {/* Botón Badge de Cierre con cruz 'x' en la esquina superior derecha */}
       <BadgeCloseButton
         id="btn-dash-close-top"
-        size={0.36}
-        position={[panelWidth / 2 - 0.32, panelHeight / 2 - 0.32, 0.01]}
+        size={0.42}
+        position={[panelWidth / 2 - 0.36, panelHeight / 2 - 0.40, 0.01]}
         onClick={handleClose}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}
@@ -948,7 +1016,9 @@ export function WixarikaWelcomeDashboard({
               maxWidth={panelWidth * 0.78}
               textAlign="center"
             >
-              Fija tu mirada durante 2 segundos o pulsa el botón para interactuar
+              {vrMode
+                ? 'Fija tu mirada durante 2 segundos o pulsa el botón para interactuar'
+                : 'Apunta con el punto central y haz clic para interactuar'}
             </Text>
           </group>
         </group>
@@ -990,7 +1060,7 @@ export function WixarikaWelcomeDashboard({
             </Text>
           </group>
 
-          {/* Cuatro Tarjetas Culturales de Referencias (Deidades, Gastronomía, Fiestas, Videos) */}
+          {/* Cinco Tarjetas: Referencias (Deidades, Gastronomía, Fiestas, Videos) + Desarrolladores */}
           <group position={[0, -0.18, 0]}>
             <DashboardTile
               key="btn-ref-deidades"
@@ -998,11 +1068,11 @@ export function WixarikaWelcomeDashboard({
               title="Deidades"
               iconName="sun"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.28}
+              width={1.14}
               height={1.15}
               iconSize={0.28}
-              titleSize={0.150}
-              position={[-2.07, 0, 0]}
+              titleSize={0.125}
+              position={[-2.44, 0, 0]}
               onClick={() => handleOpenRefCategory('deidades')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -1016,11 +1086,11 @@ export function WixarikaWelcomeDashboard({
               title="Gastronomía"
               iconName="utensils"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.28}
+              width={1.14}
               height={1.15}
               iconSize={0.28}
-              titleSize={0.150}
-              position={[-0.69, 0, 0]}
+              titleSize={0.125}
+              position={[-1.22, 0, 0]}
               onClick={() => handleOpenRefCategory('gastronomia')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -1034,11 +1104,11 @@ export function WixarikaWelcomeDashboard({
               title="Fiestas"
               iconName="sparkles"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.28}
+              width={1.14}
               height={1.15}
               iconSize={0.28}
-              titleSize={0.150}
-              position={[0.69, 0, 0]}
+              titleSize={0.125}
+              position={[0, 0, 0]}
               onClick={() => handleOpenRefCategory('fiestas')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -1052,12 +1122,30 @@ export function WixarikaWelcomeDashboard({
               title="Videos"
               iconName="video"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.28}
+              width={1.14}
               height={1.15}
               iconSize={0.28}
-              titleSize={0.150}
-              position={[2.07, 0, 0]}
+              titleSize={0.125}
+              position={[1.22, 0, 0]}
               onClick={() => handleOpenRefCategory('videos')}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+            />
+
+            <DashboardTile
+              key="btn-ref-developers"
+              id="btn-ref-developers"
+              title="Desarrolladores"
+              iconName="users"
+              accentColor={UNIFIED_ICON_COLOR}
+              width={1.14}
+              height={1.15}
+              iconSize={0.28}
+              titleSize={0.118}
+              position={[2.44, 0, 0]}
+              onClick={handleOpenDevelopers}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
               hoveredId={hoveredId}
@@ -1085,8 +1173,58 @@ export function WixarikaWelcomeDashboard({
               maxWidth={panelWidth * 0.78}
               textAlign="center"
             >
-              Fija tu mirada durante 2 segundos o pulsa el botón para interactuar
+              {vrMode
+                ? 'Fija tu mirada durante 2 segundos o pulsa el botón para interactuar'
+                : 'Apunta con el punto central y haz clic para interactuar'}
             </Text>
+          </group>
+        </group>
+      )}
+
+      {/* ===================================================================== */}
+      {/* VISTA F: DESARROLLADORES (4 INTEGRANTES CON CORREO Y TELÉFONO)        */}
+      {/* ===================================================================== */}
+      {currentView === 'developers' && (
+        <group position={[0, 0, 0.005]}>
+          <group position={[0, 1.48, 0]}>
+            <WixarikaVRButton
+              id="btn-dev-back-top"
+              label="Volver"
+              iconName="arrow-left"
+              variant="cantera"
+              width={0.92}
+              height={0.30}
+              position={[-2.62, 0, 0]}
+              onClick={handleReturnToAbout}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
+            />
+
+            <Text
+              position={[0, 0.02, 0]}
+              fontSize={0.210}
+              color="#1c1917"
+              anchorX="center"
+              anchorY="middle"
+              maxWidth={panelWidth * 0.64}
+              textAlign="center"
+            >
+              DESARROLLADORES
+            </Text>
+          </group>
+
+          <group position={[0, -0.24, 0]}>
+            {DEVELOPERS.slice(0, 4).map((dev, i) => (
+              <DeveloperCard
+                key={dev.id || i}
+                developer={dev}
+                index={i}
+                position={[i % 2 === 0 ? -1.52 : 1.52, i < 2 ? 0.62 : -0.62, 0]}
+              />
+            ))}
           </group>
         </group>
       )}
@@ -1403,9 +1541,9 @@ export function WixarikaWelcomeDashboard({
             </Text>
 
             {/* Contador de libros: X de N */}
-            <group position={[2.40, 0, 0]}>
+            <group position={[2.08, 0, 0]}>
               <mesh position={[0, 0, -0.001]}>
-                <planeGeometry args={[1.00, 0.24]} />
+                <planeGeometry args={[0.82, 0.24]} />
                 <meshBasicMaterial color="#f4ebd8" />
               </mesh>
               <Text
@@ -1654,7 +1792,7 @@ export function WixarikaWelcomeDashboard({
               variant="cantera"
               width={1.20}
               height={0.28}
-              position={[-2.60, 0, 0]}
+              position={[-2.48, 0, 0]}
               onClick={handlePrevVideo}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -1692,7 +1830,7 @@ export function WixarikaWelcomeDashboard({
               variant="cantera"
               width={1.20}
               height={0.28}
-              position={[2.60, 0, 0]}
+              position={[2.48, 0, 0]}
               onClick={handleNextVideo}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}

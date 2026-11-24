@@ -10,7 +10,7 @@ const isLocked = () => typeof document !== 'undefined' && Boolean(document.point
 /**
  * Aviso de la Experiencia 2D con mouse (estilo juego):
  * - Cursor libre: "Haz clic en la escena para explorar".
- * - Cursor capturado: recuerda unos segundos que Esc lo libera.
+ * - Cursor capturado: recuerda unos segundos que cualquier tecla lo libera.
  * No aparece en celulares/tabletas (sin mouse).
  */
 export function PointerLockHint() {
@@ -63,7 +63,7 @@ export function PointerLockHint() {
       }}
     >
       {locked ? (
-        <>Pulsa <b style={{ color: '#E5A00D' }}>Esc</b> para mostrar el cursor</>
+        <>Pulsa <b style={{ color: '#E5A00D' }}>cualquier tecla</b> para mostrar el cursor</>
       ) : (
         <>Haz <b style={{ color: '#E5A00D' }}>clic</b> en la escena para explorar · mueve el mouse para mirar</>
       )}

@@ -91,7 +91,8 @@ A lo largo del proyecto se definió y consolidó una **filosofía de diseño est
 * **Ocultamiento del Menú:** Al elegir una sala, el menú flotante se oculta automáticamente para que el visitante contemple directamente las obras en 3D en la pared sin barreras visuales. El menú puede volver a desplegarse en cualquier instante con el botón insignia inferior (*Mostrar Menú*).
 
 ### B. Fijación Visual Calibrada a 2.0 Segundos (Gaze Fuse)
-* Se utiliza un sistema de puntero central (*Gaze Reticle*) con indicador circular de progreso.
+* Se utiliza un puntero central (*Gaze Reticle*): un **punto pequeño** (no tapa las letras) que en VR **crece y se vuelve naranja** mientras carga la selección por mirada.
+* **Solo en VR:** en la Experiencia 2D no hay selección por mirada; se selecciona con clic (el punto central sigue detectando qué hay debajo para el contorno naranja).
 * **Duración Calibrada:** Se ajustó a **2.0 segundos continuos** (`GAZE_FUSE_DEFAULT_DURATION = 2.0`). Sigue evitando activaciones accidentales mientras el visitante lee, pero reduce un tercio la espera por acción (antes 3.0 s). El gatillo físico del visor (Homido Grab) activa al instante sin esperar.
 * **Aislamiento de Clics Fantasma:** Cuando se abre una ventana modal o ficha de cuadro, el raycaster desactiva temporalmente todos los objetos interactivos que están detrás del modal. De esta forma, el usuario no "traspasa" el menú ni activa cuadros de fondo por accidente.
 
@@ -213,9 +214,9 @@ Mapa de evidencia para la ficha de pruebas cruzadas. Cada ley indica **qué hace
 
 | # | Ley | Cómo se cumple | Dónde verlo |
 |---|-----|----------------|-------------|
-| 1 | **Jakob** (familiaridad) | Retícula central con anillo de progreso, igual que las apps de Cardboard. "X" de cierre siempre arriba a la derecha y botón **"← Volver"** con texto siempre arriba a la izquierda. El admin usa el patrón estándar tabla + buscador + modal de alta/edición. | Menú VR (todas las vistas), `/admin` → Libros |
+| 1 | **Jakob** (familiaridad) | Punto central que crece y se vuelve naranja al cargar (como las apps de Cardboard); en 2D, control con mouse tipo videojuego. "X" de cierre siempre arriba a la derecha y botón **"← Volver"** con texto siempre arriba a la izquierda. El admin usa el patrón estándar tabla + buscador + modal de alta/edición. | Menú VR (todas las vistas), `/admin` → Libros |
 | 2 | **Fitts** (tamaño y distancia) | Botones del muro "ACERCA DE"/"MENÚ" de 2.18 × 0.62 m. Botones "Volver" ampliados de 0.42 × 0.26 m a 0.92 × 0.30 m, del mismo alto que la paginación. Gatillo físico como alternativa a la mirada. | Bienvenida (muros a ±60°), cabecera de Referencias/Libros/Videos |
-| 3 | **Hick** (decisiones) | El menú principal tiene 3 cards (Libros, Audio, Videos) y Acerca de tiene 4 (Deidades, Gastronomía, Fiestas, Videos). Nunca hay más de 4 opciones principales a la vez. | Menú principal y Acerca de |
+| 3 | **Hick** (decisiones) | El menú principal tiene 3 cards (Libros, Audio, Videos) y Acerca de tiene 4 de referencias (Deidades, Gastronomía, Fiestas, Videos) más **Desarrolladores** al final, como opción secundaria. | Menú principal y Acerca de |
 | 4 | **Miller** (memoria) | Las referencias se muestran de **2 en 2** con paginación "Página X de N". Las salas tienen 3–6 cuadros y cada card tiene un título, una referencia y una fuente. | Acerca de → cualquier categoría |
 | 5 | **Tesler** (complejidad) | Alta de libros con **Autocompletar por ISBN** (Open Library: título, autor, editorial, año) y valores por defecto (cultura, stock 3, año actual, sección, editorial). El código interno toma el ISBN si se deja vacío. | `/admin` → Libros → Nuevo libro |
 | 6 | **Parkinson** (eficiencia) | La activación por mirada bajó de 3.0 s a **2.0 s**. Llegar a cualquier referencia toma 3 acciones (Acerca de → categoría → página). | Cualquier botón VR |
@@ -242,6 +243,17 @@ Mapa de evidencia para la ficha de pruebas cruzadas. Cada ley indica **qué hace
   2. iPhone no permite pantalla completa ni bloquear la orientación, así que `RotateDeviceHint` pide girar el teléfono y la pantalla de inicio sugiere «Agregar a pantalla de inicio» (modo standalone sin barras de Safari).
   3. El audio se desbloquea con el primer toque real (`SoundFX.unlock()`), los botones fijos respetan el notch (`env(safe-area-inset-*)`) y el render se limita a DPR 2× en iOS.
 * **Requisito:** los sensores de movimiento en iOS **solo funcionan con HTTPS** (producción en Cloudflare). Para probar en un iPhone desde la red local hace falta un túnel HTTPS.
+
+---
+
+## 7.1 Ajustes por Pruebas con Usuarios (observaciones de compañeros)
+
+* **Control 2D tipo videojuego** (`PointerLockLook`): clic en la escena captura el cursor (se oculta y solo queda el punto central), el mouse gira la vista y cada clic se dispara en el punto central. **Cualquier tecla** (o Esc) libera el cursor para usar la barra superior.
+* **Tutorial inicial** cada vez que se entra a una experiencia: en 2D una ventana (`Tutorial2D`, versión mouse o táctil) y en VR un panel 3D con letra grande frente al visitante (`WixarikaVRTutorialPanel`). Ambos explican que al seleccionar una imagen se despliega su información. El botón «Cómo usar» de la barra superior lo vuelve a mostrar.
+* **Sin selección por mirada en 2D:** solo con clic; en VR se mantiene el Gaze Fuse de 2.0 s.
+* **Contorno naranja** (`HoverOutline`) sobre el cuadro, platillo o botón del GLB al que apunta el punto central. Los menús flotantes no lo llevan porque ya muestran su propio estado.
+* **Botón de cerrar (X)** 0.42 m, un poco más abajo que antes; el contador de libros, los botones Anterior/Siguiente de videos y el título de la ficha de cuadro se ajustaron para no encimarse con él.
+* **Acerca de → Desarrolladores:** 4 integrantes con nombre, correo y teléfono, editables en `src/components/wixarika/developersData.js` (los campos vacíos dicen «Por definir»).
 
 ---
 

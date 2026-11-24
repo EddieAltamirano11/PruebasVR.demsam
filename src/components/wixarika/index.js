@@ -12,3 +12,4 @@ export * from './wixarikaArtworksData.js';
 export * from './BadgeCloseButton.jsx';
 export * from './WixarikaArtworkModal.jsx';
 export * from './WixarikaGastronomyExhibition.jsx';
+export * from './WixarikaVRTutorialPanel.jsx';

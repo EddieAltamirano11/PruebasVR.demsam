@@ -10,6 +10,7 @@ import { LoginView } from './views/LoginView.jsx';
 import { ExperienceLandingView } from './views/ExperienceLandingView.jsx';
 import { RotateDeviceHint } from './components/RotateDeviceHint.jsx';
 import { PointerLockHint } from './components/PointerLockHint.jsx';
+import { Tutorial2D } from './components/Tutorial2D.jsx';
 import { SoundFX } from './services/audioService.js';
 import { requestMotionPermission, MOTION_PERMISSION_DENIED_MESSAGE } from './utils/vrSupport.js';
 
@@ -120,6 +121,8 @@ function AppContent() {
   const [isBooksOpen, setIsBooksOpen] = useState(false);
   const [autoOpenOnFocus] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  // Tutorial inicial: se muestra cada vez que se entra a una experiencia (2D en pantalla, VR en 3D)
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   const onRecenterRef = useRef(null);
   const onWebXRTriggerRef = useRef(null);
@@ -222,6 +225,7 @@ function AppContent() {
     (mode) => {
       setExperience(mode);
       setLandingNotice('');
+      setTutorialOpen(true);
       if (mode === 'vr') {
         enterVR().then((result) => {
           if (!result?.ok) {
@@ -293,6 +297,8 @@ function AppContent() {
         onOpenBooksPanel={handleOpenBooksPanel}
         isBooksOpen={isBooksOpen}
         onToggleBooksOpen={setIsBooksOpen}
+        showVRTutorial={experience === 'vr' && tutorialOpen}
+        onCloseVRTutorial={() => setTutorialOpen(false)}
       />
 
       {/* Panel Lateral de Libros Recomendados (Sprint 3) */}
@@ -330,7 +336,12 @@ function AppContent() {
       {vrMode && <RotateDeviceHint />}
 
       {/* Experiencia 2D con mouse: aviso de clic para explorar / Esc para mostrar el cursor */}
-      {experience !== null && !vrMode && <PointerLockHint />}
+      {experience !== null && !vrMode && !tutorialOpen && <PointerLockHint />}
+
+      {/* Tutorial inicial de la Experiencia 2D */}
+      {experience === '2d' && !vrMode && tutorialOpen && (
+        <Tutorial2D onClose={() => setTutorialOpen(false)} />
+      )}
 
       {/* Barra de Controles Superior (No VR) */}
       {experience !== null && !vrMode && (
@@ -381,6 +392,38 @@ function AppContent() {
             <div />
           )}
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Volver a ver el tutorial */}
+          <button
+            onClick={() => setTutorialOpen(true)}
+            aria-label="Cómo usar"
+            style={{
+              height: '40px',
+              padding: '0 14px',
+              fontSize: '13px',
+              fontWeight: '700',
+              color: '#f8fafc',
+              background: 'rgba(11, 26, 48, 0.90)',
+              border: '1px solid rgba(229, 160, 13, 0.8)',
+              borderRadius: '24px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(8px)',
+              pointerEvents: 'auto'
+            }}
+            title="Ver de nuevo cómo explorar el museo"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e5a00d" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <path d="M12 17h.01" />
+            </svg>
+            <span className="hidden sm:inline">Cómo usar</span>
+          </button>
+
           {/* Botón para regresar al selector de experiencia (VR / 2D), arriba a la derecha */}
           <button
             onClick={() => setExperience(null)}
@@ -411,6 +454,7 @@ function AppContent() {
             </svg>
             <span>Menú principal</span>
           </button>
+          </div>
         </div>
       )}
 

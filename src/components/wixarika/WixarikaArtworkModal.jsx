@@ -212,8 +212,8 @@ export function WixarikaArtworkModal({
         {/* Botón Badge de Cierre con cruz 'x' en la esquina superior derecha */}
         <BadgeCloseButton
           id="btn-close-artwork-modal"
-          size={0.36}
-          position={[rightColWidth / 2 - 0.22, panelHeight / 2 - 0.22, 0.01]}
+          size={0.42}
+          position={[rightColWidth / 2 - 0.27, panelHeight / 2 - 0.32, 0.01]}
           onClick={onClose}
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
@@ -229,7 +229,7 @@ export function WixarikaArtworkModal({
             color="#1c1917"
             anchorX="center"
             anchorY="top"
-            maxWidth={rightColWidth * 0.86}
+            maxWidth={rightColWidth * 0.76}
             textAlign="center"
           >
             {artwork.title}

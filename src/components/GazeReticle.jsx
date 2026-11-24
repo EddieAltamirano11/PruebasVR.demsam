@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useRef, useEffect, useMemo, useCallback } from 'react';
 import { useFrame, useThree, createPortal } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SoundFX } from '../services/audioService.js';
@@ -6,6 +6,12 @@ import { GazeFuseController, GAZE_FUSE_DEFAULT_DURATION } from '../services/gaze
 import { isPointerLockedTo } from './PointerLockLook.jsx';
 
 const PHYSICAL_TRIGGER_DEBOUNCE_MS = 260;
+// Punto central: blanco en reposo; en VR crece y se vuelve naranja mientras carga el Gaze Fuse
+const DOT_RADIUS = 0.0045; // a 1.2 m ≈ 0.4° (un puntito que no tapa las letras)
+const DOT_MAX_SCALE = 2.2;
+const DOT_IDLE_COLOR = new THREE.Color('#ffffff');
+const DOT_FUSE_COLOR = new THREE.Color('#E5A00D');
+
 const HTML_INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"], [data-vr-ui="true"]';
 
 /**
@@ -39,9 +45,10 @@ function isVisibleInHierarchy(obj) {
  * Cumple con norma ISO 9241-210 y criterios WCAG 2.1 (HU-06).
  *
  * Características:
- * - Mira fija en el centro del eje visual de la cámara (z = -1.2m).
- * - Anillo de contraste exterior (WCAG AAA) para legibilidad en salas iluminadas.
- * - Temporizador circular de mirada (Gaze Fuse) calibrado a 2.0 segundos.
+ * - Punto fijo en el centro del eje visual de la cámara (z = -1.2m) con halo oscuro fino
+ *   para verse sobre fondos claros sin tapar las letras.
+ * - Gaze Fuse de 2.0 segundos solo en modo VR: el punto crece y se vuelve naranja mientras carga.
+ *   En la Experiencia 2D se selecciona con clic (no hay selección por mirada).
  * - Soporte completo de gatillo físico Homido Grab / Cardboard:
  *   1. WebXR nativo (`XRSession` selectstart/select + `gl.xr.getController(0/1)`),
  *      capturando los eventos `gaze`/`screen` de Chrome Android WebXR.
@@ -60,26 +67,23 @@ export function GazeReticle({
   vrMode = false
 }) {
   const { camera, gl } = useThree();
-  const [hoveredId, setHoveredId] = useState(null);
-  const [fuseProgress, setFuseProgress] = useState(0);
-
-  const progressMeshRef = useRef();
-  const ringMeshRef = useRef();
+  const dotGroupRef = useRef();
+  const dotMaterialRef = useRef();
+  const fuseRef = useRef(0);
+  const pulseRef = useRef(1);
   const pulseTimeoutRef = useRef(null);
   const lastPhysicalTriggerRef = useRef(0);
   const raycaster = useRef(new THREE.Raycaster());
   const rayOrigin = useRef(new THREE.Vector3());
   const rayDir = useRef(new THREE.Vector3());
 
-  const triggerRingPulse = useCallback((scale = 1.32) => {
-    if (!ringMeshRef.current) return;
-    ringMeshRef.current.scale.set(scale, scale, 1);
+  // Pulso breve del punto al seleccionar algo (retroalimentación inmediata del clic / botón del visor)
+  const triggerRingPulse = useCallback((scale = 1.6) => {
+    pulseRef.current = scale;
     if (pulseTimeoutRef.current) clearTimeout(pulseTimeoutRef.current);
     pulseTimeoutRef.current = setTimeout(() => {
-      if (ringMeshRef.current) {
-        ringMeshRef.current.scale.set(1, 1, 1);
-      }
-    }, 180);
+      pulseRef.current = 1;
+    }, 160);
   }, []);
 
   useEffect(() => {
@@ -126,16 +130,10 @@ export function GazeReticle({
       fuseDuration,
       onHoverStart: (target) => {
         SoundFX.playHover();
-        const id = target?.uuid || target?.name || 'interactive_target';
-        setHoveredId(id);
         onHoverChange?.(target, true);
       },
       onHoverEnd: (target) => {
-        setHoveredId(null);
-        setFuseProgress(0);
-        if (progressMeshRef.current) {
-          progressMeshRef.current.scale.set(0, 0, 1);
-        }
+        fuseRef.current = 0;
         onHoverChange?.(target, false);
       },
       onTrigger: (target) => {
@@ -149,13 +147,10 @@ export function GazeReticle({
           }
         }
         onTrigger?.(target);
-        triggerRingPulse(1.32);
+        triggerRingPulse(1.6);
       },
       onProgress: (p) => {
-        setFuseProgress(p);
-        if (progressMeshRef.current) {
-          progressMeshRef.current.scale.set(p, p, 1);
-        }
+        fuseRef.current = p;
       }
     });
   }, [fuseDuration, onTrigger, onHoverChange, triggerRingPulse]);
@@ -177,7 +172,7 @@ export function GazeReticle({
     }
 
     // Pulso visual sutil incluso si no apunta a un botón para confirmar que el botón físico respondió
-    triggerRingPulse(1.18);
+    triggerRingPulse(1.3);
     return false;
   }, [enabled, performCenterRaycast, controller, triggerRingPulse]);
 
@@ -336,74 +331,55 @@ export function GazeReticle({
   }, [enabled, vrMode, gl, firePhysicalTrigger]);
 
   // Bucle por cuadro: raycast central + actualización de tiempo de mirada (Gaze Fuse)
+  // En la Experiencia 2D no hay selección por mirada (se usa el clic): el tiempo no avanza,
+  // pero se sigue detectando qué hay bajo el punto central (para el contorno de resaltado).
   useFrame((_, delta) => {
     if (!enabled || !camera) return;
     const hitTarget = performCenterRaycast();
-    controller.update(hitTarget, delta);
-  });
+    controller.update(hitTarget, vrMode ? delta : 0);
 
-  const isHovered = hoveredId !== null;
+    // Punto central: crece y pasa de blanco a naranja conforme carga el Gaze Fuse (solo VR)
+    const p = vrMode ? fuseRef.current : 0;
+    const scale = (1 + (DOT_MAX_SCALE - 1) * p) * pulseRef.current;
+    dotGroupRef.current?.scale.set(scale, scale, 1);
+    // El color llega a naranja pleno a media carga (luego solo sigue creciendo) para que se note claramente
+    dotMaterialRef.current?.color.copy(DOT_IDLE_COLOR).lerp(DOT_FUSE_COLOR, Math.min(1, p * 2));
+  });
 
   return (
     <>
       {camera &&
         createPortal(
           <group position={[0, 0, -distance]} renderOrder={9999}>
-            {/* 1. Punto central sólido para máxima precisión de puntería */}
-            <mesh renderOrder={9999}>
-              <circleGeometry args={[0.006, 24]} />
-              <meshBasicMaterial
-                color="#ffffff"
-                transparent
-                opacity={0.95}
-                depthTest={false}
-                depthWrite={false}
-                side={THREE.DoubleSide}
-                toneMapped={false}
-              />
-            </mesh>
-
-            {/* 2. Anillo de contraste exterior oscuro (WCAG 2.1 - ratio > 7:1 en fondos claros) */}
-            <mesh position={[0, 0, -0.001]} renderOrder={9998}>
-              <ringGeometry args={[0.014, 0.024, 32]} />
-              <meshBasicMaterial
-                color="#000000"
-                transparent
-                opacity={0.55}
-                depthTest={false}
-                depthWrite={false}
-                side={THREE.DoubleSide}
-                toneMapped={false}
-              />
-            </mesh>
-
-            {/* 3. Anillo interactivo brillante (cambia a cian #38bdf8 al enfocar elemento) */}
-            <mesh ref={ringMeshRef} renderOrder={9999}>
-              <ringGeometry args={[0.015, 0.022, 32]} />
-              <meshBasicMaterial
-                color={isHovered ? '#38bdf8' : '#ffffff'}
-                transparent
-                opacity={isHovered ? 1.0 : 0.75}
-                depthTest={false}
-                depthWrite={false}
-                side={THREE.DoubleSide}
-                toneMapped={false}
-              />
-            </mesh>
-
-            {/* 4. Disco interior de progreso Gaze Fuse (se expande circularmente de 0 a 2.0s) */}
-            <mesh ref={progressMeshRef} scale={[0, 0, 1]} renderOrder={9999}>
-              <circleGeometry args={[0.0145, 32]} />
-              <meshBasicMaterial
-                color={fuseProgress >= 1.0 ? '#22c55e' : '#38bdf8'}
-                transparent
-                opacity={0.88}
-                depthTest={false}
-                depthWrite={false}
-                side={THREE.DoubleSide}
-                toneMapped={false}
-              />
-            </mesh>
+            <group ref={dotGroupRef}>
+              {/* Halo oscuro muy fino para que el punto se vea sobre fondos claros */}
+              <mesh position={[0, 0, -0.001]} renderOrder={9998}>
+                <circleGeometry args={[DOT_RADIUS * 1.55, 24]} />
+                <meshBasicMaterial
+                  color="#000000"
+                  transparent
+                  opacity={0.45}
+                  depthTest={false}
+                  depthWrite={false}
+                  side={THREE.DoubleSide}
+                  toneMapped={false}
+                />
+              </mesh>
+              {/* Punto central (blanco → naranja con el Gaze Fuse) */}
+              <mesh renderOrder={9999}>
+                <circleGeometry args={[DOT_RADIUS, 24]} />
+                <meshBasicMaterial
+                  ref={dotMaterialRef}
+                  color="#ffffff"
+                  transparent
+                  opacity={0.95}
+                  depthTest={false}
+                  depthWrite={false}
+                  side={THREE.DoubleSide}
+                  toneMapped={false}
+                />
+              </mesh>
+            </group>
           </group>,
           camera
         )}

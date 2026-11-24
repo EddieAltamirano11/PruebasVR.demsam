@@ -4,6 +4,7 @@ import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SoundFX } from '../services/audioService.js';
 import { WIXARIKA_ARTWORKS, WIXARIKA_GASTRONOMY_DISHES } from './wixarika/wixarikaArtworksData.js';
+import { setOutlineRoot } from './HoverOutline.jsx';
 
 export function MuseumModel({
   onSelectArtwork,
@@ -122,6 +123,7 @@ export function MuseumModel({
               onClick: handleSelect,
               onSelect: handleSelect
             };
+            setOutlineRoot(child, stationObj);
 
             // Registrar para interacción con Gaze Fuse (3.0s) en modo VR
             const isTargetForReticle =
@@ -146,6 +148,7 @@ export function MuseumModel({
           onClick: handleSelect,
           onSelect: handleSelect
         };
+        setOutlineRoot(canvasObj, canvasObj);
         registerMesh?.(canvasObj);
         registered.push(canvasObj);
       }
@@ -171,6 +174,7 @@ export function MuseumModel({
             onClick: handleAcercaClick,
             onSelect: handleAcercaClick
           };
+          setOutlineRoot(child, btnAcercaObj);
           registerMesh?.(child);
           registered.push(child);
         }
@@ -195,6 +199,7 @@ export function MuseumModel({
             onClick: handleMenuClick,
             onSelect: handleMenuClick
           };
+          setOutlineRoot(child, btnMenuObj);
           registerMesh?.(child);
           registered.push(child);
         }
@@ -295,6 +300,7 @@ export function MuseumModel({
               onClick: handleSelectDish,
               onSelect: handleSelectDish
             };
+            setOutlineRoot(child, recuadroObj);
             registerMesh?.(child);
             registered.push(child);
           }
@@ -319,6 +325,7 @@ export function MuseumModel({
               onClick: handleSelectDish,
               onSelect: handleSelectDish
             };
+            setOutlineRoot(child, tableStationObj);
             registerMesh?.(child);
             registered.push(child);
           }

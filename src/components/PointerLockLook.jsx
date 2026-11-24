@@ -37,7 +37,7 @@ export function rotateLookDirection(dir, movementX, movementY, cfg = POINTER_LOO
  * - Clic en la escena: se captura el cursor (Pointer Lock) y deja de verse; solo queda el punto central.
  * - Mover el mouse gira la vista en primera persona (la cámara no se desplaza).
  * - Los clics se disparan en el punto central (lo resuelve GazeReticle).
- * - Esc libera el cursor para usar los botones de la barra superior.
+ * - Cualquier tecla (o Esc) libera el cursor para usar los botones de la barra superior.
  * La vista gira moviendo el objetivo de OrbitControls alrededor de la cámara, así que la
  * navegación a salas y el arrastre con el cursor libre siguen funcionando igual.
  */
@@ -73,11 +73,20 @@ export function PointerLockLook({ enabled, orbitRef }) {
       controls.update();
     };
 
+    // Cualquier tecla libera el cursor (además de Esc, que lo hace el navegador)
+    const onKeyDown = (e) => {
+      if (!isPointerLockedTo(el)) return;
+      e.preventDefault();
+      document.exitPointerLock?.();
+    };
+
     el.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('keydown', onKeyDown, true);
     return () => {
       el.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('keydown', onKeyDown, true);
     };
   }, [gl, camera, orbitRef]);
 
