@@ -471,7 +471,14 @@ export const DEFAULT_CULTURAL_STATIONS = [
  * Tarjeta informativa de un integrante del equipo (nombre, correo y teléfono).
  * No es interactiva: solo muestra datos. Los campos vacíos se muestran como "Por definir".
  */
-function DeveloperCard({ developer, index, position = [0, 0, 0], width = 2.90, height = 1.10 }) {
+// Mismo tamaño para todos los nombres, el mayor con el que el nombre más largo cabe en un renglón
+const DEVELOPER_CARD_WIDTH = 2.90;
+const DEVELOPER_NAME_SIZE = Math.min(
+  0.15,
+  Math.max(0.105, (DEVELOPER_CARD_WIDTH - 0.74) / (Math.max(...DEVELOPERS.map((d) => (d.name || '').length), 12) * 0.5))
+);
+
+function DeveloperCard({ developer, index, position = [0, 0, 0], width = DEVELOPER_CARD_WIDTH, height = 1.10 }) {
   const pending = 'Por definir';
   const name = developer?.name || `Integrante ${index + 1}`;
   const rows = [
@@ -479,6 +486,7 @@ function DeveloperCard({ developer, index, position = [0, 0, 0], width = 2.90, h
     { icon: 'phone', text: developer?.phone || pending }
   ];
   const left = -width / 2 + 0.62;
+  const nameMaxWidth = width - 0.74;
 
   return (
     <group position={position}>
@@ -501,11 +509,11 @@ function DeveloperCard({ developer, index, position = [0, 0, 0], width = 2.90, h
 
       <Text
         position={[left, 0.30, 0.004]}
-        fontSize={0.150}
+        fontSize={DEVELOPER_NAME_SIZE}
         color="#1c1917"
         anchorX="left"
         anchorY="middle"
-        maxWidth={width - 0.74}
+        maxWidth={nameMaxWidth}
       >
         {name}
       </Text>

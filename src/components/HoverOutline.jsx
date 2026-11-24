@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -29,33 +29,49 @@ export function findOutlineRoot(object) {
   return null;
 }
 
-/** Las 12 aristas de una caja como pares de puntos (para <Line segments>). */
-export function boxEdgeSegments(box) {
-  const { min: a, max: b } = box;
-  const c = [
-    [a.x, a.y, a.z], [b.x, a.y, a.z], [b.x, b.y, a.z], [a.x, b.y, a.z],
-    [a.x, a.y, b.z], [b.x, a.y, b.z], [b.x, b.y, b.z], [a.x, b.y, b.z]
-  ];
-  const edges = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
-  return edges.flatMap(([i, j]) => [c[i], c[j]]);
+/**
+ * Rectángulo plano (como un marco) alrededor del objeto, en su cara de frente al visitante.
+ * Para un cuadro en el muro coincide con su marco; para un objeto sobre la mesa es el
+ * rectángulo que lo encierra visto desde el centro. Devuelve las 4 esquinas cerradas (5 puntos).
+ */
+export function frontRectangle(box, viewer) {
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  // Dirección horizontal del visitante hacia el objeto (los muros son verticales)
+  const dir = center.clone().sub(viewer).setY(0);
+  if (dir.lengthSq() < 1e-8) dir.set(0, 0, -1);
+  dir.normalize();
+  const up = new THREE.Vector3(0, 1, 0);
+  const right = new THREE.Vector3().crossVectors(dir, up).normalize();
+
+  const halfW = (Math.abs(size.x * right.x) + Math.abs(size.z * right.z)) / 2 + PADDING;
+  const halfH = size.y / 2 + PADDING;
+  const halfDepth = (Math.abs(size.x * dir.x) + Math.abs(size.z * dir.z)) / 2;
+  // Un poco por delante de la cara frontal para que no se esconda dentro del marco
+  const face = center.clone().addScaledVector(dir, -(halfDepth + 0.015));
+
+  const corner = (sx, sy) =>
+    face.clone().addScaledVector(right, sx * halfW).addScaledVector(up, sy * halfH).toArray();
+  const c1 = corner(-1, -1);
+  return [c1, corner(1, -1), corner(1, 1), corner(-1, 1), c1];
 }
 
 /**
- * Contorno naranja alrededor del objeto interactivo del GLB que está bajo el punto central,
- * para que se note qué se puede seleccionar (pensado para personas con poca experiencia digital).
+ * Marco naranja plano alrededor del objeto interactivo del GLB que está bajo el punto central,
+ * para que se note que se puede abrir (pensado para personas con poca experiencia digital).
  */
 export function HoverOutline({ target }) {
   const lineRef = useRef();
+  const camera = useThree((st) => st.camera);
   const points = useMemo(() => {
     if (!target) return null;
     target.updateWorldMatrix(true, true);
     const box = new THREE.Box3().setFromObject(target);
     if (box.isEmpty()) return null;
-    box.expandByScalar(PADDING);
-    return boxEdgeSegments(box);
-  }, [target]);
+    return frontRectangle(box, camera.getWorldPosition(new THREE.Vector3()));
+  }, [target, camera]);
 
-  // Pulso suave del contorno para llamar la atención sin distraer
+  // Pulso suave del marco para llamar la atención sin distraer
   useFrame(({ clock }) => {
     const mat = lineRef.current?.material;
     if (mat) mat.opacity = 0.75 + 0.25 * Math.sin(clock.elapsedTime * 5);
@@ -66,9 +82,8 @@ export function HoverOutline({ target }) {
     <Line
       ref={lineRef}
       points={points}
-      segments
       color={OUTLINE_COLOR}
-      lineWidth={4}
+      lineWidth={5}
       transparent
       depthTest={false}
       renderOrder={9000}

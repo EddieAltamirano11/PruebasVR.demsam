@@ -252,7 +252,7 @@ Mapa de evidencia para la ficha de pruebas cruzadas. Cada ley indica **qué hace
 * **Control 2D tipo videojuego** (`PointerLockLook`): clic en la escena captura el cursor (se oculta y solo queda el punto central), el mouse gira la vista y cada clic se dispara en el punto central. **Cualquier tecla** (o Esc) libera el cursor para usar la barra superior.
 * **Tutorial inicial** cada vez que se entra a una experiencia: en 2D una ventana (`Tutorial2D`, versión mouse o táctil) y en VR un panel 3D con letra grande frente al visitante (`WixarikaVRTutorialPanel`). Ambos explican que al seleccionar una imagen se despliega su información. El botón «Cómo usar» de la barra superior lo vuelve a mostrar.
 * **Sin selección por mirada en 2D:** solo con clic; en VR se mantiene el Gaze Fuse de 2.0 s.
-* **Contorno naranja** (`HoverOutline`) sobre el cuadro, platillo o botón del GLB al que apunta el punto central. Los menús flotantes no lo llevan porque ya muestran su propio estado.
+* **Marco naranja plano** (`HoverOutline`) alrededor del cuadro, platillo o botón del GLB al que apunta el punto central (un rectángulo en su cara de frente, no una caja 3D). Los menús flotantes no lo llevan porque ya muestran su propio estado.
 * **Botón de cerrar (X)** 0.42 m, un poco más abajo que antes; el contador de libros, los botones Anterior/Siguiente de videos y el título de la ficha de cuadro se ajustaron para no encimarse con él.
 * **Acerca de → Desarrolladores:** 4 integrantes con nombre, correo y teléfono, editables en `src/components/wixarika/developersData.js` (los campos vacíos dicen «Por definir»).
 
