@@ -1265,6 +1265,31 @@ console.log('\n[3.6] Ajustando paneles de fondo café bajito al ras del zoclo de
 }
 
 // ==========================================================================
+// 3.7 TAKUTSI NAKAWE: QUITAR LA BARRA OSCURA QUE TAPABA EL CUADRO
+//     El relieve de la base v15 incluía una barra de madera oscura (1.05 × 0.16 m) con 5 filetes
+//     turquesa a 2.38–2.53 m, justo DELANTE del lienzo (2.04–3.86 m): se veía como una franja
+//     negra sobre la fotografía. Se desprenden del relieve; el báculo dorado se conserva.
+// ==========================================================================
+console.log('\n[3.7] Quitando la barra oscura que tapaba el cuadro de Takutsi Nakawe...');
+{
+  const relieveIdx = nodes.findIndex((n) => n.name === 'relieve_cuadro_takutsi');
+  const BARRA_TAKUTSI = ['Mesh_592.007', 'Mesh_600.007', 'Mesh_601.007', 'Mesh_602.007', 'Mesh_603.007', 'Mesh_604.007'];
+  const relieve = nodes[relieveIdx];
+  const quitar = new Set(
+    (relieve?.children || []).filter((c) => BARRA_TAKUTSI.includes(nodes[c].name))
+  );
+  if (relieveIdx < 0 || quitar.size !== BARRA_TAKUTSI.length) {
+    console.error(`Error: se esperaban ${BARRA_TAKUTSI.length} piezas de la barra en relieve_cuadro_takutsi y se encontraron ${quitar.size}.`);
+    process.exit(1);
+  }
+  relieve.children = relieve.children.filter((c) => !quitar.has(c));
+  quitar.forEach((c) => {
+    nodes[c].scale = [0, 0, 0];
+    console.log(`  ✓ ${nodes[c].name} retirado`);
+  });
+}
+
+// ==========================================================================
 // PARTE 4: EMPAQUETADO FINAL DEL GLB v16
 // ==========================================================================
 gltf.buffers[0].byteLength = binBuffer.length;
