@@ -36,8 +36,8 @@ export const TUTORIAL_2D_TOUCH_STEPS = [
 ];
 
 /**
- * Tutorial inicial de la Experiencia 2D. Al pulsar "Comenzar" con mouse, se captura el cursor
- * de inmediato para empezar a explorar sin un clic extra.
+ * Tutorial inicial de la Experiencia 2D. "Comenzar" solo lo cierra; el control con el mouse
+ * se activa cuando el visitante hace clic en la escena.
  */
 export function Tutorial2D({ onClose }) {
   const isMouse = hasFinePointer();
@@ -48,16 +48,10 @@ export function Tutorial2D({ onClose }) {
     startRef.current?.focus();
   }, []);
 
+  // Solo cierra el tutorial: la vista empieza a seguir al mouse hasta que el visitante
+  // hace clic en la escena (no se captura el cursor desde este botón).
   const handleStart = () => {
     onClose?.();
-    if (!isMouse) return;
-    const canvas = document.querySelector('canvas');
-    try {
-      const result = canvas?.requestPointerLock?.();
-      if (result && typeof result.catch === 'function') result.catch(() => {});
-    } catch {
-      // Si el navegador no permite capturar el cursor, se explora con clic y arrastre
-    }
   };
 
   return (
