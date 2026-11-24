@@ -28,6 +28,8 @@ import {
 } from '../utils/viewerCenter.js';
 
 const INITIAL_LOOK_TARGET = initialLookTarget();
+// Píxeles de movimiento del mouse (cursor capturado) que cancelan el giro automático
+const USER_LOOK_CANCEL_PX = 12;
 const _center = new THREE.Vector3(...VIEWER_CENTER);
 
 // Estaciones Culturales del Museo Wixarika (HU-03, HU-06 ISO 9241-210)
@@ -145,7 +147,15 @@ function StationCameraController({ targetStation, setTargetStation, orbitRef, ca
 
   useEffect(() => {
     const stationId = typeof targetStation === 'string' ? targetStation : targetStation?.id;
-    if (!stationId) return;
+    if (!stationId) {
+      // Navegación cancelada (el visitante movió la vista) o terminada: en 2D se deja de girar
+      // de inmediato para que el giro automático no "jale" la vista de regreso.
+      if (!vrMode) {
+        isNavigatingPC.current = false;
+        targetLook.current = null;
+      }
+      return;
+    }
 
     // 1. MODO VISOR VR (Celular WebXR o Estereoscópico con Giroscopio):
     //    Calcula el giro mínimo en Y del cameraRig para dejar la sección seleccionada justo al frente.
@@ -286,6 +296,23 @@ export function MuseumScene({
   const [activeArtwork, setActiveArtwork] = useState(null);
   const [dashboardView, setDashboardView] = useState('home');
   const [navTargetStation, setNavTargetStation] = useState(null);
+  // Si el visitante mueve la vista mientras la cámara gira sola hacia una sala o menú, se cancela
+  // ese giro (antes lo "jalaba" de regreso mientras siguiera moviendo el mouse). Un umbral pequeño
+  // evita cancelar por el temblor natural de la mano al hacer clic.
+  const navActiveRef = useRef(false);
+  const lookDuringNavRef = useRef(0);
+  useEffect(() => {
+    navActiveRef.current = Boolean(navTargetStation);
+    lookDuringNavRef.current = 0;
+  }, [navTargetStation]);
+  const handleUserLook = useCallback((dx, dy) => {
+    if (!navActiveRef.current) return;
+    lookDuringNavRef.current += Math.abs(dx) + Math.abs(dy);
+    if (lookDuringNavRef.current > USER_LOOK_CANCEL_PX) {
+      navActiveRef.current = false;
+      setNavTargetStation(null);
+    }
+  }, []);
   const [isWebXRSession, setIsWebXRSession] = useState(false);
   // Objeto del GLB bajo el punto central (se resalta con un contorno naranja)
   const [outlineTarget, setOutlineTarget] = useState(null);
@@ -371,6 +398,7 @@ export function MuseumScene({
           id.startsWith('btn-videos-') ||
           id.startsWith('btn-about-') ||
           id.startsWith('btn-ref-') ||
+          id.startsWith('btn-dev-') ||
           id.startsWith('btn-empty-') ||
           id.includes('btn-close') ||
           id === 'dashboard-backdrop-blocker'
@@ -533,7 +561,7 @@ export function MuseumScene({
 
       {/* Experiencia 2D con mouse "tipo juego": clic captura el cursor, el mouse gira la vista y
           los clics se disparan en el punto central (GazeReticle). Cualquier tecla libera el cursor. */}
-      <PointerLockLook enabled={!vrMode} orbitRef={orbitRef} />
+      <PointerLockLook enabled={!vrMode} orbitRef={orbitRef} onUserLook={handleUserLook} />
       <KeepViewerCentered orbitRef={orbitRef} vrMode={vrMode} isWebXRSession={isWebXRSession} />
 
       {/* Gestor Nativo WebXR */}

@@ -41,10 +41,12 @@ export function rotateLookDirection(dir, movementX, movementY, cfg = POINTER_LOO
  * La vista gira moviendo el objetivo de OrbitControls alrededor de la cámara, así que la
  * navegación a salas y el arrastre con el cursor libre siguen funcionando igual.
  */
-export function PointerLockLook({ enabled, orbitRef }) {
+export function PointerLockLook({ enabled, orbitRef, onUserLook }) {
   const { gl, camera } = useThree();
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
+  const onUserLookRef = useRef(onUserLook);
+  onUserLookRef.current = onUserLook;
 
   useEffect(() => {
     const el = gl.domElement;
@@ -66,6 +68,7 @@ export function PointerLockLook({ enabled, orbitRef }) {
       const controls = orbitRef?.current;
       if (!enabledRef.current || !controls || !isPointerLockedTo(el)) return;
       if (!e.movementX && !e.movementY) return;
+      onUserLookRef.current?.(e.movementX, e.movementY);
       dir.copy(controls.target).sub(camera.position);
       const dist = dir.length() || 1;
       const next = rotateLookDirection(dir, e.movementX, e.movementY);
