@@ -3,6 +3,7 @@ import { useFrame, useThree, createPortal } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SoundFX } from '../services/audioService.js';
 import { GazeFuseController, GAZE_FUSE_DEFAULT_DURATION } from '../services/gazeFuseService.js';
+import { isPointerLockedTo } from './PointerLockLook.jsx';
 
 const PHYSICAL_TRIGGER_DEBOUNCE_MS = 260;
 const HTML_INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"], [data-vr-ui="true"]';
@@ -265,8 +266,21 @@ export function GazeReticle({
       firePhysicalTrigger();
     };
 
+    // Experiencia 2D "tipo juego": con el cursor capturado (Pointer Lock) el clic se dispara en el
+    // punto central. Se detiene la propagación para que R3F no haga clic con la posición del
+    // cursor oculto (que se queda congelada donde estaba al capturarlo).
+    const isLocked = () => !vrMode && isPointerLockedTo(gl?.domElement);
+    const blockWhileLocked = (e) => {
+      if (isLocked()) e.stopPropagation();
+    };
+
     const onPointerDown = (e) => {
       if (!enabled) return;
+      if (isLocked()) {
+        e.stopPropagation();
+        if (e.button === 0) firePhysicalTrigger();
+        return;
+      }
       if (isHtmlControl(e.target)) return;
 
       // Fuera del modo visor (mouse o toque) la retícula no se dispara: se usa el onClick directo
@@ -277,6 +291,10 @@ export function GazeReticle({
     };
 
     const onClickCapture = (e) => {
+      if (isLocked()) {
+        e.stopPropagation();
+        return;
+      }
       if (!enabled || !vrMode) return;
       if (isHtmlControl(e.target)) return;
       // Evitar que el clic sintetizado del pad capacitivo en la esquina superior derecha
@@ -303,12 +321,16 @@ export function GazeReticle({
     window.addEventListener('touchstart', onTouchStart, { passive: true, capture: true });
     window.addEventListener('pointerdown', onPointerDown, { passive: true, capture: true });
     window.addEventListener('click', onClickCapture, { capture: true });
+    window.addEventListener('pointerup', blockWhileLocked, { capture: true });
+    window.addEventListener('dblclick', blockWhileLocked, { capture: true });
     window.addEventListener('keydown', onKeyDown);
 
     return () => {
       window.removeEventListener('touchstart', onTouchStart, { capture: true });
       window.removeEventListener('pointerdown', onPointerDown, { capture: true });
       window.removeEventListener('click', onClickCapture, { capture: true });
+      window.removeEventListener('pointerup', blockWhileLocked, { capture: true });
+      window.removeEventListener('dblclick', blockWhileLocked, { capture: true });
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [enabled, vrMode, gl, firePhysicalTrigger]);

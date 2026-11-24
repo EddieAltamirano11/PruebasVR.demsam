@@ -9,6 +9,7 @@ import { BooksManagementView } from './views/BooksManagementView.jsx';
 import { LoginView } from './views/LoginView.jsx';
 import { ExperienceLandingView } from './views/ExperienceLandingView.jsx';
 import { RotateDeviceHint } from './components/RotateDeviceHint.jsx';
+import { PointerLockHint } from './components/PointerLockHint.jsx';
 import { SoundFX } from './services/audioService.js';
 import { requestMotionPermission, MOTION_PERMISSION_DENIED_MESSAGE } from './utils/vrSupport.js';
 
@@ -327,6 +328,9 @@ function AppContent() {
 
       {/* Modo visor en celular: pedir girar a horizontal (iPhone no permite bloquear la orientación) */}
       {vrMode && <RotateDeviceHint />}
+
+      {/* Experiencia 2D con mouse: aviso de clic para explorar / Esc para mostrar el cursor */}
+      {experience !== null && !vrMode && <PointerLockHint />}
 
       {/* Barra de Controles Superior (No VR) */}
       {experience !== null && !vrMode && (

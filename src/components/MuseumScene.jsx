@@ -6,7 +6,7 @@ import { MuseumModel } from './MuseumModel.jsx';
 import { WebXRManager } from './WebXRManager.jsx';
 import { VRDeviceOrientation } from './VRDeviceOrientation.jsx';
 import { StereoVRManager } from './StereoVRManager.jsx';
-import { MouseFollowLook } from './MouseFollowLook.jsx';
+import { PointerLockLook } from './PointerLockLook.jsx';
 import { GazeReticle } from './GazeReticle.jsx';
 import {
   WixarikaWelcomeDashboard,
@@ -486,9 +486,9 @@ export function MuseumScene({
         }}
       />
 
-      {/* Experiencia 2D con mouse: la vista sigue al cursor (zona central quieta para apuntar).
-          Se pausa con menús o cuadros abiertos para no girar mientras se elige un botón. */}
-      <MouseFollowLook enabled={!vrMode && !showButtons && !activeArtwork} orbitRef={orbitRef} />
+      {/* Experiencia 2D con mouse "tipo juego": clic captura el cursor, el mouse gira la vista y
+          los clics se disparan en el punto central (GazeReticle). Esc libera el cursor. */}
+      <PointerLockLook enabled={!vrMode} orbitRef={orbitRef} />
 
       {/* Gestor Nativo WebXR */}
       <WebXRManager onSessionChange={handleWebXRSessionChange} onTriggerRef={onWebXRTriggerRef} />
