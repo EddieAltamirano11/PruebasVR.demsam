@@ -3,7 +3,8 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import * as THREE from 'three';
 
-const OUTLINE_COLOR = '#E5A00D';
+// Azul de resaltado (mismo que los botones de los menús al apuntarlos)
+const OUTLINE_COLOR = '#2563eb';
 const PADDING = 0.03; // m alrededor del objeto
 
 // Malla interactiva del GLB → objeto completo a resaltar. Se guarda fuera de userData para no
@@ -57,7 +58,7 @@ export function frontRectangle(box, viewer) {
 }
 
 /**
- * Marco naranja plano alrededor del objeto interactivo del GLB que está bajo el punto central,
+ * Marco azul plano alrededor del objeto interactivo del GLB que está bajo el punto central,
  * para que se note que se puede abrir (pensado para personas con poca experiencia digital).
  */
 export function HoverOutline({ target }) {

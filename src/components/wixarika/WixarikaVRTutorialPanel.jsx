@@ -1,24 +1,20 @@
 import React, { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Text } from '@react-three/drei';
+import { Text } from './VRText.jsx';
 import * as THREE from 'three';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';
-import { LucideVRIcon } from './LucideVRIcon.jsx';
 
-const ICON_COLOR = '#b45309';
 const PANEL_W = 3.0;
-const PANEL_H = 2.15;
+const PANEL_H = 1.75;
 const DISTANCE = 2.4; // m frente al visitante (letra de ~2.7° de alto: se lee sin esfuerzo en el visor)
 const REFOLLOW_ANGLE = THREE.MathUtils.degToRad(50); // si se aleja más, el panel vuelve al frente
 
-/** Pasos del tutorial VR: frases cortas y letra grande para leerse cómodamente en el visor. */
+/**
+ * Tutorial VR mínimo: dos frases cortas, letra grande y sin íconos (los íconos parecían botones).
+ */
 export const VR_TUTORIAL_STEPS = [
-  { icon: 'eye', text: 'Mueve la cabeza para mirar a tu alrededor.' },
-  {
-    icon: 'info',
-    text: 'Apunta el punto a una imagen y espera 2 segundos: verás su información.'
-  },
-  { icon: 'check', text: 'También puedes presionar el botón del visor.' }
+  'Mueve la cabeza para mirar.',
+  'Mira una imagen 2 segundos para abrirla.'
 ];
 
 /**
@@ -98,43 +94,28 @@ export function WixarikaVRTutorialPanel({ onClose, registerMesh, unregisterMesh 
         <meshBasicMaterial color="#faf6eb" />
       </mesh>
 
-      <Text
-        position={[0, PANEL_H / 2 - 0.2, 0.005]}
-        fontSize={0.165}
-        color="#1c1917"
-        anchorX="center"
-        anchorY="middle"
-        maxWidth={PANEL_W * 0.9}
-        textAlign="center"
-      >
-        CÓMO USAR EL MUSEO
-      </Text>
-
-      {VR_TUTORIAL_STEPS.map((step, i) => (
-        <group key={step.icon} position={[-PANEL_W / 2 + 0.26, 0.5 - i * 0.42, 0.005]}>
-          <LucideVRIcon name={step.icon} size={0.2} color={ICON_COLOR} position={[0, 0, 0]} strokeWidth={2.6} />
-          <Text
-            position={[0.2, 0, 0]}
-            fontSize={0.112}
-            color="#1c1917"
-            anchorX="left"
-            anchorY="middle"
-            maxWidth={PANEL_W - 0.62}
-            lineHeight={1.2}
-          >
-            {step.text}
-          </Text>
-        </group>
+      {VR_TUTORIAL_STEPS.map((line, i) => (
+        <Text
+          key={line}
+          position={[0, 0.42 - i * 0.36, 0.005]}
+          fontSize={0.135}
+          color="#1c1917"
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={PANEL_W * 0.9}
+          textAlign="center"
+        >
+          {line}
+        </Text>
       ))}
 
       <WixarikaVRButton
         id="btn-vr-tutorial-start"
         label="Comenzar"
-        iconName="check"
         variant="cantera"
-        width={1.2}
-        height={0.3}
-        position={[0, -PANEL_H / 2 + 0.28, 0.01]}
+        width={1.3}
+        height={0.34}
+        position={[0, -PANEL_H / 2 + 0.36, 0.01]}
         onClick={onClose}
         registerMesh={registerMesh}
         unregisterMesh={unregisterMesh}

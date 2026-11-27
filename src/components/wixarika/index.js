@@ -13,3 +13,4 @@ export * from './BadgeCloseButton.jsx';
 export * from './WixarikaArtworkModal.jsx';
 export * from './WixarikaGastronomyExhibition.jsx';
 export * from './WixarikaVRTutorialPanel.jsx';
+export { VRModeContext, VR_TEXT_COLOR } from './VRText.jsx';

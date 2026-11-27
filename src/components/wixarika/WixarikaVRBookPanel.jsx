@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Text } from '@react-three/drei';
+import { Text } from './VRText.jsx';
 import * as THREE from 'three';
 import { WixarikaVRFloatingPanel } from './WixarikaVRFloatingPanel.jsx';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';

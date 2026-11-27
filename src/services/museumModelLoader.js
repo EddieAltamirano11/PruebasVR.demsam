@@ -6,7 +6,7 @@ import { useSyncExternalStore } from 'react';
  * en negro. Aquí se descarga una sola vez con fetch (midiendo el avance), se convierte en un
  * blob local y three.js lo lee de ahí. Si algo falla, se usa la URL directa como antes.
  */
-export const MUSEUM_MODEL_URL = './museo_wixarika_v16.glb?v=16.8';
+export const MUSEUM_MODEL_URL = './museo_wixarika_v16.glb?v=16.9';
 
 let state = { loaded: 0, total: 0, done: false, url: null, error: null };
 let promise = null;

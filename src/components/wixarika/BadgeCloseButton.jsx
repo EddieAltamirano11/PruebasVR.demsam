@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { SoundFX } from '../../services/audioService.js';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
 import { LucideVRIcon } from './LucideVRIcon.jsx';
+import { ButtonShadow, HOVER_BLUE } from './ButtonShadow.jsx';
 
 const UNIFIED_ICON_COLOR = '#b45309';
 
@@ -48,11 +49,14 @@ export function BadgeCloseButton({
 
   return (
     <group position={position}>
-      {/* Marco exterior dorado */}
+      {/* Sombra para que se perciba como botón */}
+      <ButtonShadow width={size + 0.024} height={size + 0.024} offset={0.022} />
+
+      {/* Marco exterior dorado (azul y más grueso al apuntarlo) */}
       <mesh position={[0, 0, -0.001]}>
-        <planeGeometry args={[size + 0.024, size + 0.024]} />
+        <planeGeometry args={[size + (isHovered ? 0.05 : 0.024), size + (isHovered ? 0.05 : 0.024)]} />
         <meshBasicMaterial
-          color={isHovered ? '#b45309' : '#c69214'}
+          color={isHovered ? HOVER_BLUE : '#c69214'}
           side={THREE.DoubleSide}
         />
       </mesh>

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Text } from '@react-three/drei';
+import { Text } from './VRText.jsx';
 import * as THREE from 'three';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
@@ -11,6 +11,9 @@ import {
   formatVideoTime,
   resolveVideoSource
 } from '../../services/videoService.js';
+
+// Aviso neutro (sin rojo ni mensaje técnico) cuando el video no se puede cargar, p. ej. sin internet
+export const VIDEO_UNAVAILABLE_MSG = 'Video no disponible por ahora';
 
 /**
  * WixarikaVRVideoPlayer - Reproductor audiovisual 3D en sala cultural.
@@ -238,12 +241,28 @@ export function WixarikaVRVideoPlayer({
       setIsMuted(Boolean(el.muted || el.volume === 0));
     };
 
+    // Sin conexión (o archivo no disponible) no se muestra un error técnico: un aviso neutro, y el
+    // video se vuelve a intentar cargar al regresar la conexión o al pulsarlo de nuevo.
     const onError = () => {
       setIsPlaying(false);
       setIsBuffering(false);
-      setErrorMsg('No se pudo reproducir el video');
+      setErrorMsg(VIDEO_UNAVAILABLE_MSG);
       onPlaybackChange?.(false);
     };
+    const onOnline = () => {
+      setErrorMsg((prev) => {
+        if (prev === VIDEO_UNAVAILABLE_MSG) {
+          try {
+            el.load();
+          } catch (_e) {
+            // Se reintentará al pulsar el video
+          }
+          return null;
+        }
+        return prev;
+      });
+    };
+    window.addEventListener('online', onOnline);
 
     el.addEventListener('loadedmetadata', onLoadedMetadata);
     el.addEventListener('durationchange', onDurationChange);
@@ -267,6 +286,7 @@ export function WixarikaVRVideoPlayer({
 
     return () => {
       window.removeEventListener('wixarika:ambient-start', onAmbientStart);
+      window.removeEventListener('online', onOnline);
       if (pendingMetaCleanupRef.current) {
         pendingMetaCleanupRef.current();
         pendingMetaCleanupRef.current = null;
@@ -390,12 +410,22 @@ export function WixarikaVRVideoPlayer({
     SoundFX.playClick();
     setStatusNote('');
 
+    // Si antes no se pudo cargar (p. ej. sin internet), reintentar desde cero
+    if (errorMsg === VIDEO_UNAVAILABLE_MSG) {
+      setErrorMsg(null);
+      try {
+        el.load();
+      } catch (_e) {
+        // Si vuelve a fallar, el evento error muestra el aviso neutro otra vez
+      }
+    }
+
     if (el.paused || el.ended) {
       startSafePlayback();
     } else {
       el.pause();
     }
-  }, [startSafePlayback]);
+  }, [startSafePlayback, errorMsg]);
 
   // Registrar la pantalla de video y el botón central "Iniciar documental" en el raycaster VR
   // para que Gaze Fuse y el botón físico Homido Grab inicien/pausen directamente el video.
@@ -542,7 +572,7 @@ export function WixarikaVRVideoPlayer({
 
               <mesh position={[0, 0, -0.0005]}>
                 <planeGeometry args={[theater ? 2.40 : cinemaMode ? 1.84 : 1.54, theater ? 0.36 : 0.28]} />
-                <meshBasicMaterial color={errorMsg ? '#dc2626' : '#c69214'} />
+                <meshBasicMaterial color="#c69214" />
               </mesh>
               <mesh
                 ref={overlayPlayMeshRef}
@@ -566,7 +596,7 @@ export function WixarikaVRVideoPlayer({
               <Text
                 position={[!errorMsg && !isBuffering && !statusNote ? 0.08 : 0, 0, 0.002]}
                 fontSize={theater ? 0.130 : 0.098}
-                color={errorMsg ? '#991b1b' : '#1c1917'}
+                color="#1c1917"
                 anchorX="center"
                 anchorY="middle"
                 maxWidth={theater ? 1.90 : cinemaMode ? 1.40 : 1.15}

@@ -13,6 +13,7 @@ import {
   WixarikaWelcomeDashboard,
   WixarikaArtworkModal,
   WixarikaVRTutorialPanel,
+  VRModeContext,
   calculateArtworkModalTransform
 } from './wixarika/index.js';
 import { SoundFX } from '../services/audioService.js';
@@ -241,7 +242,8 @@ function DynamicArtworkModal({
   artwork,
   onClose,
   registerMesh,
-  unregisterMesh
+  unregisterMesh,
+  hoveredId
 }) {
   const [transform, setTransform] = useState(() => calculateArtworkModalTransform(artwork));
 
@@ -260,6 +262,7 @@ function DynamicArtworkModal({
       onClose={onClose}
       registerMesh={registerMesh}
       unregisterMesh={unregisterMesh}
+      hoveredId={hoveredId}
     />
   );
 }
@@ -314,11 +317,15 @@ export function MuseumScene({
     }
   }, []);
   const [isWebXRSession, setIsWebXRSession] = useState(false);
-  // Objeto del GLB bajo el punto central (se resalta con un contorno naranja)
+  // Objeto del GLB bajo el punto central (se resalta con un marco azul)
   const [outlineTarget, setOutlineTarget] = useState(null);
+  // Botón de menú bajo el punto central (se resalta en azul)
+  const [hoveredId, setHoveredId] = useState(null);
   const handleReticleHover = useCallback((target, isHovering) => {
     const root = findOutlineRoot(target);
     setOutlineTarget((prev) => (isHovering ? root : prev === root ? null : prev));
+    const id = target?.userData?.id || null;
+    setHoveredId((prev) => (isHovering ? id : prev === id ? null : prev));
   }, []);
 
   const handleWebXRSessionChange = useCallback(
@@ -373,41 +380,11 @@ export function MuseumScene({
     if (mesh) interactiveRegistry.current.delete(mesh);
   }, []);
 
-  const getInteractiveObjects = useCallback(() => {
-    const all = Array.from(interactiveRegistry.current);
-    if (activeArtwork) {
-      // Cuando hay un cuadro/deidad abierto, desactivar el gaze fuse de las cosas detrás del menú.
-      // Solo permitir interactuar con el botón badge de cerrar y el bloqueador de fondo.
-      return all.filter((mesh) => {
-        const id = mesh.userData?.id || '';
-        return (
-          id.includes('btn-close') ||
-          id.includes('close-artwork') ||
-          id === 'artwork-modal-backdrop-blocker'
-        );
-      });
-    }
-    if (showButtons) {
-      // Cuando el menú de bienvenida o acerca de está abierto,
-      // solo permitir interactuar con elementos dentro del dashboard y su botón de cierre
-      return all.filter((mesh) => {
-        const id = mesh.userData?.id || '';
-        return (
-          id.startsWith('btn-dash-') ||
-          id.startsWith('btn-books-') ||
-          id.startsWith('btn-videos-') ||
-          id.startsWith('btn-about-') ||
-          id.startsWith('btn-ref-') ||
-          id.startsWith('btn-dev-') ||
-          id.startsWith('btn-empty-') ||
-          id.includes('btn-close') ||
-          id === 'dashboard-backdrop-blocker'
-        );
-      });
-    }
-    // Cuando no hay ningún menú abierto, interactuar con cuadros y botones de pared
-    return all;
-  }, [activeArtwork, showButtons]);
+  // Todo lo interactivo que esté a la vista se puede seleccionar, aunque haya un menú o una ficha
+  // abierta: elegir otro cuadro, platillo o botón del muro cierra el panel actual y abre el nuevo.
+  // Lo que queda detrás de un panel no se puede seleccionar porque su fondo bloquea el rayo
+  // (userData.isBlocker).
+  const getInteractiveObjects = useCallback(() => Array.from(interactiveRegistry.current), []);
 
   // Alternar audio cultural tradicional
   const handleToggleAudio = useCallback(() => {
@@ -444,6 +421,7 @@ export function MuseumScene({
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       dpr={[1, MAX_DPR]}
     >
+      <VRModeContext.Provider value={vrMode}>
       {/* Rig de camara para modo normal y modo VR:
           Su rotación en Y se gestiona imperativamente en StationCameraController para que
           los re-renders de React nunca reseteen el giro hacia Deidades/Gastronomía/Fiestas en VR. */}
@@ -500,6 +478,7 @@ export function MuseumScene({
           registerMesh={registerMesh}
           unregisterMesh={unregisterMesh}
           vrMode={vrMode}
+          hoveredId={hoveredId}
         />
         </Suspense>
       )}
@@ -515,7 +494,7 @@ export function MuseumScene({
         </Suspense>
       )}
 
-      {/* Contorno naranja sobre el cuadro / botón / platillo del GLB al que apunta el punto central */}
+      {/* Marco azul sobre el cuadro / botón / platillo del GLB al que apunta el punto central */}
       <Suspense fallback={null}>
         <HoverOutline target={activeArtwork ? null : outlineTarget} />
       </Suspense>
@@ -525,6 +504,7 @@ export function MuseumScene({
         <Suspense fallback={null}>
           <DynamicArtworkModal
             artwork={activeArtwork}
+            hoveredId={hoveredId}
             onClose={handleCloseArtwork}
             registerMesh={registerMesh}
             unregisterMesh={unregisterMesh}
@@ -572,6 +552,7 @@ export function MuseumScene({
         <VRDeviceOrientation onRecenterRef={onRecenterRef} />
       )}
       {vrMode && !isWebXRSession && <StereoVRManager eyeSep={0.064} />}
+      </VRModeContext.Provider>
     </Canvas>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Text } from '@react-three/drei';
+import { Text } from './VRText.jsx';
 import * as THREE from 'three';
 import { SoundFX } from '../../services/audioService.js';
 import { WIXARIKA_GASTRONOMY_DISHES } from './wixarikaArtworksData.js';

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Text } from '@react-three/drei';
+import { Text } from './VRText.jsx';
 import { WixarikaVRFloatingPanel } from './WixarikaVRFloatingPanel.jsx';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';
 import { WixarikaVRVideoPlayer } from './WixarikaVRVideoPlayer.jsx';

@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Text } from '@react-three/drei';
+import { Text } from './VRText.jsx';
+import { ButtonShadow, HOVER_BLUE } from './ButtonShadow.jsx';
 import { SoundFX } from '../../services/audioService.js';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
 import { LucideVRIcon } from './LucideVRIcon.jsx';
@@ -590,7 +591,7 @@ function DashboardTile({
   const bgIdle = '#fbf7ee';
   const bgHover = '#f3ebd6';
   const currentBg = isHovered ? bgHover : bgIdle;
-  const borderColor = isHovered ? accentColor : '#d4af37';
+  const borderColor = isHovered ? HOVER_BLUE : '#d4af37';
 
   // Centrado vertical dinámico y proporcionado de icono y título
   const iconY = height * 0.16;
@@ -598,9 +599,12 @@ function DashboardTile({
 
   return (
     <group position={position}>
-      {/* Marco de oro bruñido exterior */}
+      {/* Sombra para que la tarjeta se perciba como botón */}
+      <ButtonShadow width={width + 0.03} height={height + 0.03} offset={0.05} opacity={0.42} />
+
+      {/* Marco de oro bruñido exterior (azul y más grueso al apuntarlo) */}
       <mesh position={[0, 0, -0.001]}>
-        <planeGeometry args={[width + 0.030, height + 0.030]} />
+        <planeGeometry args={[width + (isHovered ? 0.06 : 0.030), height + (isHovered ? 0.06 : 0.030)]} />
         <meshBasicMaterial color={borderColor} />
       </mesh>
 
@@ -902,7 +906,7 @@ export function WixarikaWelcomeDashboard({
       />
 
       {/* ===================================================================== */}
-      {/* VISTA A: MENÚ PRINCIPAL DE BIENVENIDA (HOME - 3 CARDS CULTURALES)      */}
+      {/* VISTA A: MENÚ PRINCIPAL (LIBROS Y VIDEOS + BOTÓN DE AUDIO)            */}
       {/* ===================================================================== */}
       {currentView === 'home' && (
         <group position={[0, 0, 0.005]}>
@@ -947,38 +951,20 @@ export function WixarikaWelcomeDashboard({
             <meshBasicMaterial color="#d4af37" side={THREE.DoubleSide} />
           </mesh>
 
-          {/* Fila Única: Servicios y Catálogos Culturales (3 cards centradas verticalmente) */}
-          <group position={[0, -0.22, 0]}>
+          {/* Dos tarjetas principales: Libros y Videos (el audio es un botón aparte, abajo a la derecha) */}
+          <group position={[0, -0.18, 0]}>
             <DashboardTile
               key="btn-dash-books"
               id="btn-dash-books"
               title="Libros Recomendados"
               iconName="book-open"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.84}
-              height={1.15}
-              iconSize={0.30}
-              titleSize={0.140}
-              position={[-1.98, 0, 0]}
+              width={2.30}
+              height={1.25}
+              iconSize={0.34}
+              titleSize={0.155}
+              position={[-1.40, 0, 0]}
               onClick={() => setCurrentView('books')}
-              registerMesh={registerMesh}
-              unregisterMesh={unregisterMesh}
-              hoveredId={hoveredId}
-              fuseProgress={fuseProgress}
-            />
-
-            <DashboardTile
-              key="btn-dash-audio"
-              id="btn-dash-audio"
-              title={isAudioActive ? 'Audio: Activo' : 'Audio Cultural'}
-              iconName={isAudioActive ? 'volume-2' : 'volume-x'}
-              accentColor={UNIFIED_ICON_COLOR}
-              width={1.84}
-              height={1.15}
-              iconSize={0.30}
-              titleSize={0.140}
-              position={[0, 0, 0]}
-              onClick={handleToggleAudio}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
               hoveredId={hoveredId}
@@ -991,11 +977,11 @@ export function WixarikaWelcomeDashboard({
               title="Videos Culturales"
               iconName="video"
               accentColor={UNIFIED_ICON_COLOR}
-              width={1.84}
-              height={1.15}
-              iconSize={0.30}
-              titleSize={0.140}
-              position={[1.98, 0, 0]}
+              width={2.30}
+              height={1.25}
+              iconSize={0.34}
+              titleSize={0.155}
+              position={[1.40, 0, 0]}
               onClick={() => setCurrentView('videos')}
               registerMesh={registerMesh}
               unregisterMesh={unregisterMesh}
@@ -1004,30 +990,45 @@ export function WixarikaWelcomeDashboard({
             />
           </group>
 
-          {/* Pie de página con guía de interacción por mirada */}
-          <group position={[0, -1.35, 0]}>
-            <group position={[-2.20, 0, 0]}>
-              <LucideVRIcon
-                name="eye"
-                size={0.135}
-                color={UNIFIED_ICON_COLOR}
-                position={[0, 0, 0.002]}
-                strokeWidth={2.4}
-              />
-            </group>
+          {/* Pie: guía breve (izquierda) y botón de Audio cultural (abajo a la derecha) */}
+          <group position={[0, -1.38, 0]}>
+            <LucideVRIcon
+              name="eye"
+              size={0.135}
+              color={UNIFIED_ICON_COLOR}
+              position={[-2.80, 0, 0.002]}
+              strokeWidth={2.4}
+            />
             <Text
-              position={[0.12, 0, 0]}
-              fontSize={0.122}
+              position={[-2.62, 0, 0]}
+              fontSize={0.118}
               color="#78350f"
-              anchorX="center"
+              anchorX="left"
               anchorY="middle"
-              maxWidth={panelWidth * 0.78}
-              textAlign="center"
+              maxWidth={3.30}
+              textAlign="left"
             >
               {vrMode
-                ? 'Fija tu mirada durante 2 segundos o pulsa el botón para interactuar'
-                : 'Apunta con el punto central y haz clic para interactuar'}
+                ? 'Mira 2 segundos o pulsa el botón del visor para elegir'
+                : 'Apunta con el punto central y haz clic para elegir'}
             </Text>
+
+            <WixarikaVRButton
+              id="btn-dash-audio"
+              label={isAudioActive ? 'Audio: activo' : 'Audio cultural'}
+              iconName={isAudioActive ? 'volume-2' : 'volume-x'}
+              variant="cantera"
+              active={isAudioActive}
+              width={1.60}
+              height={0.34}
+              position={[2.20, 0, 0.004]}
+              onClick={handleToggleAudio}
+              registerMesh={registerMesh}
+              unregisterMesh={unregisterMesh}
+              hoveredId={hoveredId}
+              fuseProgress={fuseProgress}
+              showDiamonds={false}
+            />
           </group>
         </group>
       )}

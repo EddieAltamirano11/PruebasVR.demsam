@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
-import { Text } from '@react-three/drei';
+import { Text } from './VRText.jsx';
 import { SoundFX } from '../../services/audioService.js';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
 import { LucideVRIcon } from './LucideVRIcon.jsx';

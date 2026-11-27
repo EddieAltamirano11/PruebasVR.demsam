@@ -815,8 +815,10 @@ const { meshIdx: btnDiamondOroMeshIdx } = addGeometryMeshToGltf(
   'mesh_boton_bienvenida_rombo_oro'
 );
 
-// Texto 3D dorado para "ACERCA DE" (escala y material idéntico a las placas de las deidades)
-const acercaTextGeom = new TextGeometry('ACERCA DE', {
+// Texto 3D dorado "REFERENCIAS" (antes "ACERCA DE"; el nodo conserva su nombre porque la app lo
+// busca como boton_bienvenida_acerca_de). Escala y material idénticos a las placas de las deidades;
+// si la palabra no cabe en el panel de cantera se reduce proporcionalmente.
+const acercaTextGeom = new TextGeometry('REFERENCIAS', {
   font,
   size: 0.165,
   depth: 0.024,
@@ -825,6 +827,12 @@ const acercaTextGeom = new TextGeometry('ACERCA DE', {
 });
 acercaTextGeom.computeVertexNormals();
 acercaTextGeom.center();
+acercaTextGeom.computeBoundingBox();
+{
+  const maxTextW = BTN_CANVAS_W * 0.88;
+  const textW = acercaTextGeom.boundingBox.max.x - acercaTextGeom.boundingBox.min.x;
+  if (textW > maxTextW) acercaTextGeom.scale(maxTextW / textW, maxTextW / textW, 1);
+}
 const { meshIdx: acercaTextMeshIdx } = addGeometryMeshToGltf(
   acercaTextGeom,
   MAT_TEXTO_ORO_3D,
@@ -1287,6 +1295,89 @@ console.log('\n[3.7] Quitando la barra oscura que tapaba el cuadro de Takutsi Na
     nodes[c].scale = [0, 0, 0];
     console.log(`  ✓ ${nodes[c].name} retirado`);
   });
+}
+
+// ==========================================================================
+// 3.8 PLACAS DE DEIDADES Y FIESTAS MÁS LEGIBLES + BRILLO EN LOGOS DE BIENVENIDA
+//     Pedido del equipo: que las placas de nombre se parezcan a los letreros principales de
+//     sala (más gruesas, más 3D, con brillo) y con letra más grande. No pueden ensancharse
+//     (entre placas vecinas quedan ~16 cm), así que crecen en alto y en grosor, y el texto se
+//     agranda hasta llenar el ancho disponible de la placa.
+// ==========================================================================
+console.log('\n[3.8] Placas de deidades y fiestas más grandes, gruesas y con brillo; logos con brillo...');
+{
+  const PLACA_ALTO = 1.15;   // la placa crece 15 % en alto
+  const PLACA_GROSOR = 2.2;  // y el doble de grosor (más 3D, como los letreros de sala)
+  const TEXTO_ALTO = 1.15;   // letras 15 % más altas dentro de la placa (≈32 % en total)
+  const TEXTO_ANCHO = 1.15;  // y más anchas, sin salir del 94 % del panel de cantera
+
+  const matByName = (prefix) => gltf.materials.findIndex((m) => (m.name || '').startsWith(prefix));
+  const cloneMaterial = (srcIdx, name, emissiveFactor) => {
+    const idx = gltf.materials.length;
+    gltf.materials.push({ ...JSON.parse(JSON.stringify(gltf.materials[srcIdx])), name, emissiveFactor });
+    return idx;
+  };
+  const MAT_CANTERA_SRC = matByName('mat_letrero_cantera');
+  const MAT_TEXTO_SRC = matByName('mat_texto_oro_3d');
+  // Brillo propio (emisivo) para que se vean iluminadas como el letrero superior de cada sala
+  const MAT_PLACA_CANTERA_BRILLO = cloneMaterial(MAT_CANTERA_SRC, 'mat_placa_cantera_brillo', [0.32, 0.29, 0.25]);
+  const MAT_PLACA_TEXTO_BRILLO = cloneMaterial(MAT_TEXTO_SRC, 'mat_placa_texto_oro_brillo', [0.5, 0.2, 0.0]);
+
+  // Cada malla se duplica con el material nuevo (algunas mallas se comparten con otros objetos)
+  const meshWithMaterial = (meshIdx, matIdx) => {
+    const src = gltf.meshes[meshIdx];
+    const idx = gltf.meshes.length;
+    gltf.meshes.push({ name: `${src.name}_brillo`, primitives: src.primitives.map((pr) => ({ ...pr, material: matIdx })) });
+    return idx;
+  };
+
+  let placas = 0;
+  nodes.forEach((n) => {
+    if (!/^placa_(deidad|fiesta)_/.test(n.name)) return;
+    const [sx, sy, sz] = n.scale || [1, 1, 1];
+    n.scale = [sx, sy * PLACA_ALTO, sz * PLACA_GROSOR];
+
+    const kids = (n.children || []).map((c) => nodes[c]).filter((k) => k.mesh !== undefined);
+    const matOf = (k) => gltf.meshes[k.mesh].primitives[0].material;
+    const cantera = kids.find((k) => matOf(k) === MAT_CANTERA_SRC);
+    const texto = kids.find((k) => matOf(k) === MAT_TEXTO_SRC && !(k.scale && k.scale[0] === 0));
+    if (!cantera || !texto) {
+      console.error(`Error: la placa ${n.name} no tiene panel de cantera o texto dorado.`);
+      process.exit(1);
+    }
+
+    // Texto más grande, limitado al ancho del panel de cantera
+    const accW = (k) => {
+      const a = gltf.accessors[gltf.meshes[k.mesh].primitives[0].attributes.POSITION];
+      return a.max[0] - a.min[0];
+    };
+    const [tx, ty, tz] = texto.scale || [1, 1, 1];
+    const maxScaleX = (accW(cantera) * 0.94) / accW(texto);
+    texto.scale = [Math.min(tx * TEXTO_ANCHO, Math.max(tx, maxScaleX)), ty * TEXTO_ALTO, tz];
+
+    cantera.mesh = meshWithMaterial(cantera.mesh, MAT_PLACA_CANTERA_BRILLO);
+    texto.mesh = meshWithMaterial(texto.mesh, MAT_PLACA_TEXTO_BRILLO);
+    placas += 1;
+    console.log(`  ✓ ${n.name}: texto ${texto.scale[0].toFixed(2)} × ${texto.scale[1].toFixed(2)}`);
+  });
+  if (placas !== 9) {
+    console.error(`Error: se esperaban 9 placas (6 deidades + 3 fiestas) y se encontraron ${placas}.`);
+    process.exit(1);
+  }
+
+  // Logos institucionales de Bienvenida con brillo propio (se ven más vivos con la luz de la sala)
+  let logos = 0;
+  gltf.materials.forEach((m) => {
+    if (!/^mat_logo_(itt|cecan|solon_arguello)_bienvenida$/.test(m.name || '')) return;
+    m.emissiveTexture = { index: m.pbrMetallicRoughness.baseColorTexture.index };
+    m.emissiveFactor = [0.4, 0.4, 0.4];
+    logos += 1;
+  });
+  if (logos !== 3) {
+    console.error(`Error: se esperaban 3 logos de Bienvenida y se encontraron ${logos}.`);
+    process.exit(1);
+  }
+  console.log('  ✓ Logos ITT, CECAN y Solón Argüello con brillo propio');
 }
 
 // ==========================================================================

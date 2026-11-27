@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { Text } from '@react-three/drei';
+import { Text } from './VRText.jsx';
+import { ButtonShadow, HOVER_BLUE } from './ButtonShadow.jsx';
 import { SoundFX } from '../../services/audioService.js';
 import { WIXARIKA_VARIANTS, calculateAngularSize } from './wixarikaTheme.js';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
@@ -87,9 +88,9 @@ export function WixarikaVRButton({
 
   const currentBorder = disabled
     ? '#475569'
-    : active
-    ? theme.borderGlow
     : isHovered
+    ? HOVER_BLUE
+    : active
     ? theme.borderGlow
     : theme.borderColor;
 
@@ -115,9 +116,12 @@ export function WixarikaVRButton({
 
   return (
     <group position={position} rotation={rotation}>
-      {/* 1. Marco exterior con relieve 3D y brillo de chaquira */}
+      {/* Sombra para que se perciba como botón */}
+      {!disabled && <ButtonShadow width={width + 0.035} height={height + 0.035} offset={0.022} />}
+
+      {/* 1. Marco exterior con relieve 3D y brillo de chaquira (azul al apuntarlo) */}
       <mesh position={[0, 0, -0.003]}>
-        <planeGeometry args={[width + 0.035, height + 0.035]} />
+        <planeGeometry args={[width + (isHovered ? 0.05 : 0.035), height + (isHovered ? 0.05 : 0.035)]} />
         <meshBasicMaterial
           color={currentBorder}
           transparent

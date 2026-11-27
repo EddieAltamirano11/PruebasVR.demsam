@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from '@react-three/drei';
+import { Text } from './VRText.jsx';
 import { WIXARIKA_VARIANTS, VR_TYPOGRAPHY_PALETTE } from './wixarikaTheme.js';
 import { TsikuriDiamond } from './TsikuriDiamond.jsx';
 import { WixarikaVRButton } from './WixarikaVRButton.jsx';
