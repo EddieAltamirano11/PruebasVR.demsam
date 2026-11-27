@@ -4,6 +4,22 @@ import { isIOSDevice, isStandaloneDisplay } from '../utils/vrSupport.js';
 import { BiblioLogo } from '../components/BiblioLogo.jsx';
 import { ExperienceSelector } from '../components/ExperienceSelector.jsx';
 
+/** Logos institucionales (los mismos que se ven en la sala de Bienvenida del museo). */
+export const INSTITUTION_LOGOS = [
+  { src: './texturas/logo_itt_bienvenida.png', alt: 'Instituto Tecnológico de Tepic', className: 'h-10 sm:h-14' },
+  {
+    src: './texturas/logo_cecan_bienvenida.png',
+    alt: 'Consejo Estatal para la Cultura y las Artes de Nayarit (CECAN)',
+    // La imagen trae mucho margen interno: un poco más alta para verse del mismo tamaño que las demás
+    className: 'h-12 sm:h-[4.5rem]'
+  },
+  {
+    src: './texturas/logo_solon_arguello_bienvenida.png',
+    alt: 'Biblioteca Pública Central Estatal Solón Argüello',
+    className: 'h-9 sm:h-12'
+  }
+];
+
 /**
  * Pantalla de inicio: el visitante elige cómo recorrer el museo (VR o 2D).
  * Se muestra siempre al entrar a la app, encima de la escena 3D que se precarga detrás.
@@ -40,7 +56,20 @@ export function ExperienceLandingView({
         </button>
       </header>
 
-      <main className="mx-auto w-full max-w-4xl px-4 sm:px-8 pt-6 sm:pt-12 pb-12 flex flex-col items-center text-center">
+      <main className="mx-auto w-full max-w-4xl px-4 sm:px-8 pt-4 sm:pt-6 pb-12 flex flex-col items-center text-center">
+        {/* Logos institucionales arriba y al centro, sobre una franja clara para que se lean bien */}
+        <div className="mb-6 sm:mb-8 inline-flex max-w-full flex-wrap items-center justify-center gap-x-5 gap-y-3 rounded-2xl bg-[#faf6eb] px-4 py-3 shadow-lg sm:gap-x-8 sm:px-6">
+          {INSTITUTION_LOGOS.map((logo) => (
+            <img
+              key={logo.src}
+              src={logo.src}
+              alt={logo.alt}
+              className={`${logo.className} w-auto object-contain`}
+              draggable="false"
+            />
+          ))}
+        </div>
+
         <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-[#E5A00D]">
           Biblioteca Pública Central Estatal Solón Argüello
         </p>
